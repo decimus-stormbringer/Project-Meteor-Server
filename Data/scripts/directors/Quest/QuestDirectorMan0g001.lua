@@ -35,89 +35,38 @@ function onCreateContentArea(players, director, contentArea, contentGroup)
 
 end
 
-function onEventStarted(player, actor, triggerName)
+function onEventStarted(player, director, triggerName)	
 
 	man0g0Quest = player:GetQuest("Man0g0");
 	startTutorialMode(player);
-
-
-	--Combat portion of tutorial
-	
-	if player:IsDiscipleOfWar() then
-    
-        callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtl001");
-        player:EndEvent();
-        waitForSignal("playerActive");
-        wait(1); --If this isn't here, the scripts bugs out. TODO: Find a better alternative.
-        kickEventContinue(player, actor, "noticeEvent", "noticeEvent");	
-        
-        callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtl002", nil, nil, nil);
-        player:EndEvent();        
-
-		--waitForSignal("playerAttack");
-		closeTutorialWidget(player);
-		showTutorialSuccessWidget(player, 9055); --Open TutorialSuccessWidget for attacking enemy
-		openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_TP);
-
-        wait(3);
-		closeTutorialWidget(player);
-		openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_WEAPONSKILLS);
-		--waitForSignal("weaponskillUsed");
-        wait(3);
-		--player:SetMod(modifiersGlobal.MinimumTpLock, 0);
-		closeTutorialWidget(player);
-		showTutorialSuccessWidget(player, 9065); --Open TutorialSuccessWidget for weapon skill
-        
-	elseif player:IsDiscipleOfMagic() then
-    
-        callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtlMagic001");  
-        player:EndEvent();
-        wait(1);
-        kickEventContinue(player, actor, "noticeEvent", "noticeEvent");
-        closeTutorialWidget(player);
-        player:SendMessage(0x20, "", "Sending success");
-        showTutorialSuccessWidget(player, 9050); --Open TutorialSuccessWidget for magic skill
-        wait(1)
-		openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_DEFEATENEMY);
-        wait(3);
-        closeTutorialWidget(player);
- 
-
-		--waitForSignal("spellUsed");  9050
-
-	elseif player:IsDiscipleOfHand() then
-		--waitForSignal("abilityUsed");
-	elseif player:IsDiscipleOfLand() then
-		--waitForSignal("abilityUsed");
-	end
-	
-    wait(3);
+	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtl001", nil, nil, nil);
+	player:EndEvent();	
+   	waitForSignal("playerActive");
+	wait(1); --If this isn't here, the scripts bugs out. TODO: Find a better alternative.	
+	kickEventContinue(player, director, "noticeEvent", "noticeEvent");	
+	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtl002", nil, nil, nil);	
+	player:EndEvent();	
+	wait(4);
+	closeTutorialWidget(player);
+	showTutorialSuccessWidget(player, 9055); --Open TutorialSuccessWidget for attacking enemy
+	wait(3);
+	openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_TP);
+	wait(5);
+	closeTutorialWidget(player);
+	openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_WEAPONSKILLS);
+	wait(4); --Should be wait for weaponskillUsed signal
+	closeTutorialWidget(player);
+	showTutorialSuccessWidget(player, 9065); --Open TutorialSuccessWidget for weapon skill
+	wait(6); --Should be wait for mobkill
 	worldMaster = GetWorldMaster();
-	player:SendDataPacket("attention", worldMaster, "", 51073, 2);
-	wait(7);
+	attentionMessage(player, 51073, 1);
+	wait(7); -- end of fight?
 	player:ChangeMusic(7);
 	player:ChangeState(0); 
-
-	--kickEventContinue(player, actor, "noticeEvent", "noticeEvent");    
-	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processEvent020_1");
-
-    man0g0Quest:StartSequence(10);
-	
-	player:EndEvent();	
-    player.CurrentArea:ContentFinished();
+	kickEventContinue(player, director, "noticeEvent", "noticeEvent");
+	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processEvent020_1", nil, nil, nil);	
+	man0g0Quest:StartSequence(10);
+	player.CurrentArea:ContentFinished();
 	GetWorldManager():DoZoneChange(player, 155, "PrivateAreaMasterPast", 1, 15, 175.38, -1.21, -1156.51, -2.1);
-	player:EndEvent();	
+	player:EndEvent();
 end
-
---[[
-	IF DoW:
-		OpenWidget (TP)
-		IF TP REACHED:
-			CloseWidget
-			OpenWidget (WS)
-		IF WS USED:
-			Success
-			CloseWidget
-	ELSE MAGIC:
-		OpenWidget (DEFEAT ENEMY)
-	--]]

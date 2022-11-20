@@ -217,15 +217,24 @@ function onStateChange(player, quest, sequence)
 end
 
 function onTalk(player, quest, npc)
+	player:SendMessage(0x1D,"",">function onTalk");
 	local sequence = quest:getSequence();
+	player:SendMessage(0x1D,"",">local sequence");
 	local classId = npc:GetActorClassId();
+	player:SendMessage(0x1D,"",">local classId");
 	
 	if (sequence == SEQ_000) then
+	player:SendMessage(0x1D,"",">if (sequence == SEQ_000)");
 		seq000_onTalk(player, quest, npc, classId);
+		player:SendMessage(0x1D,"",">If s000 talk commaned?");
 	elseif (sequence == SEQ_003) then
+	player:SendMessage(0x1D,"",">function onTalk -> elseif (sequence == SEQ_003)");
 		if (classId == BADERON) then
+			player:SendMessage(0x1D,"",">onTalk if (classId == BADERON)");
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent020_2");
+			player:SendMessage(0x1D,"",">ontalk callClientFunction");
 			player:EndEvent();
+			player:SendMessage(0x1D,"",">ontalk if Baderon End");
 		end
 	elseif (sequence == SEQ_005) then
 		if (classId == BADERON) then
@@ -332,6 +341,8 @@ function onTalk(player, quest, npc)
 	elseif (sequence == SEQ_085) then
 		if (classId == HNAANZA) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent632_2");
+			--Adding end event to prevent softlock if you talk to Hnaanza twice.
+			player:EndEvent();
 		else
 			seq080_085_onTalk(player, quest, npc, classId);
 		end
@@ -344,11 +355,12 @@ function onTalk(player, quest, npc)
 			return;
 		end
 	end
-	
+	player:SendMessage(0x1D,"",">ontalk end");
 	quest:UpdateENPCs();
 end
 
 function seq000_onTalk(player, quest, npc, classId)
+	player:SendMessage(0x1D,"",">seq000_onTalk");
 	if     (classId == CRAPULOUS_ADVENTURER) then
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent010_2");
 	elseif (classId == SKITTISH_ADVENTURER) then
@@ -361,22 +373,35 @@ function seq000_onTalk(player, quest, npc, classId)
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent010_6");
 	elseif (classId == RELAXING_ADVENTURER) then
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent010_7");
-	elseif (classId == YSHTOLA) then		
+	elseif (classId == YSHTOLA) then
+		player:SendMessage(0x1D,"",">elseif (classId == YSHTOLA)");
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent010_8");
 	elseif (classId == BADERON) then
+		player:SendMessage(0x1D,"",">elseif (classId == BADERON)");
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent020");
+		player:SendMessage(0x1D,"",">callClientFunction");
 		quest:NewNpcLsMsg(1);
+		player:SendMessage(0x1D,"",">quest:NewNpcLsMsg(1)");
 		quest:StartSequence(SEQ_003);
-		player:EndEvent();		
+		player:SendMessage(0x1D,"",">quest:StartSequence(SEQ_003)");
+		player:EndEvent();
+		player:SendMessage(0x1D,"",">player:EndEvent()");		
 		
-		local director = GetWorldManager():GetArea(133):CreateDirector("AfterQuestWarpDirector", false);		
-		player:AddDirector(director);
-		director:StartDirector(true);
-		player:SetLoginDirector(director);		
-		player:KickEvent(director, "noticeEvent", true);
+		--local director = GetWorldManager():GetArea(133):CreateDirector("AfterQuestWarpDirector", false);
+			player:SendMessage(0x1D,"",">SKIPPINGlocal");
+		--player:AddDirector(director);
+		player:SendMessage(0x1D,"",">SKIPPINGplayer:AddDirector");
+		--director:StartDirector(true);
+		player:SendMessage(0x1D,"",">SKIPPINGdirector:StartDirector(true)");
+		--player:SetLoginDirector(director);
+			player:SendMessage(0x1D,"",">SKIPPINGplayer:SetLoginDirector(director)");
+		--player:KickEvent(director, "noticeEvent", true);
+		player:SendMessage(0x1D,"",">SKIPPINGplayer:KickEvent");
 		
 		quest:UpdateENPCs();
+		player:SendMessage(0x1D,"",">quest:UpdateENPCs");
 		GetWorldManager():DoZoneChange(player, 133, nil, 0, 15, player.positionX, player.positionY, player.positionZ, player.rotation);
+		player:SendMessage(0x1D,"",">GetWorldManager and about to RETURN");
 		return;
 	elseif (classId == MYTESYN) then
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent010_7");	
@@ -387,7 +412,7 @@ function seq000_onTalk(player, quest, npc, classId)
 	elseif (classId == SENTENIOUS_SELLSWORD) then
 		callClientFunction(player, "delegateEvent", player, quest, "processEtc003");
 	end
-	
+	player:SendMessage(0x1D,"",">seqooo talk end");
 	player:EndEvent();
 end
 
@@ -639,23 +664,33 @@ function onEmote(player, quest, npc, eventName)
 end
 
 function onNotice(player, quest, target)
+	player:SendMessage(0x1D,"",">function onNotice");
 	local sequence = quest:getSequence();
-	
+	player:SendMessage(0x1D,"",">function onNotice Local");
 	if (sequence == SEQ_003) then
+	player:SendMessage(0x1D,"",">function onNotice if seq3");
 		player:EndEvent();
+		player:SendMessage(0x1D,"",">function onNotice if seq3 end");
 	end
-		
+	player:SendMessage(0x1D,"",">function onNotice after if s3");
 	quest:UpdateENPCs();
+	player:SendMessage(0x1D,"",">function onNotice updateenpcs");
 end
 
 function onNpcLS(player, quest, from, msgStep)
+player:SendMessage(0x1D,"",">function onNpcLS");
 	local sequence = quest:getSequence();
+	player:SendMessage(0x1D,"",">function onNpcLS local sequence");
 	local msgPack;
+	player:SendMessage(0x1D,"",">function onNpcLS local msgpack");
 
 	if (from == 1) then
+	player:SendMessage(0x1D,"",">function onNpcLS if (from == 1)");
 		-- Get the right msg pack
 		if (sequence == SEQ_003) then
+			player:SendMessage(0x1D,"",">function onNpcLS if (from == 1) if (sequence == SEQ_003)");
 			msgPack = 1;
+			player:SendMessage(0x1D,"",">function onNpcLS if (from == 1) if (sequence == SEQ_003) msgPack = 1");
 		elseif (sequence == SEQ_007 or sequence == SEQ_035) then
 			msgPack = 2;
 		elseif (sequence == SEQ_070 or sequence == SEQ_075) then
@@ -663,18 +698,26 @@ function onNpcLS(player, quest, from, msgStep)
 		elseif (sequence == SEQ_090 or sequence == SEQ_092) then
 			msgPack = 4;
 		end	
-				
+		player:SendMessage(0x1D,"",">function onNpcLS if (from == 1) if (sequence == SEQ_003) ended");		
 		-- Quick way to handle all msgs nicely.
 		player:SendGameMessageLocalizedDisplayName(quest, NPCLS_MSGS[msgPack][msgStep], MESSAGE_TYPE_NPC_LINKSHELL, 1000015);
+		player:SendMessage(0x1D,"",">function onNpcLS if (from == 1) player:SendGameMessageLocalizedDisplayName");
 		if (msgStep >= #NPCLS_MSGS[msgPack]) then
+		player:SendMessage(0x1D,"",">function onNpcLS if (from == 1) if (msgStep");
 			quest:EndOfNpcLsMsgs();
+			player:SendMessage(0x1D,"",">function onNpcLS if (from == 1) if (msgStep - quest:EndOfNpcLsMsg");
 		else
+		player:SendMessage(0x1D,"",">function onNpcLS if (from == 1) else");
 			quest:ReadNpcLsMsg();
+			player:SendMessage(0x1D,"",">function onNpcLS if (from == 1)quest:ReadNpcLsMsg()");
 		end
+		player:SendMessage(0x1D,"",">function onNpcLS if (from == 1)ended");
 		
 		-- Handle anything else
 		if (sequence == SEQ_003) then
+		player:SendMessage(0x1D,"",">function onNpcLS if (sequence == SEQ_003)");
 			endTutorialMode(player);
+			player:SendMessage(0x1D,"",">function onNpcLS if (sequence == SEQ_003) endTutorialMode");
 		elseif (sequence == SEQ_007) then
 			quest:StartSequenceForNpcLs(SEQ_035);
 		elseif (sequence == SEQ_070) then
@@ -683,7 +726,7 @@ function onNpcLS(player, quest, from, msgStep)
 			quest:StartSequenceForNpcLs(SEQ_092);
 		end
 	end
-	
+	player:SendMessage(0x1D,"",">function onNpcLS ended");
 	player:EndEvent();
 end
 
@@ -709,6 +752,8 @@ function getJournalInformation(player, quest)
 end
 
 function getJournalMapMarkerList(player, quest)
+	player:SendMessage(0x1D,"",">function getJournalMapMarkerList");
 	local sequence = quest:getSequence();
+	player:SendMessage(0x1D,"",">function getJournalMapMarkerList LOCAL");
 	
 end

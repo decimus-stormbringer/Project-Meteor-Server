@@ -26,7 +26,7 @@ SEQ_050	= 50;  	-- Head to God's Grip push, talk with Blackburn.
 SEQ_055	= 55;  	-- Continue to the other push with Y'shtola in the subecho.
 SEQ_060	= 60;  	-- Unused? Talks about spying Stahlmann, Emerick, and Merod scheming.
 SEQ_065	= 65;  	-- Unused? Talks about the meteor shower and the Ascian stealing the key.
-SEQ_070	= 70;  	-- Unused? Talks about heading to Ul'dah
+SEQ_070	= 70;  	-- Unused? Talks about heading to Ul'dah.
 
 -- Quest Actors
 BADERON 					= 1000137;
@@ -97,6 +97,8 @@ function onStateChange(player, quest, sequence)
 	elseif (sequence == SEQ_055) then
 		quest:SetENpc(TRIGGER_SEAFLD3, QFLAG_PUSH, false, true);
 		quest:SetENpc(YSHTOLA);
+	elseif (sequence == SEQ_070) then
+		quest:SetENpc(BADERON, QFLAG_REWARD);
 	end	
 	
 end
@@ -134,6 +136,11 @@ function onTalk(player, quest, npc)
 		if (classId == BADERON) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent050");
 			quest:StartSequence(SEQ_037);
+			player:SendMessage(0x1D,"",">marker is in Lower La Noscea.");
+			player:SendMessage(0x1D,"",">Coordinates are X=131 - horizontal on map");
+			player:SendMessage(0x1D,"",">Coordinates are Z=1183 -  vertical on map");
+			player:SendMessage(0x1D,"",">Target self and type !getinfo to get current coordinates.");
+			player:SendMessage(0x1D,"",">Map marker will appear when close to quest area.");
 		end		
 	elseif (sequence == SEQ_037) then
 		if (classId == BADERON) then
@@ -147,10 +154,17 @@ function onTalk(player, quest, npc)
 		if (classId == ISAUDOREL) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent075");
 			quest:StartSequence(SEQ_050);
+			player:SendMessage(0x1D,"",">marker is at same place as last location");
 		end
 	elseif (sequence == SEQ_055) then
 		if (classId == YSHTOLA) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent080_2");
+		end
+	elseif (sequence == SEQ_070) then
+		if (classId == BADERON) then
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent081_2", 1);
+			callClientFunction(player, "delegateEvent", player, quest, "sqrwa", 300, 1, 1, 2);
+			player:CompleteQuest(quest);
 		end
 	end	
 	
@@ -243,19 +257,26 @@ function onPush(player, quest, npc)
 	elseif (sequence == SEQ_055 and classId == TRIGGER_SEAFLD3) then
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent081");
 		GetWorldManager():DoZoneChange(player, 133, nil, 0, 0, -435.501, 40, 202.698, -2.152);
+		quest:StartSequence(SEQ_070);
 	end	
 	
 	player:EndEvent();
 	quest:UpdateENPCs();
 end
 
-function onNotice(player, quest, target)
-	callClientFunction(player, "delegateEvent", player, quest, "sqrwa", 300, 1, 1, 2);
-	player:CompleteQuest(quest);
-    callClientFunction(player, "delegateEvent", player, quest, "processEvent081_2", 1);
-    player:EndEvent();
-    quest:UpdateENPCs();
-end
+--function onNotice(player, quest, target)
+	--local sequence = quest:getSequence();
+	--if (sequence == SEQ_003) then
+		--if (classId == MYTESYN) then
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent081_2", 1);
+			callClientFunction(player, "delegateEvent", player, quest, "sqrwa", 300, 1, 1, 2);
+			player:CompleteQuest(quest);
+			--callClientFunction(player, "delegateEvent", player, quest, "processEvent081_2", 1);
+			player:EndEvent();
+			quest:UpdateENPCs();
+		--end
+	--end
+--end
 
 function onNpcLS(player, quest, from, msgStep)
 	local sequence = quest:getSequence();

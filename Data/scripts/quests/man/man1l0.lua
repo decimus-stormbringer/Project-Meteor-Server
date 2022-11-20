@@ -330,6 +330,11 @@ function onPush(player, quest, npc)
 		if (classId == TRIGGER_FSH) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent600");
 			quest:StartSequence(SEQ_070);
+			player:SendMessage(0x1D,"",">marker is in Lower La Noscea.");
+			player:SendMessage(0x1D,"",">Coordinates are X=218 - horizontal on map");
+			player:SendMessage(0x1D,"",">Coordinates are Z=1176 -  vertical on map");
+			player:SendMessage(0x1D,"",">Target self and type !getinfo to get current coordinates.");
+			player:SendMessage(0x1D,"",">Map marker will appear when close to quest area.");
 		end
 	elseif (sequence == SEQ_070) then
 		if (classId == TRIGGER_SEAFLD) then

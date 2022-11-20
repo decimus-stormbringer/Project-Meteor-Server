@@ -5,6 +5,7 @@ function init()
 end
 
 function onEventStarted(player, director, eventType, eventName)
+	player:SendMessage(0x1D,"",">AQWDirector?");
 	if (player:HasQuest(110002) == true) then
 		quest = player:GetQuest("Man0l1");
 		quest:OnNotice(player);

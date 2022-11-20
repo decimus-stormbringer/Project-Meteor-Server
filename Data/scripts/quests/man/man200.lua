@@ -74,9 +74,10 @@ end
 
 function onStateChange(player, quest, sequence)
 	local data = quest:GetData();
-	
+	if (sequence == SEQ_ACCEPT) then
+		quest:SetENpc(TATARU,QFLAG_TALK);
 	-- Sequence changing ENpcs
-	if (sequence == SEQ_000) then
+	elseif (sequence == SEQ_000) then
 		quest:SetENpc(EVENT_DOOR_OFFICE_W, QFLAG_PUSH, false, true);
 		quest:SetENpc(TATARU);
 	elseif (sequence == SEQ_005) then
@@ -132,7 +133,14 @@ function onTalk(player, quest, npc)
 	local sequence = quest:getSequence();
 	local classId = npc:GetActorClassId();
 
-	if (sequence == SEQ_000) then
+	if (sequence == SEQ_ACCEPT) then
+		if (classId == TATARU) then
+			callClientFunction(player, "delegateEvent", player, quest, "pE00", "???", 1, 1, 1, player:GetInitialTown());
+			player:EndEvent();
+			player:AcceptQuest(quest, true);
+			return;
+		end
+	elseif (sequence == SEQ_000) then
 		if (classId == TATARU) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent000_2");
 		end
