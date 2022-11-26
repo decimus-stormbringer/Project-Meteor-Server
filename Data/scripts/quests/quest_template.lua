@@ -24,16 +24,20 @@ local killCounter3 = 0;
 --[[
 A list of markers to show when the player opens the journal and clicks "View Map". References the 
 quest_marker sheet.
+
+For tips on finding the marker ID for a quest objective, look at "getJournalMapMarkerList" below.
 ]]
 local seq000_Markers = {
 };
+
+MARKER_S000_ACTOR = 0; --Name ID goes here
 
 -- Actors in this quest
 --[[
 A list of actor class ids that the quest will use. Good for adding it to the ENPC list and checking against
 them when events are triggered.
 ]]
-NPC_SOMEACTOR = 0;
+NPC_SOMEACTOR = 0; -- Model ID goes here
 
 -- Called when a quest is started. Initialize any global variables across all phases here and always start
 -- the first sequence (usually SEQ_000).
@@ -91,6 +95,10 @@ end
 
 -- This is called by the RequestQuestJournalCommand when map markers are request.
 -- Check quest_marker for valid values. This should return a table of map markers.
+-- actorclass.csv links model ID with name ID.
+-- quest_marker.csv links name ID with Marker ID and coordinates. Marker ID is the questID followed by 2 numbers
+-- xtx_displayName.csv links Name ID with the name used above NPCs and objects and other things.
+-- xtx_quest.csv can have Name IDs used within a quest's row for the name of the quest giver/ender. I think.
 function getJournalMapMarkerList(player, quest)
 	return {};
 end

@@ -2,7 +2,7 @@ require ("global")
 require ("quest")
 require ("tutorial")
 --[[
-
+-- player:SendMessage(0x1D,"",">");
 Quest Script
 
 Name:   Souls Gone Wild  
@@ -14,6 +14,106 @@ Notes:
 ]]
 
 ENABLE_GL_TUTORIAL = false;
+
+--[[
+ProcessEvents
+
+processEvent100	First cutscene meeting Miounne. Should kick into this.
+processEvent100_1	WorldMaster message about instances.
+processEvent100_2	Morose Merchant: "Impurity's as bad as a curse, I tell ye."
+processEvent100_3	Amiable Adventurer: "You would do well to fear the Twelveswood - and live in awe of it."
+processEvent100_4	Well-Bundled Adventurer: "If you are planning to stay a while, you might want to learn a bit about the elementals."
+processEvent100_5	Well-Bundled Adventurer: "The ancient elementals of the Twelveswood are much more powerful and wise than those from other parts of the world."
+processEvent100_6	Beaming Adventurer: "You met a moogle? Well, count yourself as one of the lucky ones."
+processEvent100_7	Narrow-Eyed Adventurer: "As if breaking of the hedge wasn't enough, it seems an airship crashed in the forest as well."
+processEvent100_8	Whispily-Whiskered Adventurer: "In Gridania, there live a chosen few who are blessed by the forest."
+processEvent100_9	 ???: "The Twelveswood is a sacred place, and runs thicker and deeper than you can imagine."
+processEvent110	Cutscene exiting echo and Miounne telling you to go to Camp Bentbranch.
+processEvent110_2	Miounne reminder message to go to Bentbranch.
+processEvent013	Linkshell chat message from Miounne when you touch the Aetheryte. Gives tutorial leve.
+processEvent013_2	Linkshell chat message from Miounne when you touch the Aetheryte. Sans tutorial leve.
+processEvent114	Miounne speech when you return.
+processEvent115	Miounne speech when you talk again. Tells you to go to the CNJ and LTW guilds.
+processEvent115_2	Reminder message to go to the CNJ and LTW guilds.
+processEvent120	Cutscene at the LTW guild.
+processEvent123	Worldmaster Message teaching you about npc linkshells.
+processEvent120_2	Reminder message after talking to the LTW guild.
+processEvent125	Soileine Telling you to enter the chamber in the CNJ guild.
+processEvent125_2	Soileine Reminder message to enter the chamber.
+processEvent130	Cutscene into echo meeting O-App-Pesi and then Yda/Papalimo.
+processEvent130_2	 ???: "The two outsiders brought by Swethyna of the Wood Wailers... There was something strange about them."
+processEvent130_3	O-App-Pesi: "I pray a moment, please. Swethyna has important words which must be heard."
+processEvent130_4	Yda: "Look, Papalymo, he's got horns! This must be one of those Padjal!"
+processEvent130_5	Papalymo: "Manners, Yda. Gods, the Gridanians will think us raised in a gutter."
+processEvent130_6	Gugula: "The fury of the elementals is sure to be wakened whenever the Hedge is broken through."
+processEvent130_7	Ingram: "Brother O-App is a Padjal, of course."
+processEvent130_8	Challinie: "We conjurers hear the whispers of the elementals, and see to it that their will is made known to all Gridanians."
+processEvent130_9	 ???: "Where are those two outsiders from? We've had dealings with those from beyond the wood before, but never have I witnessed such insolence."
+processEvent130_10	 ???: "If Swethyna is involved, it must be a matter of some import. The leader of the Wood Wailers wouldn't waste time dabbling in aught else."
+processEvent135	Exiting the echo and more elemental explanation.
+processEvent136	Same as above, but adds a worldmaster message about linkshells.
+processEvent135_2	Miounne recap message to go to the LTW guild if you already went to the CNJ guild.
+processEvent137_2	Miounne recap message to go to the BTN guild.
+processEvent140	Cutscene entering the BTN guild into the emote test instance.
+processEvent140_10	Fufucha Reminder message: "Let the younglings teach you the dance."
+processEvent140_1	Aunille: "Watch how I do it. You have to beckon the elementals near. Like this."
+processEvent141_1	Aunille "I wonder if the elementals dance as we do..."
+processEvent142_1	Aunille, success: "Hahaha, that's it!"
+processEvent140_2	Nicoliaux: "You have to clap to keep the rhythm. Come on, keep up!"
+processEvent141_2	Nicoliaux "I don't even want to be here. My parents made me come. "
+processEvent142_2	Nicoliaux, success: "Now you've got it!"
+processEvent140_3	Sansa: "We bow to show our respect to the elementals. Just like this, see?"
+processEvent141_3	Sansa "It's not that hard. The most important thing is to let your heart guide you. "
+processEvent142_3	Sansa, success: "Perfect! You're nearly as good as us!"
+processEvent140_4	Powle: "You have to cheer like this! Don't be shy, really get in there and throw your weight around!"
+processEvent141_4	Powle "You're terrible! You dance worse than my nana, and she's almost dead."
+processEvent142_4	Powle, success: "You look like you've done this before."
+processEvent140_5	Ryd: "We always d-do this, like we've just b-been surprised by s-something."
+processEvent141_5	Ryd "I wonder if any moogles will come and watch this time."
+processEvent142_5	Ryd, success: "H-How did you l-learn it so f-fast?"
+processEvent140_6	Elyn: "You can't forget this part! You have to keep a lookout for the elementals."
+processEvent141_6	Elyn "Hey, what are you here for? Me? I was running in the forest and tripped."
+processEvent142_6	Elyn, success: "See how well you did? Aren't we good teachers?"
+--????????processEvent150	  startNQCutScene("man0g150", 1)?																			----
+processEvent150_2	Fufucha: "Twelve be good, what are those little brats getting into now?"
+processEvent150_3	 ???: "<whisper>" (Different in other localizations: "Kosokoso")
+processEvent150_4	 ???: "<whisper>" (Different in other localizations: "Hisohiso")
+processEvent160	Cutscene of this kids telling you to escort them somewhere in the forest.
+processEvent170	Escort Duty Start Cutscene.
+processEvent180	Escort Duty End Cutscene. Warps into echo.
+processEvent180_2	Hermit reminder: "Seek out the younglin's and bid them return. Unless you'd prefer they make a tasty snack for the nearest feral beast? Bloody fool..."
+processEvent181	Cutscene with Moogle telling you the mask can't be fixed.
+processEvent182	Cutscene, exit echo. Hermit finds out you know Mooglespeak.
+processEvent182_2	Miounne reminder: "Wandered about the Twelveswood with the younglings? Gods save us! It's small wonder you adventurers have a reputation for being dangerous."
+processEvent185	Cutscene with Fufucha, giving payments and such.
+processEvent185_2	Miounne reminder to go to the LNC guild: "The Wailers and the Quiver have been scouring the wood since the Hedge came down".
+processEvent190	Talking to Willelda in the LNC guild.
+processEvent190_2	Reminder message from Willelda: "You may proceed. Commander Burchard and Commander Nuala await you within.".
+processEvent200	Cutscene, warp into echo in the LNC guild.
+processEvent200_2	Nuala: "Tend the wounded! Staunch the bleeding!"
+processEvent200_3	T'kebbe: "I couldn't get a good look. Elemental, or perhaps a man... I-I cannot say for certain."
+processEvent200_4	Farrimond: "The shadows... They came to life..."
+processEvent200_5	Mansel: "You, help us! Quickly! We have wounded!"
+processEvent200_6	Jijimaya: "The elementals rage as I've never heard. And I feel great fear among the people, as well—genuine terror. What could have done this?"
+processEvent200_7	Langloisiert: "St-Stop...please... The pain is too great..."
+processEvent200_8	Cecillia: "<wheeze> I can't...breathe..."
+processEvent200_9	Turstin: "What the hells was that?"
+processEvent200_10	Hellbhanth: "Bugger it! I lost my bloody polearm. I really liked that polearm."
+processEvent200_11	Pasdevillet: "To bring down the Hedge is to bring down the greenwrath upon oneself. Such a life is forfeit."
+processEvent210	Cutscene implicating Dunstan and two wailers asking you to join them for a briefing.
+processEvent210_2	Burchard: "I can make no sense of it. Dunstan... By the Twelve, but why?"
+processEvent220	Cutscene explaining wildlings.
+processEvent220_2	Willelda, reminder: "We have seen our share of adventurers in Gridania over the years—some sure-footed on the path of righteousness, and others not so."
+processEvent220_3	Burchard: "Adventurers share a certain bond, I know, but should any of your brethren act suspiciously, you must report them to the Wailers."
+processEventComplete	Final chat with Miounne to end the quest.
+processEvent1000_2	Beaming Adventurer?: "Why the moogles would want to help a complete stranger like you is beyond me. Got me wondering if you might not be one of these forest-beckoned souls the conjurers are always on about."
+processEvent1000_3	Opyltyl: Msg to warp back into the BTN instance. "Ah you must be the poor soul Fufucha has running all over creation."
+processEvent1000_5	Nuala?: "Understand that we do not wish to see you made the scapegoat in all of this. We seek only to find the perpetrator as swiftly as possible."
+processTtrBlkNml001	Blocker npc during the first echo sequence.
+processEventTu_001	Starts the linkshell tutorial.
+
+
+--]]
 
 -- Sequence Numbers
 SEQ_000 = 0;	-- (Private Area) Roost Echo Scene.
@@ -122,11 +222,14 @@ JIJIMAYA		= 1000741;
 MRKR_MIOUNNE	= 11000601;
 
 function onStart(player, quest) 
+	player:SendMessage(0x1D,"",">Started man0g1 in man0g1!");
     quest:StartSequence(SEQ_000);
     
     -- Immediately move to the Adventurer's Guild private area
 	callClientFunction(player, "delegateEvent", player, quest, "processEvent100");
-	GetWorldManager():DoZoneChange(player, 155, "PrivateAreaMasterPast", 2, 15, 67.034, 4, -1205.6497, -1.074);	
+	GetWorldManager():DoZoneChange(player, 155, "PrivateAreaMasterPast", 2, 15, 67.034, 4, -1205.6497, -1.074);
+	player:SendGameMessage(quest, 353, 0x20);
+	player:SendGameMessage(quest, 354, 0x20);	
 	player:endEvent();
 end
 
@@ -392,22 +495,25 @@ end
 
 function seq000_onTalk(player, quest, npc, classId)
     if (classId == MIOUNNE) then
-        
-        callClientFunction(player, "delegateEvent", player, quest, "processEvent100_1");        
+			player:SendMessage(0x1D,"",">F-S000-Talk Miounne");
+		callClientFunction(player, "delegateEvent", player, quest, "processEvent110");
+			player:SendMessage(0x1D,"",">PE110");
+		quest:NewNpcLsMsg(1);
+		quest:StartSequence(SEQ_005); -- Change from S003 to S005
         player:EndEvent();
-		quest:StartSequence(SEQ_003);
-				
-		
-		local director = GetWorldManager():GetArea(155):CreateDirector("AfterQuestWarpDirector", false);		
-		director:StartDirector(true);
-        player:AddDirector(director);
-		--player:SetLoginDirector(director);	     
-		player:KickEvent(director, "noticeEvent", true);
-		
 		quest:UpdateENPCs();
+		GetWorldManager():DoZoneChange(player, 155, nil, 0, 15, player.positionX, player.positionY, player.positionZ, player.rotation);
+		--player:SendMessage(0x1D,"",">End Event after PE100_1");
+		--player:SendMessage(0x1D,"",">S003 Start");
+		--local director = GetWorldManager():GetArea(155):CreateDirector("AfterQuestWarpDirector", false);		
+		--director:StartDirector(true);
+        --player:AddDirector(director);
+		--player:SetLoginDirector(director);	     
+		--player:KickEvent(director, "noticeEvent", true);
+		---quest:UpdateENPCs();
         --GetWorldManager():WarpToPublicArea(player);
-        GetWorldManager():DoZoneChange(player, 155, nil, 0, 15, player.positionX, player.positionY, player.positionZ, player.rotation);
-  
+        --GetWorldManager():DoZoneChange(player, 155, nil, 0, 15, player.positionX, player.positionY, player.positionZ, player.rotation);
+		return;
     elseif (classId == BEAMING_ADVENTURER) then
         callClientFunction (player, "delegateEvent", player, quest, "processEvent100_6");
     elseif (classId == AMIABLE_ADVENTURER) then
@@ -425,7 +531,7 @@ function seq000_onTalk(player, quest, npc, classId)
     elseif (classId == WISPILY_WHISKERED_WOODWORKER) then
         callClientFunction(player, "delegateEvent", player, quest, "processEvent100_8");
     end
-	
+	player:EndEvent();
 end
 
 function seq015_onTalk(player, quest, npc, classId)
@@ -686,7 +792,7 @@ end
 function onNotice(player, quest, target)
     player:EndEvent();
     player:SendMessage(0x20, "", "Test");
-    callClientFunction(player, "delegateEvent", player, quest, "processEventTu_001");  
+    callClientFunction(player, "delegateEvent", player, quest, "processEventTu_001");  -- Linkshell Tutorial
     player:EndEvent();
 end
 

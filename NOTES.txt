@@ -1,0 +1,9 @@
+To find an NPC's marker and model in a quest:
+	Start with NPC's name: (Kinnison)
+	(ffxivTool) xtx_displayName.csv client file gives [name ID] on first column
+	That [Name ID] is used in (ffxivTool) actorclass.csv and (ffxivTool) quest_marker.csv
+	actorclass.csv gives NPC client [Model ID] (first column)
+	quest_marker.csv gives NPC client [Marker ID] (first column)
+	The [Name ID] is also in xtx_quest.csv for the name of the quest giver?
+		Cross-reference all these to find info for use in
+	quest_template.lua and RequestQuestJournalCommand.lua and quest luas

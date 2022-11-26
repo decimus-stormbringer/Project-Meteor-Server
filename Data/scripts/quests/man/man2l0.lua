@@ -45,6 +45,9 @@ TRIGGER_SEAFLD2				= 1090086;
 TRIGGER_SEAFLD3				= 1090087;
 
 -- Quest Markers
+MRKR_S037_SEAFLD1 			= 11000404;
+MRKR_S050_SEAFLD2			= 11000407;
+
 
 -- Msg packs for the Npc LS
 NPCLS_MSGS = {
@@ -98,6 +101,7 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(TRIGGER_SEAFLD3, QFLAG_PUSH, false, true);
 		quest:SetENpc(YSHTOLA);
 	elseif (sequence == SEQ_070) then
+		player:SendMessage(0x1D,"",">Talk to Baderon to complete Never the Twain Shall Meet");
 		quest:SetENpc(BADERON, QFLAG_REWARD);
 	end	
 	
@@ -136,11 +140,7 @@ function onTalk(player, quest, npc)
 		if (classId == BADERON) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent050");
 			quest:StartSequence(SEQ_037);
-			player:SendMessage(0x1D,"",">marker is in Lower La Noscea.");
-			player:SendMessage(0x1D,"",">Coordinates are X=131 - horizontal on map");
-			player:SendMessage(0x1D,"",">Coordinates are Z=1183 -  vertical on map");
-			player:SendMessage(0x1D,"",">Target self and type !getinfo to get current coordinates.");
-			player:SendMessage(0x1D,"",">Map marker will appear when close to quest area.");
+			player:SendMessage(0x1D,"",">Use Journal to find location.");
 		end		
 	elseif (sequence == SEQ_037) then
 		if (classId == BADERON) then
@@ -154,7 +154,6 @@ function onTalk(player, quest, npc)
 		if (classId == ISAUDOREL) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent075");
 			quest:StartSequence(SEQ_050);
-			player:SendMessage(0x1D,"",">marker is at same place as last location");
 		end
 	elseif (sequence == SEQ_055) then
 		if (classId == YSHTOLA) then
@@ -310,6 +309,15 @@ function getJournalInformation(player, quest)
 end
 
 function getJournalMapMarkerList(player, quest)
-	local sequence = quest:getSequence();
+    local sequence = quest:getSequence();
+	local data = quest:GetData();
+    local possibleMarkers = {};
+    local data = quest:GetData();
 	
+	if (sequence == SEQ_037) then
+		table.insert(possibleMarkers, MRKR_S037_SEAFLD1);
+	elseif (sequence == SEQ_037) then
+		table.insert(possibleMarkers, MRKR_S050_SEAFLD2);
+	end
+    return unpack(possibleMarkers)
 end

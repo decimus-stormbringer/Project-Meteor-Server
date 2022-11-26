@@ -64,7 +64,7 @@ function onFinish(player, quest)
 end
 
 function onStateChange(player, quest, sequence)
-	if (sequence == SEQ_000) then		
+	if (sequence == SEQ_000) then	
 		-- Setup states incase we loaded in.
 		local data = quest:GetData();
 		
@@ -93,7 +93,8 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(EXIT_TRIGGER, exitFlag, false, exitCanPush);
 		print(tostring(exitCanPush));
 	elseif (sequence == SEQ_005) then
-	elseif (sequence == SEQ_010) then		
+	elseif (sequence == SEQ_010) then
+		player:SendMessage(0x1D,"",">function onStateChange If S 10");
 		quest:SetENpc(HOB, QFLAG_TALK);
 		quest:SetENpc(GERT);
 		quest:SetENpc(LORHZANT);
