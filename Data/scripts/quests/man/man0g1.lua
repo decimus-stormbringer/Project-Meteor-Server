@@ -167,7 +167,7 @@ NARROW_EYED_ADVENTURER          = 1001059;
 BEAMING_ADVENTURER              = 1001062;
 WELL_BUNDLED_ADVENTURER         = 1001060;
 UNCONCERNED_PASSERBY            = 1001648;
---BLOCKER                       = ;
+--S000_BLOCKER                    = ;
 
 -- Sequence 015
 HEREWARD		= 1000231;
@@ -219,7 +219,7 @@ PASDEVILLET		= 1000738;
 JIJIMAYA		= 1000741;
 
 -- Quest Markers
-MRKR_MIOUNNE	= 11000601;
+--MRKR_MIOUNNE	= 11000601;
 
 function onStart(player, quest) 
 	player:SendMessage(0x1D,"",">Started man0g1 in man0g1!");
@@ -272,7 +272,30 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(HETZKIN);
 		quest:SetENpc(GUGULA);
 		quest:SetENpc(BIDDY);
-		quest:SetENpc(CHALLINIE);
+		quest:SetENpc(CHALLINIE);	
+	--elseif (sequence == SEQ_015) then 
+		--local subseqLTW = data:GetCounter(CNTR_SEQ15_LTW);
+		--local subseqCNJ = data:GetCounter(CNTR_SEQ15_CNJ);
+		-- Always active in this seqence
+		--quest:SetENpc(MIOUNNE);
+		--quest:SetENpc(HEREWARD, (subseqLTW <= 1) and QFLAG_TALK or QFLAG_OFF);
+		-- CNJ and In Echo
+		--quest:SetENpc(SOILEINE, (subseqCNJ == 0) and QFLAG_TALK or QFLAG_OFF);
+			--if (subseqCNJ == 1) then
+				--quest:SetENpc(CNJ_TRIG, QFLAG_PUSH, false, true);
+				--quest:SetENpc(CNJ_TRIG, (subseqCNJ == 1) and QFLAG_PUSH or QFLAG_OFF, false, (subseqCNJ == 1));
+				
+			--end
+		--quest:setENpc(CNJ_TRIG, QFLAG_PUSH, false, true);
+		--quest:SetENpc(YDA);
+		--quest:SetENpc(PAPALYMO);
+		--quest:SetENpc(O_APP_PESI);
+		--quest:SetENpc(SWETHYNA, (subseqCNJ == 2) and QFLAG_TALK or QFLAG_OFF);
+		--quest:SetENpc(INGRAM);
+		--quest:SetENpc(HETZKIN);
+		--quest:SetENpc(GUGULA);
+		--quest:SetENpc(BIDDY);
+		--quest:SetENpc(CHALLINIE);
 	elseif (sequence == SEQ_040) then 
         quest:SetENpc(OPYLTYL, QFLAG_TALK);
 		quest:SetENpc(MIOUNNE);
@@ -361,7 +384,7 @@ function onTalk(player, quest, npc)
 	elseif (sequence == SEQ_012) then
 		if (classId == MIOUNNE) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent115");
-			quest:NewNpcLsMsg(1);
+			quest: (1);
 			quest:StartSequence(SEQ_015);
 		end
 	elseif (sequence == SEQ_015) then
@@ -524,8 +547,11 @@ function seq000_onTalk(player, quest, npc, classId)
         callClientFunction(player, "delegateEvent", player, quest, "processEvent100_7");
     elseif (classId == UNCONCERNED_PASSERBY) then
         callClientFunction(player, "delegateEvent", player, quest, "processEvent100_9");
+		--callClientFunction(player, "delegateEvent", player, quest, "processTtrBlkNml001");
+		
     elseif (classId == VKOROLON) then
-        callClientFunction(player, "delegateEvent", player, GetStaticActor("DftWil"), "defaultTalkWithVkorolon_001");
+        --callClientFunction(player, "delegateEvent", player, GetStaticActor("DftWil"), "defaultTalkWithVkorolon_001");
+		
     elseif (classId == WELL_BUNDLED_ADVENTURER) then
         callClientFunction(player, "delegateEvent", player, quest, "processEvent100_4");        
     elseif (classId == WISPILY_WHISKERED_WOODWORKER) then
@@ -564,16 +590,18 @@ function seq015_onTalk(player, quest, npc, classId)
 	elseif (classId == SOILEINE) then
 		if (subseqCNJ == 0) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent125");
-			data:IncCounter(CNTR_SEQ15_CNJ);
+			data:IncCounter(CNTR_SEQ15_CNJ); -- CNJ to 1
 		elseif (subseqCNJ == 1) then
+			player:SendMessage(0x1D,"",">Pushed Soi1");
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent125_2");
 		elseif (subseqCNJ == 2) then
+			player:SendMessage(0x1D,"",">Pushed Soi2");
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent125_2");
 		end
 	elseif (classId == O_APP_PESI) then
 		if (subseqCNJ == 1) then
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent130");
-			data:IncCounter(CNTR_SEQ15_CNJ);
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent130"); -- Same event as entering room?
+			data:IncCounter(CNTR_SEQ15_CNJ); --CNJ to 2
 		else
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent130_3");
 		end
@@ -591,17 +619,21 @@ function seq015_onTalk(player, quest, npc, classId)
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent130_2");	
 	elseif (classId == BIDDY) then
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent130_2");
-	elseif (classId == SWETHYNA) then
+	elseif (classId == SWETHYNA) then -- Needs to not let it make you leave until you talked to o app pesi I think. Maybe not. He has flavor text?
 		if (subseqLTW == 0) then			
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent135");
-			data:IncCounter(CNTR_SEQ15_CNJ);
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent135"); -- if you haven't gone to LTW yet
+			data:IncCounter(CNTR_SEQ15_CNJ); --CNJ to 2
+			--adding v
+			player:EndEvent();
+			quest:UpdateENPCs();
+			GetWorldManager():WarpToPublicArea(player);
 		else
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent136");
-			data:IncCounter(CNTR_SEQ15_CNJ);
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent136"); --leaving guild like in man0l1 event060
+			data:IncCounter(CNTR_SEQ15_CNJ); -- CNJ to 3
 			quest:NewNpcLsMsg(1);
 			player:EndEvent();
 			GetWorldManager():WarpToPublicArea(player);
-			return true;
+			--return true; --not in man0l1?
 		end
 	end
 end
@@ -660,14 +692,21 @@ function onPush(player, quest, npc)
 	local data = quest:GetData();
 	local subseqCNJ = data:GetCounter(CNTR_SEQ15_CNJ);
 	
-    if (sequence == SEQ_000) then    
-    elseif (sequence == SEQ_015) then
-		if (classId == CNJ_TRIG and subseqCNJ == 1) then
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent130");
-			data:IncCounter(CNTR_SEQ15_CNJ);
+    if (sequence == SEQ_000) then
+		if (classId == UNCONCERNED_PASSERBY) then
+			callClientFunction(player, "delegateEvent", player, quest, "processTtrBlkNml001");
 			player:EndEvent();
-			GetWorldManager():WarpToPrivateArea(player, "PrivateAreaMasterPast", 0, -353.05, 6.25, -1697.39, 0.774);
-			return;
+		end
+    elseif (sequence == SEQ_015) then
+		if (classId == CNJ_TRIG) then
+			player:SendMessage(0x1D,"",">Pushed CNJ!");
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent130");
+			data:IncCounter(CNTR_SEQ15_CNJ); -- CNJ +1
+			--quest:UpdateENPCs(); -- Added
+			GetWorldManager():WarpToPrivateArea(player, "PrivateAreaMasterPast", 0, -353.05, 6.25, -1697.39, 0.774);  --Place NPCs in this
+			--GetWorldManager():DoZoneChange(player, 206, nil, 0, 15, -334, 8, -1678, 0.791); -- Using Limsa Info
+			--return;
+			player:EndEvent();
 		end
 	elseif (sequence == SEQ_055) then
 		if (classId == KIDS_TRIGGER) then

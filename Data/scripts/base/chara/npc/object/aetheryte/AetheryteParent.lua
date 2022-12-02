@@ -46,7 +46,7 @@ function onEventStarted(player, aetheryte, triggerName)
 		local quest = player:GetQuest("Man0g1");
 		if (quest:GetSequence() == SEQ_005) then			
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent013");
-			--quest:StartSequence(???);
+			quest:StartSequence(SEQ_010);
 		end
 	elseif (player:HasQuest(110010) == true) then
 		require ("quests/man/man0u1");
