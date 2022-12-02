@@ -30,10 +30,10 @@ function onBeginLogin(player)
 		elseif (player:HasItem(10011252) and not player:HasQuest(110849)) then
 			dreamCode = 2;
 		-- Nael Van Darnus nightmare
-		elseif (player:???) then
+		--elseif (player:???) then -- Kill these to prevent lua error
 			dreamCode = 20;
 		-- Random item
-		elseif (player:???) then
+		--elseif (player:???) then  -- Kill these to prevent lua error
 			dreamCode = math.random(21, 33);
 		end
 		

@@ -56,7 +56,8 @@ REPLACE INTO `server_zones_privateareas` (`id`, `parentZoneId`, `className`, `pr
 	(24, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 5, 1, 51),
 	(25, 128, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 5, 1, 53),
 	(26, 181, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 5, 1, 61),
-	(27, 172, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 5, 1, 72);
+	(27, 172, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 5, 1, 72),
+	(28, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 0, 0, 40); -- man0g1 Echo in CNJ guild
 /*!40000 ALTER TABLE `server_zones_privateareas` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
