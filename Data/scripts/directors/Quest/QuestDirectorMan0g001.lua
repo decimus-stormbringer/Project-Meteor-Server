@@ -36,61 +36,68 @@ function onCreateContentArea(players, director, contentArea, contentGroup)
 end
 
 function onEventStarted(player, actor, triggerName)
-
+	player:SendMessage(0x1D,"",">STARTING function onEventStarted");
 	man0g0Quest = player:GetQuest("Man0g0");
-	startTutorialMode(player);
+	if (man0g0Quest:GetSequence() == SEQ_005) then -- make it only do things before it switches to seq10
+		player:SendMessage(0x1D,"",">if sequence 5 check");
+		startTutorialMode(player);
 
-
-	--Combat portion of tutorial
+		--Combat portion of tutorial
 	
-	if player:IsDiscipleOfWar() then
-    
-        callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtl001");
-        player:EndEvent();
-        waitForSignal("playerActive");
-        wait(1); --If this isn't here, the scripts bugs out. TODO: Find a better alternative.
-        kickEventContinue(player, actor, "noticeEvent", "noticeEvent");	
-        
-        callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtl002", nil, nil, nil);
-        player:EndEvent();        
+		if player:IsDiscipleOfWar() then
+			player:SendMessage(0x1D,"",">if DOW");
+			callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtl001");
+			player:SendMessage(0x1D,"",">if DOW, played DOW cutscene");
+			player:EndEvent();
+			waitForSignal("playerActive");
+			wait(1); --If this isn't here, the scripts bugs out. TODO: Find a better alternative.
+			player:SendMessage(0x1D,"",">Director DOW kickevent Start");
+			kickEventContinue(player, actor, "noticeEvent", "noticeEvent");	
+			player:SendMessage(0x1D,"",">Director DOW kickevent End");
+			callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtl002", nil, nil, nil);
+			player:EndEvent();        
+	
+			--waitForSignal("playerAttack");
+			closeTutorialWidget(player);
+			showTutorialSuccessWidget(player, 9055); --Open TutorialSuccessWidget for attacking enemy
+			openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_TP);
 
-		--waitForSignal("playerAttack");
-		closeTutorialWidget(player);
-		showTutorialSuccessWidget(player, 9055); --Open TutorialSuccessWidget for attacking enemy
-		openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_TP);
+			wait(3);
+			closeTutorialWidget(player);
+			openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_WEAPONSKILLS);
+			--waitForSignal("weaponskillUsed");
+			wait(3);
+			--player:SetMod(modifiersGlobal.MinimumTpLock, 0);
+			closeTutorialWidget(player);
+			showTutorialSuccessWidget(player, 9065); --Open TutorialSuccessWidget for weapon skill
+			player:SendMessage(0x1D,"",">DOW finished");
+		elseif player:IsDiscipleOfMagic() then
+			player:SendMessage(0x1D,"",">elseif DOM");
+			callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtlMagic001"); 
+			player:SendMessage(0x1D,"",">if DOM, played DOM cutscene");
+			player:EndEvent();
+			wait(1);
+			player:SendMessage(0x1D,"",">Director DOM kickevent Start");
+			kickEventContinue(player, actor, "noticeEvent", "noticeEvent");
+			player:SendMessage(0x1D,"",">Director DOM kickevent End");
+			closeTutorialWidget(player);
+			--player:SendMessage(0x20, "", "Sending success");
+			showTutorialSuccessWidget(player, 9050); --Open TutorialSuccessWidget for magic skill
+			wait(1)
+			openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_DEFEATENEMY);
+			wait(3);
+			closeTutorialWidget(player);
+			player:SendMessage(0x1D,"",">DOM finished");
 
-        wait(3);
-		closeTutorialWidget(player);
-		openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_WEAPONSKILLS);
-		--waitForSignal("weaponskillUsed");
-        wait(3);
-		--player:SetMod(modifiersGlobal.MinimumTpLock, 0);
-		closeTutorialWidget(player);
-		showTutorialSuccessWidget(player, 9065); --Open TutorialSuccessWidget for weapon skill
-        player:SendMessage(0x1D,"",">DOW finished");
-	elseif player:IsDiscipleOfMagic() then
-    player:SendMessage(0x1D,"",">elseif DOM");
-        callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtlMagic001");  
-        player:EndEvent();
-        wait(1);
-        kickEventContinue(player, actor, "noticeEvent", "noticeEvent");
-        closeTutorialWidget(player);
-        player:SendMessage(0x20, "", "Sending success");
-        showTutorialSuccessWidget(player, 9050); --Open TutorialSuccessWidget for magic skill
-        wait(1)
-		openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_DEFEATENEMY);
-        wait(3);
-        closeTutorialWidget(player);
- 
+			--waitForSignal("spellUsed");  9050
 
-		--waitForSignal("spellUsed");  9050
-
-	elseif player:IsDiscipleOfHand() then
-		--waitForSignal("abilityUsed");
-	elseif player:IsDiscipleOfLand() then
-		--waitForSignal("abilityUsed");
-	end
-	player:SendMessage(0x1D,"",">after DOW if statements");
+		elseif player:IsDiscipleOfHand() then
+			--waitForSignal("abilityUsed");
+		elseif player:IsDiscipleOfLand() then
+			--waitForSignal("abilityUsed");
+		end
+	
+	player:SendMessage(0x1D,"",">after DOW/DOM if statements");
     wait(3);
 	worldMaster = GetWorldMaster();
 	player:SendDataPacket("attention", worldMaster, "", 51073, 2);
@@ -98,16 +105,26 @@ function onEventStarted(player, actor, triggerName)
 	player:SendMessage(0x1D,"",">music change");
 	player:ChangeMusic(7);
 	player:ChangeState(0); 
-	player:SendMessage(0x1D,"",">before cutscene");
+	
+	player:SendMessage(0x1D,"",">Director afterDOW/DOM kickevent Start");
 	kickEventContinue(player, actor, "noticeEvent", "noticeEvent");  -- uncommenting this plays cutscene?  
+	player:SendMessage(0x1D,"",">Director afterDOW/DOM kickevent End");
+	player:SendMessage(0x1D,"",">before post-tutorial cutscene");
 	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processEvent020_1");
-	player:SendMessage(0x1D,"",">after cutscene");
+	player:SendMessage(0x1D,"",">after post-tutorial cutscene");
     man0g0Quest:StartSequence(10);
 	player:SendMessage(0x1D,"",">S10 Start");
 	--player:EndEvent();	
     player.CurrentArea:ContentFinished();
 	GetWorldManager():DoZoneChange(player, 155, "PrivateAreaMasterPast", 1, 15, 175.38, -1.21, -1156.51, -2.1);
-	player:EndEvent();	
+	player:SendMessage(0x1D,"",">end of seq 5 statements");
+	player:EndEvent();
+	elseif (man0g0Quest:GetSequence() == SEQ_010) then
+		player:SendMessage(0x1D,"",">directors10 check?");
+		player:EndEvent();
+	end
+	player:SendMessage(0x1D,"",">after sequence checks");
+	player:EndEvent();
 end
 
 --[[
@@ -121,4 +138,4 @@ end
 			CloseWidget
 	ELSE MAGIC:
 		OpenWidget (DEFEAT ENEMY)
-	--]]
+]]
