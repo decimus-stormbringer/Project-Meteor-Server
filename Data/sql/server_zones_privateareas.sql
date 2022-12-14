@@ -57,7 +57,13 @@ REPLACE INTO `server_zones_privateareas` (`id`, `parentZoneId`, `className`, `pr
 	(25, 128, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 5, 1, 53),
 	(26, 181, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 5, 1, 61),
 	(27, 172, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 5, 1, 72),
-	(28, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 0, 0, 40); -- man0g1 Echo in CNJ guild
+	(28, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 0, 0, 40), -- man0g1 Echo in CNJ guild
+	(29, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 1, 0, 51), -- man0g1 s050 DANCE
+	(30, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 2, 0, 51), -- man0g1 s055 KIDS
+	(31, 150, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 0, 0, 52), -- man0g1 s60-65 ESCORT
+	(32, 150, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 1, 0, 40), -- Echo
+	(33, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 3, 0, 40), -- Echo in Lancer Guild
+	(34, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 4, 0, 40); -- Echo in Lancer Guild?
 /*!40000 ALTER TABLE `server_zones_privateareas` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

@@ -113,6 +113,32 @@ processTtrBlkNml001	Blocker npc during the first echo sequence.
 processEventTu_001	Starts the linkshell tutorial.
 
 
+--Cutscene client names in order:
+man0g100 - processEvent100 - done
+man0g110 - processEvent110 - done - s000 - works - Miounne - Name ID: 1300018 - Model ID: 1000230 - Marker ID: 11000601 11000603 11000620 11000713 11008101 11040110
+man0g120 - processEvent120 - done - s015 - works - HEREWARD - Name ID: 1000324 - Model ID: 1000231 - Marker ID: 11000604
+man0g130 - processEvent130 - done - s015 - works - CNJ_TRIG - Name ID: 4000257 - Model ID: 1090200 - Marker ID: 11000602 11000606 11000609 11000610 11000611 11000612 11000613 11000614 11000615
+man0g135 - processEvent135 - done - s015 - works - no LTW - SWETHYNA - Name: 1100010 - Model: 1000680 - Marker: 11000607
+man0g135 - processEvent136 - done - s015 - works - ys LTW - SWETHYNA - ^
+man0g140 - processEvent140 - done - s040 - works - OPYLTYL - name: 1600132 - model: 1000236 - Marker: 11000608
+man0g150 - processEvent150 - done - n/a  - works - With you and Fufucha. Not originally used? Check youtube videos - After doing emotes, before kids ask you to help. Use onPush KIDS_TRIGGER - KIDS_TRIGGER - Name ID: 4000257 - Model ID: 1090201 - Marker ID: 11000602 11000606 11000609 11000610 11000611 11000612 11000613 11000614 11000615
+man0g160 - processEvent160 - done - s055 - works - Kids tell you to meet them
+man0g170 - processEvent170 - done - s060 - works - GATE_TRIGGER (outside town) - Name ID: 4000257 - Model ID: 1090202 - Marker: 11000611
+man0g180 - processEvent180 - done - s065 - works - GATE_TRIGGER - Name ID: 4000257 - Model ID: 1090202 - Marker ID: 11000612
+man0g181 - processEvent181 - done - s070 - works - STUMP_TRIGGER - Name ID: 4000257 - Model ID: 1090203 - Marker ID: 11000613
+man0g182 - processEvent182 - done - s071 - works - STUMP_EXIT_TRIGGER - Name ID: 4000257 - Model ID: 1090204 - Marker ID: 11000614
+man0g185 - processEvent185 - done - s072 - works - BTN_TRIGGER - Name ID: 4000257 - Model ID: 1090046 - Marker ID: 11000615
+man0g190 - processEvent190 - done - s080 - works - WILLELDA - name: 1100014 - model: 1000242 - marker: 11000616
+man0g200 - processEvent200 - done - s085 - works - BURCHARD - name: 1000013 - model: 1000243 - marker: 11000617 11000618
+man0g210 - processEvent210 - done - s090 - works - BURCHARD ^
+man0g220 - processEvent220 - done - s095 - works - NUALA - name: 1100210 - model: 1000681 - marker: 11000619
+	  processEventComplete - done - s105 - works - MIOUNNE - Miounne - Name ID: 1300018 - Model ID: 1000230 - Marker ID: 11000601 11000603 11000620 11000713 11008101 11040110
+
+--unused markers:
+
+
+
+
 --]]
 
 -- Sequence Numbers
@@ -194,10 +220,10 @@ NICOLLAUX		= 1000409;
 AUNILLE			= 1000410;
 ELYN			= 1000411;
 RYD				= 1000412;
-KIDS_TRIGGER	= 1090201;
-GATE_TRIGGER	= 1090202;
+KIDS_TRIGGER	= 1090201;  -- needs existence
+GATE_TRIGGER	= 1090202;  -- needs existence -- Also seq 60
 
--- Post Escort Duty
+-- Post Escort Duty -- place npcs
 STUMP_TRIGGER		= 1090203;
 STUMP_EXIT_TRIGGER	= 1090204;
 BTN_TRIGGER			= 1090046;
@@ -219,7 +245,50 @@ PASDEVILLET		= 1000738;
 JIJIMAYA		= 1000741;
 
 -- Quest Markers
---MRKR_MIOUNNE	= 11000601;
+--s00
+MRKR_S000_MIOUNNE			= 11000601;
+
+--s015
+MRKR_S015_HEREWARD			= 11000604;
+MRKR_S015_SWETHYNA			= 11000607;
+
+--s040
+MRKR_S040_OPYLTYL			= 11000608;
+
+--s055
+--MRKR_S055_KIDS_TRIGGER		= ;
+
+--s060
+MRKR_S060_GATE_TRIGGER		= 11000611;
+
+--s065
+MRKR_S065_GATE_TRIGGER		= 11000612;
+
+--s070
+MRKR_S070_STUMP_TRIGGER		= 11000613;
+
+--s071
+MRKR_S071_STUMP_EXIT_TRIGGER	= 11000614;
+
+--s072
+MRKR_S072_BTN_TRIGGER		= 11000615;
+
+--s080
+MRKR_S080_WILLELDA			= 11000616;
+
+--s085
+MRKR_S085_BURCHARD			= 11000617;
+
+--s090
+MRKR_S090_BURCHARD			= 11000618;
+
+--s095
+MRKR_S095_NUALA				= 11000619;
+
+--s105
+MRKR_S105_MIOUNNE			= 11000620;
+
+
 
 function onStart(player, quest) 
 	player:SendMessage(0x1D,"",">Started man0g1 in man0g1!");
@@ -301,6 +370,7 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(MIOUNNE);
 	elseif (sequence == SEQ_050) then 
 		quest:SetENpc(OPYLTYL, QFLAG_TALK);
+		quest:SetENpc(KIDS_TRIGGER, QFLAG_PUSH, false, true);
         quest:SetENpc(AUNILLE, not data:GetFlag(FLAG_EMOTE_DONE1) and QFLAG_TALK or QFLAG_OFF, true, false, not data:GetFlag(FLAG_EMOTE_DONE1));
 		quest:SetENpc(NICOLLAUX, not data:GetFlag(FLAG_EMOTE_DONE2) and QFLAG_TALK or QFLAG_OFF, true, false, not data:GetFlag(FLAG_EMOTE_DONE2));
 		quest:SetENpc(SANSA, not data:GetFlag(FLAG_EMOTE_DONE3) and QFLAG_TALK or QFLAG_OFF, true, false, not data:GetFlag(FLAG_EMOTE_DONE3));
@@ -319,13 +389,19 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(ELYN);
 		quest:SetENpc(FUFUCHA);
 	elseif (sequence == SEQ_060) then
+		player:SendMessage(0x1D,"",">seq_60");
 		quest:SetENpc(GATE_TRIGGER, QFLAG_PUSH, false, true);
 	elseif (sequence == SEQ_065) then
+		player:SendMessage(0x1D,"",">seq_65");
+		quest:SetENpc(GATE_TRIGGER, QFLAG_PUSH, false, true);
 	elseif (sequence == SEQ_070) then
+		player:SendMessage(0x1D,"",">seq_70");
 		quest:SetENpc(STUMP_TRIGGER, QFLAG_PUSH, false, true);
-	elseif (sequence == SEQ_071) then		
+	elseif (sequence == SEQ_071) then	
+		player:SendMessage(0x1D,"",">seq_71");
 		quest:SetENpc(STUMP_EXIT_TRIGGER, QFLAG_PUSH, false, true);
 	elseif (sequence == SEQ_072) then
+		player:SendMessage(0x1D,"",">seq_72");
 		quest:SetENpc(BTN_TRIGGER, QFLAG_PUSH, false, true);
 	elseif (sequence == SEQ_075) then
 	elseif (sequence == SEQ_080) then
@@ -384,7 +460,7 @@ function onTalk(player, quest, npc)
 	elseif (sequence == SEQ_012) then
 		if (classId == MIOUNNE) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent115");
-			quest: (1);
+			quest:NewNpcLsMsg(1);
 			quest:StartSequence(SEQ_015);
 		end
 	elseif (sequence == SEQ_015) then
@@ -397,7 +473,8 @@ function onTalk(player, quest, npc)
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent140");
 			quest:StartSequence(SEQ_050);
 			player:EndEvent();
-			GetWorldManager():WarpToPrivateArea(player, "PrivateAreaMasterPast", 1, -223.792, 12, -1498.369, -1.74);
+			GetWorldManager():WarpToPrivateArea(player, "PrivateAreaMasterPast", 1, -223.792, 12, -1498.369, -1.74); -- S050 private area needs emote programming
+			-- skip privatearea 1, go straight to 2.			
 			return;
 		elseif (classId == MIOUNNE) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent137_2");
@@ -458,7 +535,7 @@ function onTalk(player, quest, npc)
 			return;
 		elseif (classId == NUALA) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent200_2");
-		elseif (classId == TKEBBE) then
+		elseif (classId == TKEBBE) then 
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent200_3");
 		elseif (classId == FARRIMOND) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent200_4");
@@ -600,7 +677,8 @@ function seq015_onTalk(player, quest, npc, classId)
 		end
 	elseif (classId == O_APP_PESI) then
 		if (subseqCNJ == 1) then
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent130"); -- Same event as entering room?
+			--callClientFunction(player, "delegateEvent", player, quest, "processEvent130"); -- Same event as entering room?
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent130_3");
 			data:IncCounter(CNTR_SEQ15_CNJ); --CNJ to 2
 		else
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent130_3");
@@ -627,12 +705,14 @@ function seq015_onTalk(player, quest, npc, classId)
 			player:EndEvent();
 			quest:UpdateENPCs();
 			GetWorldManager():WarpToPublicArea(player);
+			return;
 		else
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent136"); --leaving guild like in man0l1 event060
 			data:IncCounter(CNTR_SEQ15_CNJ); -- CNJ to 3
 			quest:NewNpcLsMsg(1);
 			player:EndEvent();
 			GetWorldManager():WarpToPublicArea(player);
+			return;
 			--return true; --not in man0l1?
 		end
 	end
@@ -682,7 +762,8 @@ function seq050_onTalk(player, quest, npc, classId)
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent141_6");
 		end
 	elseif (classId == FUFUCHA) then
-		callClientFunction(player, "delegateEvent", player, quest, "processEvent140_10");
+		callClientFunction(player, "delegateEvent", player, quest, "processEvent140_10"); 
+		--GetWorldManager():WarpToPrivateArea(player, "PrivateAreaMasterPast", 2, -231.474, 12, -1500.86, 0.73); Just flavor text
 	end
 end
 
@@ -699,6 +780,7 @@ function onPush(player, quest, npc)
 		end
     elseif (sequence == SEQ_015) then
 		if (classId == CNJ_TRIG) then
+		
 			player:SendMessage(0x1D,"",">Pushed CNJ!");
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent130");
 			data:IncCounter(CNTR_SEQ15_CNJ); -- CNJ +1
@@ -708,8 +790,16 @@ function onPush(player, quest, npc)
 			--return;
 			player:EndEvent();
 		end
+	elseif (sequence == SEQ_050) then -- Use kids trigger to skip children
+		if (classId == KIDS_TRIGGER) then -- KIDS_TRIGGER1
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent150"); -- For now just skip seq 50 into seq 55
+			player:EndEvent();
+			quest:StartSequence(SEQ_055); 
+			GetWorldManager():WarpToPrivateArea(player, "PrivateAreaMasterPast", 2, -231.474, 12, -1500.86, 0.73); -- Different private area with kids whispering
+			return;
+		end
 	elseif (sequence == SEQ_055) then
-		if (classId == KIDS_TRIGGER) then
+		if (classId == KIDS_TRIGGER) then -- KIDS_TRIGGER2
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent160");
 			player:EndEvent();
 			quest:StartSequence(SEQ_060);
@@ -720,25 +810,30 @@ function onPush(player, quest, npc)
 		if (classId == GATE_TRIGGER) then
 			local result = callClientFunction(player, "delegateEvent", player, quest, "contentsJoinAskInBasaClass");
 			if (result == 1) then
+				callClientFunction(player, "delegateEvent", player, quest, "processEvent170");
+				player:EndEvent();
+				GetWorldManager():WarpToPrivateArea(player, "PrivateAreaMasterPast", 0, -770.197, 23, -1086.209); -- into private zone for escort. Get a bit further for next cutscene
 				-- DO ESCORT DUTY HERE
 				-- startMan0g1Content(player, quest);
 				-- For now just skip the sequence
 				quest:StartSequence(SEQ_065);
-				callClientFunction(player, "delegateEvent", player, quest, "processEvent180");
 				player:EndEvent();
-				quest:StartSequence(SEQ_070);
-				GetWorldManager():WarpToPrivateArea(player, "PrivateAreaMasterPast", 0, -770.197, 23, -1086.209);
 				return;
 			end
+		end
+	elseif (sequence == SEQ_065) then -- walk in private area to next onPush Trigger (where is cutscene taking place?)
+		if (classId == GATE_TRIGGER) then
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent180");
+			quest:StartSequence(SEQ_070);
 			player:EndEvent();
-		end	
+			GetWorldManager():WarpToPrivateArea(player, "PrivateAreaMasterPast", 1);
+			return;
+		end
 	elseif (sequence == SEQ_070) then
 		if (classId == STUMP_TRIGGER) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent181");
 			player:EndEvent();
 			quest:StartSequence(SEQ_071);
-			GetWorldManager():WarpToPrivateArea(player, "PrivateAreaMasterPast", 1);
-			return;
 		end		
 	elseif (sequence == SEQ_071) then
 		if (classId == STUMP_EXIT_TRIGGER) then
@@ -759,7 +854,7 @@ function onPush(player, quest, npc)
 	quest:UpdateENPCs();
 end
 
-function onEmote(player, quest, npc, eventName)
+function onEmote(player, quest, npc, eventName) -- Needs programming from etc3g0
 	local data = quest:GetData();
 	local sequence = quest:getSequence();
 	local classId = npc:GetActorClassId();	
@@ -782,32 +877,32 @@ function onEmote(player, quest, npc, eventName)
 	
 	-- Handle the result
 	if (sequence == SEQ_050) then
-		if (classId == AUNILLE) then
+		if (classId == AUNILLE) then -- Beckon
 			if (not data:GetFlag(FLAG_EMOTE_DONE1)) then
 				callClientFunction(player, "delegateEvent", player, quest, "processEvent142_1");
 				data:SetFlag(FLAG_EMOTE_DONE1);
 			end
-		elseif (classId == NICOLLAUX) then
+		elseif (classId == NICOLLAUX) then -- Clap
 			if (not data:GetFlag(FLAG_EMOTE_DONE2)) then
 				callClientFunction(player, "delegateEvent", player, quest, "processEvent142_2");
 				data:SetFlag(FLAG_EMOTE_DONE2);
 			end
-		elseif (classId == SANSA) then
+		elseif (classId == SANSA) then -- Bow
 			if (not data:GetFlag(FLAG_EMOTE_DONE3)) then
 				callClientFunction(player, "delegateEvent", player, quest, "processEvent142_3");
 				data:SetFlag(FLAG_EMOTE_DONE3);
 			end
-		elseif (classId == POWLE) then
+		elseif (classId == POWLE) then -- Cheer
 			if (not data:GetFlag(FLAG_EMOTE_DONE4)) then
 				callClientFunction(player, "delegateEvent", player, quest, "processEvent142_4");
 				data:SetFlag(FLAG_EMOTE_DONE4);
 			end
-		elseif (classId == RYD) then
+		elseif (classId == RYD) then -- Surprised
 			if (not data:GetFlag(FLAG_EMOTE_DONE5)) then
 				callClientFunction(player, "delegateEvent", player, quest, "processEvent142_5");
 				data:SetFlag(FLAG_EMOTE_DONE5);
 			end
-		elseif (classId == ELYN) then
+		elseif (classId == ELYN) then -- Lookout
 			if (not data:GetFlag(FLAG_EMOTE_DONE6)) then
 				callClientFunction(player, "delegateEvent", player, quest, "processEvent142_6");
 				data:SetFlag(FLAG_EMOTE_DONE6);
@@ -816,11 +911,11 @@ function onEmote(player, quest, npc, eventName)
 	end
 	
 	-- Check result and finish
-	if (bit32.band(data:GetFlags(), 0x7E) == 0x7E) then
-		callClientFunction(player, "delegateEvent", player, quest, "processEvent150");
+	if (bit32.band(data:GetFlags(), 0x7E) == 0x7E) then -- Needs programming
+		callClientFunction(player, "delegateEvent", player, quest, "processEvent150"); -- For now just skip seq 50 into seq 55
 		player:EndEvent();
-		quest:StartSequence(SEQ_055);
-		GetWorldManager():WarpToPrivateArea(player, "PrivateAreaMasterPast", 2, -231.474, 12, -1500.86, 0.73);
+		quest:StartSequence(SEQ_055); 
+		GetWorldManager():WarpToPrivateArea(player, "PrivateAreaMasterPast", 2, -231.474, 12, -1500.86, 0.73); -- Different private area with kids whispering
 		return
 	end
 	
@@ -885,11 +980,13 @@ function getJournalInformation(player, quest)
 end
 
 function getJournalMapMarkerList(player, quest)
-    local sequence = quest:getSequence();
+	local sequence = quest:getSequence();
+	local data = quest:GetData();
     local possibleMarkers = {};
+    local data = quest:GetData();
 
     if (sequence == SEQ_000) then
-	
+		table.insert(possibleMarkers, MRKR_S000_MIOUNNE);
     elseif (sequence == SEQ_005) then 
 	
 	elseif (sequence == SEQ_010) then 
@@ -897,36 +994,41 @@ function getJournalMapMarkerList(player, quest)
 	elseif (sequence == SEQ_012) then 
 	
 	elseif (sequence == SEQ_015) then 
-		local subseqLTW = data:GetCounter(CNTR_SEQ15_LTW);
-		local subseqCNJ = data:GetCounter(CNTR_SEQ15_CNJ);
-		
+		--local subseqLTW = data:GetCounter(CNTR_SEQ15_LTW);
+		--local subseqCNJ = data:GetCounter(CNTR_SEQ15_CNJ);
+		table.insert(possibleMarkers, MRKR_S015_HEREWARD);
+		table.insert(possibleMarkers, MRKR_S015_SWETHYNA);
 	elseif (sequence == SEQ_040) then 
-        
+        table.insert(possibleMarkers, MRKR_S040_OPYLTYL);
 	elseif (sequence == SEQ_050) then 
 		
 	elseif (sequence == SEQ_055) then
-		return MRKR_KID_TRIGGER;
+		--return MRKR_KID_TRIGGER;
 	elseif (sequence == SEQ_060) then
-		return MRKR_GATE_TRIGGER;
+		table.insert(possibleMarkers, MRKR_S060_GATE_TRIGGER);
+		--return MRKR_GATE_TRIGGER;
 	elseif (sequence == SEQ_065) then
+		table.insert(possibleMarkers, MRKR_S065_GATE_TRIGGER);
 	elseif (sequence == SEQ_070) then
+		table.insert(possibleMarkers, MRKR_S070_STUMP_TRIGGER);
 	elseif (sequence == SEQ_071) then
+		table.insert(possibleMarkers, MRKR_S071_STUMP_EXIT_TRIGGER);
 	elseif (sequence == SEQ_072) then
-	
+		table.insert(possibleMarkers, MRKR_S072_BTN_TRIGGER);
 	elseif (sequence == SEQ_075) then
 	
 	elseif (sequence == SEQ_080) then
-	
+		table.insert(possibleMarkers, MRKR_S080_WILLELDA);
 	elseif (sequence == SEQ_085) then
-	
+		table.insert(possibleMarkers, MRKR_S085_BURCHARD);
 	elseif (sequence == SEQ_090) then
-	
+		table.insert(possibleMarkers, MRKR_S090_BURCHARD);
 	elseif (sequence == SEQ_095) then
-	
+		table.insert(possibleMarkers, MRKR_S095_NUALA);
 	elseif (sequence == SEQ_100) then
 	
 	elseif (sequence == SEQ_105) then
-	
+		table.insert(possibleMarkers, MRKR_S105_MIOUNNE);
     end
 
     return unpack(possibleMarkers)
