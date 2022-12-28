@@ -316,7 +316,7 @@ function getJournalMapMarkerList(player, quest)
 	
 	if (sequence == SEQ_037) then
 		table.insert(possibleMarkers, MRKR_S037_SEAFLD1);
-	elseif (sequence == SEQ_037) then
+	elseif (sequence == SEQ_050) then
 		table.insert(possibleMarkers, MRKR_S050_SEAFLD2);
 	end
     return unpack(possibleMarkers)
