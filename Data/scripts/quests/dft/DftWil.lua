@@ -45,8 +45,11 @@ local defaultTalkWil = {
     [1000665] = "defaultTalkWithRosalind_001",          -- Rosalind
     [1000666] = "defaultTalkWithOcoco_001",             -- Ococo
     [1000668] = "defaultTalkWithUbokhn_001",            -- U'bokhn
-    [1000672] = "defaultTalkWithBlandhem_001",          -- <<<NOT IMPLEMENTED>>> - Blandhem (Camp Black Brush: X:56.089 Y:199.983 Z:-462.182 rough estimate)
-    [1000673] = "defaultTalkWithChechedoba_001",        -- <<<NOT IMPLEMENTED>>> - Chechedoba (Camp Black Brush: X:8.436 Y:199.973 Z:-484.073 rough estimate)
+    [1000672] = "defaultTalkWithBlandhem_001",          -- Blandhem
+	[1600062] = "defaultTalkWithBenedict_001",			-- Benedict
+	[1500073] = "defaultTalkWithLudovraint_001",		-- Ludovraint
+	[1500099] = "defaultTalkWithMimina_001",			-- Mimina
+    [1000673] = "defaultTalkWithChechedoba_001",        -- Chechedoba
     [1000674] = "defaultTalkWithZllayan_001",           -- <<<NOT IMPLEMENTED>>> - Z'llayan (Camp Drybone)
     [1000780] = "defaultTalkWithKiora_001",             -- Kiora        - defaultTalkWithKiora_002 / 003 (informs about MRD guild)
     [1000781] = "defaultTalkWithOpondhao_001",          -- O'pondhao    - defaultTalkWithOpondhao_002 / 003 (informs about FSH guild)
@@ -145,7 +148,7 @@ local defaultTalkWil = {
     [1001335] = "defaultTalkWithHonmeme_001",           -- <<<NOT IMPLEMENTED>>> - Honmeme (Eastern Thanalan, Little Ala Mhigo)
     [1001336] = "defaultTalkWithCatriona_001",          -- <<<NOT IMPLEMENTED>>> - Catriona (Eastern Thanalan, Little Ala Mhigo)
     [1001337] = "defaultTalkWithGrifiud_001",           -- <<<NOT IMPLEMENTED>>> - Grifiud (Eastern Thanalan, Little Ala Mhigo)
-    [1001392] = "defaultTalkWithNomomo_001",            -- <<<NOT IMPLEMENTED>>> - Nomomo (Camp Black Brush: X:24.274 Y:200.003 Z:-473.548 rough estimate) - If arg1=true, says different dialog.
+    [1001392] = "defaultTalkWithNomomo_001",            -- Nomomo - If arg1=true, says different dialog.
     [1001415] = "defaultTalkWithAnthoinette_001",       -- Anthoinette
     [1001416] = "defaultTalkWithWisemoon_001",          -- Wise Moon
     [1001417] = "defaultTalkWithApachonaccho_001",      -- Apacho Naccho
