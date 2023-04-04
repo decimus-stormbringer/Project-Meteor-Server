@@ -67,7 +67,12 @@ REPLACE INTO `server_zones_privateareas` (`id`, `parentZoneId`, `className`, `pr
 	(35, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 6, 0, 40), -- man1g0 s005 CRP
 	(36, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 7, 0, 40), -- man1g0 s010 FYE
 	(37, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 8, 0, 40), -- man1g0 s015 CRP
-	(38, 150, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 2, 0, 40); -- man1g0 s035 MOOGLE
+	(38, 150, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 2, 0, 40), -- man1g0 s035 MOOGLE
+	(39, 209, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 0, 0, 40), -- MAN0u1 S015 GLD
+	(41, 209, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 1, 0, 40), -- MAN0u1 S015 GLD
+	(42, 209, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 2, 0, 18), -- MAN0u1 S050 MIN
+	(43, 209, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 3, 0, 40), -- MAN0u1 S058 MIN
+	(44, 170, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 4, 0, 40); -- MAN0u1 S070 BLACKBRUSH
 /*!40000 ALTER TABLE `server_zones_privateareas` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

@@ -51,7 +51,10 @@ function onEventStarted(player, aetheryte, triggerName)
 	elseif (player:HasQuest(110010) == true) then
 		require ("quests/man/man0u1");
 		local quest = player:GetQuest("Man0u1");
-		if (quest:GetSequence() == SEQ_005) then			
+		if (quest:GetSequence() == SEQ_005) then
+			player:SendGameMessage(GetWorldMaster(), 60006, 0x20, 1280032)
+			-- Msg "You have Arrived in BlackBrush" needs widget.
+			wait (1)
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent013");
 			quest:StartSequence(SEQ_010);
 		end
