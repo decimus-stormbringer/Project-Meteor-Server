@@ -570,6 +570,26 @@ namespace Meteor.Map.Actors
             }
         }
 
+        public Npc SpawnActor(uint classId, string uniqueId, string displayName, float x, float y, float z, float rot)
+        {
+            lock (mActorList)
+            {
+                ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
+
+                if (actorClass == null)
+                    return null;
+
+                Npc npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot);
+
+                npc.LoadEventConditions(actorClass.eventConditions);
+                npc.DisplayName = displayName;
+
+                AddActorToZone(npc);
+
+                return npc;
+            }
+        }
+
         public BattleNpc GetBattleNpcById(uint id)
         {
             foreach (var bnpc in GetAllActors<BattleNpc>())

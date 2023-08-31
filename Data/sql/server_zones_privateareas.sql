@@ -72,7 +72,31 @@ REPLACE INTO `server_zones_privateareas` (`id`, `parentZoneId`, `className`, `pr
 	(41, 209, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 1, 0, 40), -- MAN0u1 S015 GLD
 	(42, 209, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 2, 0, 18), -- MAN0u1 S050 MIN
 	(43, 209, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 3, 0, 40), -- MAN0u1 S058 MIN
-	(44, 170, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 4, 0, 40); -- MAN0u1 S070 BLACKBRUSH
+	(44, 170, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 4, 0, 40), -- MAN0u1 S070 BLACKBRUSH
+	(45, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 9, 0, 40), -- man2g0 seq003 ARC Guild
+	(46, 153, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 1, 0, 9), -- Combat Instance for man2g0 SEQ_004
+	(47, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 10, 0, 40),  
+	(48, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 11, 0, 40),
+	(49, 206, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 12, 0, 40),
+	(50, 153, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 2, 0, 0),
+	(51, 209, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 4, 0, 40),
+	(52, 272, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 0, 0, 40),
+	(53, 209, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 6, 0, 40),
+	(54, 272, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 1, 0, 40),
+	(55, 170, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 1, 0, 40),
+	(56, 170, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 0, 0, 40),
+	(57, 271, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 0, 0, 40),
+	(58, 175, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 0, 0, 40),
+	(59, 181, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 6, 1, 66),
+	(60, 181, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 7, 1, 40),
+	(61, 170, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 5, 0, 9),
+	(62, 181, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 8, 1, 61),
+	(63, 181, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 9, 1, 36),
+	(64, 181, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 10, 1, 36),
+	(65, 209, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 7, 0, 40);
+
+	
+
 /*!40000 ALTER TABLE `server_zones_privateareas` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

@@ -915,7 +915,7 @@ namespace Meteor.Map.actors.chara.ai.utils
                 newChain.SetTier((byte)(Math.Min(expChainNumber + 1, 255)));
                 attacker.statusEffects.AddStatusEffect(newChain, attacker);
 
-                actionContainer?.AddEXPActions(attacker.AddExp(baseExp, (byte)attacker.GetClass(), (byte)(totalBonus.Min(255))));
+                actionContainer?.AddEXPActions(attacker.AddExp(baseExp, (byte)attacker.GetClass(), (byte)totalBonus.Min(255)));
             }
         }
 

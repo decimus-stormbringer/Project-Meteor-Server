@@ -161,12 +161,12 @@ namespace Meteor.Map.actors.group
                 if (s != null)
                     s.GetActor().SetCurrentContentGroup(null);
                 Actor a = director.CurrentArea.FindActorInArea(members[i]);
-                if (a is Npc)
-                    ((Npc)a).Despawn();
+              /*  if (a is Npc)
+                    ((Npc)a).Despawn();   */      /* Script handling despawn of NPCs after advancing in an instance. Commented out because it was breaking tutorial instances */
                 members.Remove(members[i]);
                 i--;
             }
-            Server.GetWorldManager().DeleteContentGroup(groupIndex);
+            Server.GetWorldManager().DeleteContentGroup(groupIndex);  
         }
 
         public void CheckDestroy()

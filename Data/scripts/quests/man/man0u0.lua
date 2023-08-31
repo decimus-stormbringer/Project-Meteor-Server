@@ -89,11 +89,12 @@ MRKR_ADV_GUILD              = 11000906;
 
 
 -- Quest Flags
+-- SEQ000
 FLAG_SEQ000_MINITUT0    = 0; -- PushEvent ASCILIA
 FLAG_SEQ000_MINITUT1    = 1; -- TalkEvent ASCILIA
 FLAG_SEQ000_MINITUT2    = 2; -- TalkEvent FRETFUL_FARMHAND
 FLAG_SEQ000_MINITUT3    = 3; -- TalkEvent GIL_DIGGING_MISTRESS
-
+-- SEQ010
 FLAG_SEQ010_TALK0       = 0; -- TalkEvent YAYATOKI
 
 
@@ -110,9 +111,9 @@ function onStateChange(player, quest, sequence)
     if (sequence == SEQ_000) then
         -- Setup states incase we loaded in.
         local asciliaCanPush = not data:GetFlag(FLAG_SEQ000_MINITUT0);
-        local asciliaFlag = data:GetFlag(FLAG_SEQ000_MINITUT1) and QFLAG_NONE or QFLAG_TALK;
-        local fretfulfarmhandFlag = data:GetFlag(FLAG_SEQ000_MINITUT2) and QFLAG_NONE or QFLAG_TALK;
-        local gildiggingmistressFlag = data:GetFlag(FLAG_SEQ000_MINITUT3) and QFLAG_NONE or QFLAG_TALK;
+        local asciliaFlag = (not data:GetFlag(FLAG_SEQ000_MINITUT1) and QFLAG_TALK or QFLAG_NONE);
+        local fretfulfarmhandFlag = (not data:GetFlag(FLAG_SEQ000_MINITUT2) and QFLAG_TALK or QFLAG_OFF);
+        local gildiggingmistressFlag = (not data:GetFlag(FLAG_SEQ000_MINITUT3) and QFLAG_TALK or QFLAG_OFF);
 
         local exitFlag = data:GetFlags() == 0xF and QFLAG_PUSH or QFLAG_NONE;
 
@@ -137,7 +138,7 @@ function onStateChange(player, quest, sequence)
         quest:SetENpc(OPENING_STOPER_ULDAH, QFLAG_NONE, false, false, true);
 
     elseif (sequence == SEQ_010) then
-        local yayatokiFlag = data:GetFlag(FLAG_SEQ010_TALK0) and QFLAG_NONE or QFLAG_TALK;
+        local yayatokiFlag = (not data:GetFlag(FLAG_SEQ010_TALK0) and QFLAG_TALK or QFLAG_OFF);
         local uldahopeningexitFlag = QFLAG_PUSH;
         quest:SetENpc(KEEN_EYED_MERCHANT);
         quest:SetENpc(HIGH_SPIRITED_FELLOW);
@@ -179,7 +180,7 @@ function onPush(player, quest, npc)
                 return;
             else
                 callClientFunction(player, "delegateEvent", player, quest, "processTtrBlkNml001");
-                GetWorldManager():DoPlayerMoveInZone(player, -22, 196, 87, 2.4, 0x11)
+                GetWorldManager():DoPlayerMoveInZone(player, -22, 196, 87, 2.4, 0x11);
                 player:EndEvent();
             end
         end
@@ -215,10 +216,10 @@ function seq000_onTalk(player, quest, npc, classId)
     if (classId == ASCILIA) then
         if (not data:GetFlag(FLAG_SEQ000_MINITUT0)) then -- If Talk tutorial
             callClientFunction(player, "delegateEvent", player, quest, "processTtrNomal003");
-            quest:GetData():SetFlag(FLAG_SEQ000_MINITUT0); -- Used to disable her PushEvent / Allow for her next TalkEvent
+            data:SetFlag(FLAG_SEQ000_MINITUT0); -- Used to disable her PushEvent / Allow for her next TalkEvent
         else
             callClientFunction(player, "delegateEvent", player, quest, "processTtrMini001");
-            quest:GetData():SetFlag(FLAG_SEQ000_MINITUT1); -- Ascilia has now been talked to.
+            data:SetFlag(FLAG_SEQ000_MINITUT1); -- Ascilia has now been talked to.
         end
 
     elseif (classId == FRETFUL_FARMHAND) then
@@ -259,6 +260,8 @@ function seq000_onTalk(player, quest, npc, classId)
 end
 
 function seq010_onTalk(player, quest, npc, classId)
+	local data = quest:GetData();
+
     if (classId == KEEN_EYED_MERCHANT) then
         callClientFunction(player, "delegateEvent", player, quest, "processEvent020_2");
     elseif (classId == HIGH_SPIRITED_FELLOW) then
@@ -274,10 +277,10 @@ function seq010_onTalk(player, quest, npc, classId)
     elseif (classId == FULL_LIPPED_FILLE) then
         callClientFunction(player, "delegateEvent", player, quest, "processEtc002");
     elseif (classId == YAYATOKI) then
-        if (not quest:GetData():GetFlag(FLAG_SEQ010_TALK0)) then
+        if (not data:GetFlag(FLAG_SEQ010_TALK0)) then
             callClientFunction(player, "delegateEvent", player, quest, "processEvent020_8");
-            quest:GetData():SetFlag(FLAG_SEQ010_TALK0);
-        else
+            data:SetFlag(FLAG_SEQ010_TALK0);
+        elseif (data:GetFlag(FLAG_SEQ010_TALK0)) then
             callClientFunction(player, "delegateEvent", player, quest, "processEvent020_8");
         end
     end
@@ -296,7 +299,10 @@ function getJournalMapMarkerList(player, quest)
             if (not data:GetFlag(FLAG_SEQ000_MINITUT2)) then table.insert(possibleMarkers, MRKR_FRETFUL_FARMHAND); end
             if (not data:GetFlag(FLAG_SEQ000_MINITUT3)) then table.insert(possibleMarkers, MRKR_GIL_DIGGING_MISTRESS); end
         end
-
+		
+		if ((data:GetFlag(FLAG_SEQ000_MINITUT1)) and (data:GetFlag(FLAG_SEQ000_MINITUT2)) and (data:GetFlag(FLAG_SEQ000_MINITUT3))) then
+			table.insert(possibleMarkers, MRKR_COMBAT_TUTORIAL);
+		end
     elseif (sequence == SEQ_010) then
         if (not data:GetFlag(FLAG_SEQ010_TALK0)) then
             table.insert(possibleMarkers, MRKR_YAYATOKI)

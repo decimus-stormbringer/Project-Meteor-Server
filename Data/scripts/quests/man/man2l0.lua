@@ -10,6 +10,28 @@ Code: 	Man2l0
 Id: 	110004
 Prereq: Legends Adrift (Man1l0 - 110003)
 
+Map Markers
+11000401,,1,-639.099976,409.380005,1000017,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarkerQuest,@5208/i11000401,Visible
+11000402,,1,1821.449951,1816.918945,4000257,-1,common/mapMarker.le.spk,m00013,112,1102,0,MapMarkerQuest,@5208/i11000402,Visible
+11000403,,1,1824.199951,1825.51001,4000257,-1,common/mapMarker.le.spk,m00013,112,1102,0,MapMarkerQuest,@5208/i11000403,Visible
+11000404,,1,218.580002,1176.560059,4000257,-1,common/mapMarker.le.spk,m00013,101,101,0,MapMarkerQuest,@5208/i11000404,Visible
+11000405,,1,-598.369995,-50.279999,4000257,-1,common/mapMarker.le.spk,m00013,101,121,50,MapMarkerQuest,@5208/i11000405,Visible
+11000406,,1,-611,-56,1200100,-1,common/mapMarker.le.spk,m00013,101,121,50,MapMarkerQuest,@5208/i11000406,Visible
+11000407,,1,131.759995,1183.920044,4000257,-1,common/mapMarker.le.spk,m00013,101,101,0,MapMarkerQuest,@5208/i11000407,Visible
+11000408,,1,221.009995,1177.619995,4000257,-1,common/mapMarker.le.spk,m00013,101,101,0,MapMarkerQuest,@5208/i11000408,Visible
+11000409,,1,-428.059998,185.960007,1000015,-1,common/mapMarker.le.spk,m00013,101,121,50,MapMarkerQuest,@5208/i11000409,Visible
+11000410,,1,-431,187,1600179,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarker,@5208/i11000101,Visible
+11000411,,1,-431,187,1600179,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarker,@5208/i11000101,Visible
+11000412,,1,-431,187,1600179,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarker,@5208/i11000101,Visible
+11000413,,1,-431,187,1600179,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarker,@5208/i11000101,Visible
+11000414,,1,-431,187,1600179,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarker,@5208/i11000101,Visible
+11000415,,1,-431,187,1600179,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarker,@5208/i11000101,Visible
+11000416,,1,-431,187,1600179,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarker,@5208/i11000101,Visible
+11000417,,1,-431,187,1600179,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarker,@5208/i11000101,Visible
+11000418,,1,-431,187,1600179,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarker,@5208/i11000101,Visible
+11000419,,1,-431,187,1600179,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarker,@5208/i11000101,Visible
+11000420,,1,-431,187,1600179,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarker,@5208/i11000101,Visible
+
 ]]
 
 -- Sequence Numbers
@@ -45,14 +67,21 @@ TRIGGER_SEAFLD2				= 1090086;
 TRIGGER_SEAFLD3				= 1090087;
 
 -- Quest Markers
-MRKR_S037_SEAFLD1 			= 11000404;
+MRKR_HOB					= 11000401;
+MRKR_PSHSHIP				= 11000402;	
+MRKR_PSHSHIP2				= 11000403;
+MRKR_S037_SEAFLD1			= 11000404;
+MRKR_PSHMSKGUILD			= 11000405;
+MRKR_ISAUDOREL				= 11000406;
 MRKR_S050_SEAFLD2			= 11000407;
+MRKR_PSHSEAFLD				= 11000408;
+MRKR_BADERON				= 11000409;
 
 
 -- Msg packs for the Npc LS
 NPCLS_MSGS = {
-	{40, 41} 	-- SEQ_040
-};
+	{40, 41}	-- SEQ_010
+};  
 
 function onStart(player, quest)	
 	quest:StartSequence(SEQ_000);
@@ -71,13 +100,13 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(HOB, QFLAG_TALK);
 		quest:SetENpc(BADERON);
 	elseif (sequence == SEQ_010) then
-		quest:SetENpc(TRIGGER_DOCKS, QFLAG_NONE, false, true);
+		quest:SetENpc(TRIGGER_DOCKS, QFLAG_PUSH, false, true);
 		quest:SetENpc(HOB);
 		quest:SetENpc(BARRACUDA_KNIGHT1);
 		quest:SetENpc(BARRACUDA_KNIGHT2);
 		quest:SetENpc(EVENTDOOR_SHIP1, QFLAG_PUSH, false, true);
 	elseif (sequence == SEQ_015) then
-		quest:SetENpc(TRIGGER_DOCKS, QFLAG_NONE, false, true);
+		quest:SetENpc(TRIGGER_DOCKS, QFLAG_PUSH, false, true);
 		quest:SetENpc(HOB);
 		quest:SetENpc(BARRACUDA_KNIGHT1);
 		quest:SetENpc(BARRACUDA_KNIGHT2);
@@ -98,6 +127,7 @@ function onStateChange(player, quest, sequence)
 	elseif (sequence == SEQ_050) then
 		quest:SetENpc(TRIGGER_SEAFLD2, QFLAG_PUSH, false, true);
 	elseif (sequence == SEQ_055) then
+		quest:SetENpc(TRIGGER_SEAFLD2, QFLAG_PUSH, false, true);
 		quest:SetENpc(TRIGGER_SEAFLD3, QFLAG_PUSH, false, true);
 		quest:SetENpc(YSHTOLA);
 	elseif (sequence == SEQ_070) then
@@ -120,17 +150,17 @@ function onTalk(player, quest, npc)
 		end
 	elseif (sequence == SEQ_000) then		
 		if (classId == HOB) then
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent010");			
-			quest:StartSequence(SEQ_010);
-			player:EndEvent();
-			GetWorldManager():DoZoneChange(player, 192, "PrivateAreaMasterPast", 0, 0, 1832.243, 16.352, 1834.965, 1.584);
-			return;
-		elseif (classId == BADERON) then
 			if (npc.CurrentArea.IsPrivate()) then
-				callClientFunction(player, "delegateEvent", player, quest, "processEvent000_2");
+				callClientFunction(player, "delegateEvent", player, quest, "processEvent010");			
+				quest:StartSequence(SEQ_010);
+				player:EndEvent();
+				GetWorldManager():DoZoneChange(player, 192, "PrivateAreaMasterPast", 0, 0, 1832.243, 16.352, 1834.965, 1.584);
+				return;
 			else
 				callClientFunction(player, "delegateEvent", player, quest, "processEvent010_3");
 			end
+		elseif (classId == BADERON) then
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent000_2");
 		end
 	elseif (sequence >= SEQ_010 and sequence <= SEQ_020) then
 		if (onTalk_shipSequences(player, quest, npc, classId, sequence) == 1) then
@@ -163,7 +193,14 @@ function onTalk(player, quest, npc)
 		if (classId == BADERON) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent081_2", 1);
 			callClientFunction(player, "delegateEvent", player, quest, "sqrwa", 300, 1, 1, 2);
+			player:EndEvent();
 			player:CompleteQuest(quest);
+			player:AddItem(1000001, 30000);
+--			player:AddItem(2001006, 1);
+--			player:SendGameMessage(GetWorldMaster(), 25117, 0x20, 2001006);
+			player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 30000);
+			player:AddExp(50000, player.GetCurrentClassOrJob(), 0);
+			return;
 		end
 	end	
 	
@@ -242,10 +279,13 @@ function onPush(player, quest, npc)
 				player:EndEvent();
 			end
 		end
-	elseif (sequence == SEQ_037 and classId == TRIGGER_SEAFLD1) then
-		callClientFunction(player, "delegateEvent", player, quest, "processEvent060");
-		quest:NewNpcLsMsg(1);
-		quest:StartSequence(SEQ_040);
+	elseif (sequence == SEQ_037) then
+		if (classId == TRIGGER_SEAFLD1) then
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent060");
+			player:EndEvent();
+			quest:StartSequence(SEQ_040);	-- Should be SEQ_040, Skipped to SEQ_042 due to unable to call Baderon on LS.
+			quest:NewNpcLsMsg(1);
+		end
 	elseif (sequence == SEQ_042 and classId == TRIGGER_MSK) then
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent070");
 		quest:StartSequence(SEQ_045);
@@ -253,55 +293,43 @@ function onPush(player, quest, npc)
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent080");
 		quest:StartSequence(SEQ_055);
 		GetWorldManager():DoZoneChange(player, 128, "PrivateAreaMasterPast", 3, 0, 198.314, 25.928, 1186.126, 1.6);
-	elseif (sequence == SEQ_055 and classId == TRIGGER_SEAFLD3) then
-		callClientFunction(player, "delegateEvent", player, quest, "processEvent081");
-		GetWorldManager():DoZoneChange(player, 133, nil, 0, 0, -435.501, 40, 202.698, -2.152);
-		quest:StartSequence(SEQ_070);
+	elseif (sequence == SEQ_055) then
+		if (classId == TRIGGER_SEAFLD3) then
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent081");
+			GetWorldManager():DoZoneChange(player, 133, nil, 0, 0, -435.501, 40, 202.698, -2.152);
+			quest:StartSequence(SEQ_070);
+		elseif (classId == TRIGGER_SEAFLD2) then
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent080");
+			GetWorldManager():DoZoneChange(player, 128, "PrivateAreaMasterPast", 3, 0, 198.314, 25.928, 1186.126, 1.6);
+		end
 	end	
 	
 	player:EndEvent();
 	quest:UpdateENPCs();
 end
 
---function onNotice(player, quest, target)
-	--local sequence = quest:getSequence();
-	--if (sequence == SEQ_003) then
-		--if (classId == MYTESYN) then
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent081_2", 1);
-			callClientFunction(player, "delegateEvent", player, quest, "sqrwa", 300, 1, 1, 2);
-			player:CompleteQuest(quest);
-			--callClientFunction(player, "delegateEvent", player, quest, "processEvent081_2", 1);
-			player:EndEvent();
-			quest:UpdateENPCs();
-		--end
-	--end
---end
-
 function onNpcLS(player, quest, from, msgStep)
 	local sequence = quest:getSequence();
 	local msgPack;
 
 	if (from == 1) then
-		-- Get the right msg pack
 		if (sequence == SEQ_040 or sequence == SEQ_042) then
 			msgPack = 1;
-		end	
-				
-		-- Quick way to handle all msgs nicely.
-		player:SendGameMessageLocalizedDisplayName(quest, NPCLS_MSGS[msgPack][msgStep], MESSAGE_TYPE_NPC_LINKSHELL, 1000015);
-		if (msgStep >= #NPCLS_MSGS[msgPack]) then
-			quest:EndOfNpcLsMsgs();
-		else
-			quest:ReadNpcLsMsg();
-		end
-		
-		-- Handle anything else
-		if (sequence == SEQ_040) then
-			quest:StartSequenceForNpcLs(SEQ_042);
 		end
 	end
-	
-	player:EndEvent();
+
+	-- Quick way to handle all msgs nicely.
+	player:SendGameMessageLocalizedDisplayName(quest, NPCLS_MSGS[msgPack][msgStep], MESSAGE_TYPE_NPC_LINKSHELL, 1000015);
+	if (msgStep >= #NPCLS_MSGS[msgPack]) then
+		quest:EndOfNpcLsMsgs();
+	else
+		quest:ReadNpcLsMsg();
+	end
+
+		-- Handle anything else
+	if (sequence == SEQ_040) then
+		quest:StartSequenceForNpcLs(SEQ_042);
+	end
 end
 
 function getJournalInformation(player, quest)
@@ -312,12 +340,40 @@ function getJournalMapMarkerList(player, quest)
     local sequence = quest:getSequence();
 	local data = quest:GetData();
     local possibleMarkers = {};
-    local data = quest:GetData();
 	
-	if (sequence == SEQ_037) then
+	if (sequence == SEQ_000) then
+		table.insert(possibleMarkers, MRKR_HOB);
+	elseif (sequence == SEQ_010) then
+		if (player.CurrentArea.IsPrivate()) then
+			table.insert(possibleMarkers, MRKR_PSHSHIP);
+		else
+			table.insert(possibleMarkers, MRKR_HOB);
+		end
+	elseif (sequence == SEQ_015) then
+		if (player.CurrentArea.IsPrivate()) then
+			table.insert(possibleMarkers, MRKR_PSHSHIP2);
+		else
+			table.insert(possibleMarkers, MRKR_HOB);
+		end
+	elseif (sequence == SEQ_035) then
+		table.insert(possibleMarkers, MRKR_BADERON);
+	elseif (sequence == SEQ_037) then
 		table.insert(possibleMarkers, MRKR_S037_SEAFLD1);
+	elseif (sequence == SEQ_042) then
+		table.insert(possibleMarkers, MRKR_PSHMSKGUILD);
+	elseif (sequence == SEQ_045) then
+		table.insert(possibleMarkers, MRKR_ISAUDOREL);
 	elseif (sequence == SEQ_050) then
 		table.insert(possibleMarkers, MRKR_S050_SEAFLD2);
+	elseif (sequence == SEQ_055) then
+		if (player.CurrentArea.IsPrivate()) then
+			table.insert(possibleMarkers, MRKR_PSHSEAFLD);
+		else
+			table.insert(possibleMarkers, MRKR_S050_SEAFLD2);
+		end
+	elseif (sequence == SEQ_070) then
+		table.insert(possibleMarkers, MRKR_BADERON);
 	end
+
     return unpack(possibleMarkers)
 end

@@ -129,7 +129,7 @@ function onTalk(player, quest, npc, eventName)
 	player:EndEvent();
 end
 
-functison onEmote(player, quest, npc, eventName)
+function onEmote(player, quest, npc, eventName)
 	print("TESSSSSSSSSSSSSSSSSSSSSST2");
 	local npcClassId = npc.GetActorClassId();
 	local seq = quest:GetSequence();

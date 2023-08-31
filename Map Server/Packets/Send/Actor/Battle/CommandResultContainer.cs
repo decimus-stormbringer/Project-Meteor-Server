@@ -19,6 +19,7 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using System;
 using System.Collections.Generic;
 
 namespace Meteor.Map.packets.send.actor.battle
@@ -115,6 +116,11 @@ namespace Meteor.Map.packets.send.actor.battle
         public List<CommandResult> GetList()
         {
             return actionsList;
+        }
+
+        internal void AddEXPActions(object v)
+        {
+            throw new NotImplementedException();
         }
     }
 }

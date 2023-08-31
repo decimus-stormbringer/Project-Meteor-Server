@@ -25,10 +25,14 @@ function onTrigger(player, argc, qty, name, lastName)
     if player then
         currency = 1000001;
         qty = tonumber(qty) or 1;
-        location = INVENTORY_CURRENCY;
-        print("ASDASDASDASDASD");
-        actionList = player:AddExp(qty, player.charaWork.parameterSave.state_mainSkill[1], 0);
-        player:DoBattleAction(0, 0, actionList);
+		if (qty <= 75000) then
+			location = INVENTORY_CURRENCY;
+			print("ASDASDASDASDASD");
+			actionList = player:AddExp(qty, player.GetCurrentClassOrJob(), 0);
+			player:DoBattleAction(0, 0, actionList);
+		else
+			player:SendMessage(0x1D,"",">Value too high. Please use a value of 75,000 or lower");
+		end
     else
         print(sender.."unable to add experience, ensure player name is valid.");
     end;

@@ -259,7 +259,7 @@ namespace Meteor.Map.Properties {
         ///		warp &lt;zone id&gt; &lt;X coordinate&gt; &lt;Y coordinate&gt; &lt;Z coordinate&gt;
         ///		warp &lt;zone id&gt; &lt;instance&gt; &lt;X coordinate&gt; &lt;Y coordinate&gt; &lt;Z coordinate&gt;
         ///&lt;location list&gt; is a pre-defined list of locations from the server database
-        ///&lt;zone id&gt; is the [rest of string was truncated]&quot;;.
+        ///&lt;zone id&gt; is the zone&apos;s i [rest of string was truncated]&quot;;.
         /// </summary>
         public static string CPwarp {
             get {

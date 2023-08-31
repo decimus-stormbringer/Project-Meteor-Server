@@ -2,7 +2,7 @@
 
 $server_name	= "Magis' Funhouse";
 
-$db_server		= "localhost";
+$db_server	= "localhost";
 $db_username	= "root";
 $db_password	= "";
 $db_database	= "ffxiv_server";

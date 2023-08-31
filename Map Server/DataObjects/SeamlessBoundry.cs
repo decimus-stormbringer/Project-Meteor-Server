@@ -35,7 +35,7 @@ namespace Meteor.Map.DataObjects
             this.zoneId1 = zoneId1;
             this.zoneId2 = zoneId2;
             this.zone1_x1 = zone1_x1;
-            this.zone1_y1= zone1_y1;
+            this.zone1_y1 = zone1_y1;
             this.zone1_x2 = zone1_x2;
             this.zone1_y2 = zone1_y2;
             this.zone2_x1 = zone2_x1;

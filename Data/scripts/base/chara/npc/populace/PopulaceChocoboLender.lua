@@ -1,3 +1,6 @@
+require ("global")
+require ("quest")
+
 --[[
 
 PopulaceChocoboLender Script
@@ -39,7 +42,7 @@ local startAppearances = {
 };
 
 local cityExits = {
-	[1500006] = {133, -6.032, 46.356, 132.572, 3.034},
+	[1500006] = {128, -6.032, 46.356, 132.572, 3.034},
 	[1500061] = {150, 333.271, 5.889, -943.275, 0.794},
 	[1000840] = {170, -26.088, 181.846, -79.438, 2.579},
     [1500059] = {172, -2133.028, 15.476, -421.471, 1.5}
@@ -56,7 +59,7 @@ function onEventStarted(player, npc, triggerName)
 	local hasChocobo = player.hasChocobo;
 	
 	if (hasChocobo == false) then -- Let GMs auto have the issuance for debugging 
-		hasIssuance = true;
+		hasIssuance = true;  -- Set to true to automatically give chocobo issuance
 	end	
 
 	local hasFunds = (player:GetCurrentGil() >= rentalPrice);
@@ -73,6 +76,23 @@ function onEventStarted(player, npc, triggerName)
         else
             player:EndEvent();
         end
+	elseif ((classId == 1000840) and (player:HasQuest(110012))) then  -- Quest Dialogue for Man2u0 (Calamity Cometh)
+		local sequence = player:GetQuest(110012):getSequence();
+		local quest = player:GetQuest("Man2u0");
+		require ("quests/man/man2u0");
+
+		if (sequence == 0) then
+			callClientFunction(player, "delegateEvent", player, GetStaticActor("Man2u0"), "processEvent005");
+			quest:StartSequence(SEQ_010);
+			player:EndEvent();
+			GetWorldManager():DoZoneChange(player, 170, "PrivateAreaMasterPast", 5, 15, -117.242, 215.653, -769.757, 1.442);
+		elseif (sequence == 10) then
+			callClientFunction(player, "delegateEvent", player, GetStaticActor("Man2u0"), "processEvent005");
+			GetWorldManager():DoZoneChange(player, 170, "PrivateAreaMasterPast", 5, 15, -117.242, 215.653, -769.757, 1.442);
+			player:EndEvent();
+		else
+			callClientFunction(player, "eventAskMainMenu", player, curLevel, hasFunds, hasIssuance, hasChocobo, hasChocobo, 0);
+		end
     else
         callClientFunction(player, "eventTalkWelcome", player);
         

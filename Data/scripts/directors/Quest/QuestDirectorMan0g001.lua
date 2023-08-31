@@ -131,6 +131,13 @@ function onEventStarted(player, actor, triggerName)
 	end
 	player:SendMessage(0x1D,"",">after sequence checks");
 	player:EndEvent();
+
+	-- End Tutorial mode
+	-- Forces Tutorial to end to prevent crash bug from unsheathing weapon
+	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtl004", nil, nil, nil);
+	player:EndEvent();
+	endTutorialMode(player);
+
 end
 
 --[[function onEventStarted(player, actor, triggerName)

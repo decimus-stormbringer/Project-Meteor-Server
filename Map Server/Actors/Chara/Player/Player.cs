@@ -2216,7 +2216,7 @@ namespace Meteor.Map.Actors
         
         public void SendInstanceUpdate(bool force = false)
         {
-            //Server.GetWorldManager().SeamlessCheck(this);
+            //Server.GetWorldManager().SeamlessCheck(this); 
 
             //Update Instance
             List<Actor> aroundMe = new List<Actor>();

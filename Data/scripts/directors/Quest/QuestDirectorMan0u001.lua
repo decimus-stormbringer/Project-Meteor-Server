@@ -63,8 +63,14 @@ function onEventStarted(player, director, triggerName)
 	player:ChangeMusic(7);
 	player:ChangeState(0); 
 	kickEventContinue(player, director, "noticeEvent", "noticeEvent");
-	callClientFunction(player, "delegateEvent", player, man0u0Quest, "processEvent020", nil, nil, nil);	
+	callClientFunction(player, "delegateEvent", player, man0u0Quest, "processEvent020", nil, nil, nil);
+	player:EndEvent();
+
+	callClientFunction(player, "delegateEvent", player, man0u0Quest, "processTtrBtl004", nil, nil, nil);
+	player:EndEvent();
+	endTutorialMode(player);
 	
+
 	--[[
 	IF DoW:
 		OpenWidget (TP)
@@ -82,4 +88,5 @@ function onEventStarted(player, director, triggerName)
 	player.CurrentArea:ContentFinished();
 	GetWorldManager():DoZoneChange(player, 175, "PrivateAreaMasterPast", 3, 15, -22.81, 196, 87.82, 2.98);
     player:EndEvent();
+
 end

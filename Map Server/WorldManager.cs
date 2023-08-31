@@ -1054,8 +1054,8 @@ namespace Meteor.Map
                     return;
 
                 Zone zone = zoneList[zoneId];
-                //zone.clear();
-                //LoadNPCs(zone.actorId);
+                //zone.clear();                 
+                //LoadNPCs(zone.actorId);        
             }
         }
 

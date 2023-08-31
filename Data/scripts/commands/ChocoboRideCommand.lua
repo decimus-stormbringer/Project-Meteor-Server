@@ -23,9 +23,10 @@ function onEventStarted(player, actor, eventType, eventName, isGoobbue)
             player:SetMountState(2);
         end
         
-        player:ChangeSpeed(0.0, 3.6, 9.0, 9.0);
-        player:ChangeState(15);
-    else
+		player:ChangeSpeed(0.0, 3.6, 9.0, 9.0);
+		player:ChangeState(15);
+
+	else
         player:ChangeMusic(player.currentArea.bgmDay, MUSIC_FADEIN);
         
         worldMaster = GetWorldMaster();

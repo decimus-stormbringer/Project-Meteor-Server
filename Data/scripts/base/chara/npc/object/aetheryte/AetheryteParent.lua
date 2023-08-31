@@ -37,26 +37,32 @@ function onEventStarted(player, aetheryte, triggerName)
 	if (player:HasQuest(110002) == true) then
 		require ("quests/man/man0l1");
 		local quest = player:GetQuest("Man0l1");
-		if (quest:GetSequence() == SEQ_003) then			
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent025");
-			quest:StartSequence(SEQ_005);
+		if (quest:GetSequence() == SEQ_003) then
+			if (player.CurrentArea.ZoneId == 128) then
+				callClientFunction(player, "delegateEvent", player, quest, "processEvent025");
+				quest:StartSequence(SEQ_005);
+			end
 		end
 	elseif (player:HasQuest(110006) == true) then
 		require ("quests/man/man0g1");
 		local quest = player:GetQuest("Man0g1");
-		if (quest:GetSequence() == SEQ_005) then			
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent013");
-			quest:StartSequence(SEQ_010);
+		if (quest:GetSequence() == SEQ_005) then
+			if (player.CurrentArea.ZoneId == 150) then
+				callClientFunction(player, "delegateEvent", player, quest, "processEvent013");
+				quest:StartSequence(SEQ_010);
+			end
 		end
 	elseif (player:HasQuest(110010) == true) then
 		require ("quests/man/man0u1");
 		local quest = player:GetQuest("Man0u1");
 		if (quest:GetSequence() == SEQ_005) then
-			player:SendGameMessage(GetWorldMaster(), 60006, 0x20, 1280032)
+			if (player.CurrentArea.ZoneId == 170) then
+				player:SendGameMessage(GetWorldMaster(), 60006, 0x20, 1280032)
 			-- Msg "You have Arrived in BlackBrush" needs widget.
-			wait (1)
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent013");
-			quest:StartSequence(SEQ_010);
+				wait (1)
+				callClientFunction(player, "delegateEvent", player, quest, "processEvent013");
+				quest:StartSequence(SEQ_010);
+			end
 		end
 	end
 	

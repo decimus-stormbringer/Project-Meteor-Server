@@ -67,14 +67,19 @@ function onStateChange(player, quest, sequence)
 	if (sequence == SEQ_000) then	
 		-- Setup states incase we loaded in.
 		local data = quest:GetData();
-		
-		local rostnsthalFlag = data:GetFlag(FLAG_SEQ000_MINITUT1) and QFLAG_NONE or QFLAG_TALK;
-		local vixenFlag = data:GetFlag(FLAG_SEQ000_MINITUT2) and QFLAG_NONE or QFLAG_TALK;
-		local babyfaceFlag = data:GetFlag(FLAG_SEQ000_MINITUT3) and QFLAG_NONE or QFLAG_TALK;
+		local rostnsthalFlag = (not data:GetFlag(FLAG_SEQ000_MINITUT1) and QFLAG_TALK or QFLAG_NONE);
+		local vixenFlag = (not data:GetFlag(FLAG_SEQ000_MINITUT2) and QFLAG_TALK or QFLAG_NONE);
+		local babyfaceFlag = (not data:GetFlag(FLAG_SEQ000_MINITUT3) and QFLAG_TALK or QFLAG_NONE);
 		local rostnsthalCanPush = not data:GetFlag(FLAG_SEQ000_MINITUT0);
 		local exitCanPush = data:GetFlags() == 0xF;
-		local exitFlag = data:GetFlags() == 0xF and QFLAG_PUSH or QFLAG_NONE;		
+		local exitFlag = data:GetFlags() == 0xF and QFLAG_PUSH or QFLAG_NONE;
+
+		if (rostnsthalCanPush) then
+			vixenFlag = QFLAG_NONE;
+			babyfaceFlag = QFLAG_NONE;
+		end
 		
+		--SetENpc(classId, byte flagType=0,isTalkEnabled, isPushEnabled, isEmoteEnabled, isSpawned)
 		quest:SetENpc(WELLTRAVELED_MERCHANT);
 		quest:SetENpc(TIPSY_ADVENTURER);
 		quest:SetENpc(CULTIVATED_TENDER);
@@ -93,6 +98,7 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(EXIT_TRIGGER, exitFlag, false, exitCanPush);
 		print(tostring(exitCanPush));
 	elseif (sequence == SEQ_005) then
+		quest:SetENpc(EXIT_TRIGGER, QFLAG_PUSH);
 	elseif (sequence == SEQ_010) then
 		player:SendMessage(0x1D,"",">function onStateChange If S 10");
 		quest:SetENpc(HOB, QFLAG_TALK);
@@ -105,6 +111,7 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(VOLUPTUOUS_VIXEN);
 		quest:SetENpc(LANKY_TRAVELER);
 		quest:SetENpc(PRIVAREA_PAST_EXIT, QFLAG_NONE, false, true);
+		quest:SetENpc(EXIT_TRIGGER, QFLAG_PUSH);
 	end
 end
 
@@ -133,6 +140,11 @@ function onPush(player, quest, npc)
 			callClientFunction(player, "delegateEvent", player, quest, "processTtrNomal002");
 			player:EndEvent();
 		end
+	elseif (sequence == SEQ_005) then
+		if (classId == EXIT_TRIGGER) then
+			doExitDoor(player, quest, npc);
+			return;
+		end
 	elseif (sequence == SEQ_010) then
 		if (classId == PRIVAREA_PAST_EXIT) then
 			if (eventName == "caution") then
@@ -140,6 +152,9 @@ function onPush(player, quest, npc)
 				player:SendGameMessage(player, worldMaster, 34109, 0x20);
 			elseif (eventName == "exit") then		
 			end
+		elseif (classId == EXIT_TRIGGER) then
+			doExitDoor(player, quest, npc);
+			return;
 		end
 	end
 	
@@ -246,14 +261,33 @@ end
 
 function getJournalMapMarkerList(player, quest)
 	local sequence = quest:getSequence();
+	local possibleMarkers = {};
+	local data = quest:GetData();
 	
 	if (sequence == SEQ_000) then
-		return MRKR_ROSTNSTHAL, MRKR_BABYFACED_ADVENTURER, MRKR_VOLUPTUOUS_VIXEN;
+		if ((not data:GetFlag(FLAG_SEQ000_MINITUT1)) or (not data:GetFlag(FLAG_SEQ000_MINITUT0))) then
+			table.insert(possibleMarkers, MRKR_ROSTNSTHAL);
+		end
+
+		if ((data:GetFlag(FLAG_SEQ000_MINITUT0)) and (not data:GetFlag(FLAG_SEQ000_MINITUT2))) then
+			table.insert(possibleMarkers, MRKR_VOLUPTUOUS_VIXEN);
+		end
+
+		if ((data:GetFlag(FLAG_SEQ000_MINITUT0)) and (not data:GetFlag(FLAG_SEQ000_MINITUT3))) then
+			table.insert(possibleMarkers, MRKR_BABYFACED_ADVENTURER);
+		end
+
+		if ((data:GetFlag(FLAG_SEQ000_MINITUT1)) and (data:GetFlag(FLAG_SEQ000_MINITUT2)) and (data:GetFlag(FLAG_SEQ000_MINITUT3))) then
+			table.insert(possibleMarkers, MRKR_TRIGGER_DOOR);
+		end
 	elseif (sequence == SEQ_010) then
 		return MRKR_HOB;
 	end
+
+	return unpack(possibleMarkers)
 end
 
+-- Exit door functionality to transition from SEQ_000 to SEQ_005 and begin Battle Tutorial
 function doExitDoor(player, quest, npc)
 	local choice = callClientFunction(player, "delegateEvent", player, quest, "processEventNewRectAsk", nil);	
 	if (choice == 1) then

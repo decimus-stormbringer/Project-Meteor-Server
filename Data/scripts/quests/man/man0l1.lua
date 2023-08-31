@@ -1,4 +1,4 @@
-require ("global")
+﻿require ("global")
 require ("quest")
 require ("tutorial")
 
@@ -10,6 +10,29 @@ Name: 	Treasures of the Main
 Code: 	Man0l1
 Id: 	110002
 Prereq: Shapeless Melody (Man0l0 - 110001)
+
+Map Markers
+11000101,,1,-431,187,1000015,-1,common/mapMarker.le.spk,m00013,101,121,50,MapMarkerQuest,@5208/i11000101,Visible
+11000102,,1,35,-32,4000257,-1,common/mapMarker.le.spk,m00013,101,101,0,MapMarker,　,Visible
+11000103,,1,-431,187,1000015,-1,common/mapMarker.le.spk,m00013,101,121,50,MapMarkerQuest,@5208/i11000103,Visible
+11000104,,1,-512,27,1000066,-1,common/mapMarker.le.spk,m00013,101,121,50,MapMarkerQuest,@5208/i11000104,Visible
+11000105,,1,-611,-56,1200100,-1,common/mapMarker.le.spk,m00013,101,121,50,MapMarkerQuest,@5208/i11000105,Visible
+11000106,,1,-604,-87,4000257,-1,common/mapMarker.le.spk,m00013,101,121,50,MapMarkerQuest,@5208/i11000106,Visible
+11000107,,1,-611,-56,1200100,-1,common/mapMarker.le.spk,m00013,101,121,50,MapMarkerQuest,@5208/i11000107,Visible
+11000108,,1,-594,-46,4000257,-1,common/mapMarker.le.spk,m00013,101,121,50,MapMarkerQuest,@5208/i11000108,Visible
+11000109,,1,-613,341,1900011,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarkerQuest,@5208/i11000109,Visible
+11000110,,1,-617.400024,344.920013,1500024,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarkerQuest,@5208/i11000110,Visible
+11000111,,1,-22,147,4000257,-1,common/mapMarker.le.spk,m00013,101,101,0,MapMarkerQuest,@5208/i11000111,Visible
+11000112,,1,117,1274,4000257,-1,common/mapMarker.le.spk,m00013,101,101,0,MapMarkerQuest,@5208/i11000112,Visible
+11000113,,1,150.970001,1312.800049,4000016,-1,common/mapMarker.le.spk,m00013,101,101,0,MapMarkerQuest,@5208/i11000113,Visible
+11000114,,1,136,1324,4000257,-1,common/mapMarker.le.spk,m00013,101,101,0,MapMarkerQuest,@5208/i11000114,Visible
+11000115,,1,-501,416,2200064,-1,common/mapMarker.le.spk,m00013,101,121,50,MapMarkerQuest,@5208/i11000115,Visible
+11000116,,1,-506.769989,432.070007,1900029,-1,common/mapMarker.le.spk,m00013,101,121,50,MapMarkerQuest,@5208/i11000116,Visible
+11000117,,1,-490,418,4000257,-1,common/mapMarker.le.spk,m00013,101,121,50,MapMarkerQuest,@5208/i11000117,Visible
+11000118,,1,-431,187,1000015,-1,common/mapMarker.le.spk,m00013,101,121,50,MapMarkerQuest,@5208/i11000118,Visible
+11000119,,1,-624,359,4000257,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarkerQuest,@5208/i11000119,Visible
+11000120,,1,0,0,1900006,-1,common/mapMarker.le.spk,m00013,101,121,0,MapMarkerQuest,@5208/i11000120,Visible
+
 
 ]]
 
@@ -47,6 +70,7 @@ MYTESYN 				= 1000167;
 COCKAHOOP_COCKSWAIN 	= 1001643;
 SENTENIOUS_SELLSWORD 	= 1001649;
 SOLICITOUS_SELLSWORD 	= 1001650;
+BLOCKER					= 1090372;
 
 	-- Sequence 005
 BEARDEDROCK_AETHERYTE	= 1280002;
@@ -75,7 +99,8 @@ NNMULIKA				= 1000153;
 SISIPU_EMOTE			= 1000155;
 ZEPHYR_TRIGGER			= 1090004;
 
-	-- Sequence 055, 060, 065
+	-- Sequence 050, 055, 060, 065
+LIGHTHOUSE_TRIGGER		= 1090176;
 SISIPU					= 1000156;
 WINDWORN_CORPSE			= 1000091;
 GLASSYEYED_CORPSE		= 1000092;
@@ -94,19 +119,32 @@ HIHINE					= 1000267;
 TRINNE					= 1000268;
 ECHO_EXIT_TRIGGER2		= 1090007;
 
+-- ActorId Fixes
+NANAKA					= 1000276;
+CARRILAUT				= 1000062;
+BRICTT					= 1000051;
+AENTFOET				= 1000064;
+
 -- Quest Markers
-
-	-- SEQ_000
-MRKR_S0_BADERON		= 11000101;
-					
-
-	-- SEQ_005
---MRKR_S5_BADERON		= 11000103;
-
-	-- SEQ_007
---MRKR_S7_CHARLYS		= 11000104;
---MRKR_S7_ISANDOREL	=
---MRKR_S7_MERLZIRN	=
+MRKR_BADERON			= 11000101;
+MRKR_CAMPBEARDEDROCK	= 11000102;
+MRKR_BADERON2			= 11000103;
+MRKR_CULGUILD			= 11000104;
+MRKR_MSKGUILD			= 11000105;
+MRKR_MSKGUILD2			= 11000106;
+MRKR_MSKGUILD3			= 11000107;
+MRKR_MSKGUILD4			= 11000108;
+MRKR_FSHGUILD			= 11000109;
+MRKR_SISIPU				= 11000110;
+MRKR_ESCORTSTART		= 11000111;
+MRKR_LIGHTHOUSE			= 11000112;		--Used in Escort Mission
+MRKR_CORPSE				= 11000113;
+MRKR_SISIPU2			= 11000114;
+MRKR_BODENOLF			= 11000115;
+MRKR_HNAANZA			= 11000116;
+MRKR_SEQ085PSH			= 11000117;
+MRKR_QUESTCOMPLETE		= 11000118;
+MRKR_FSHGUILD2			= 11000119;
 
 
 -- Quest Data
@@ -134,10 +172,18 @@ function onStart(player, quest)
 end
 
 function onFinish(player, quest)
+	local data = quest:GetData();
+	local subseqCUL = data:GetCounter(CNTR_SEQ7_CUL);
+	local subseqMSK = data:GetCounter(CNTR_SEQ7_MSK);
+
+	data:SetCounter(CNTR_SEQ7_CUL, 0);
+	data:SetCounter(CNTR_SEQ7_MSK, 0);
 end
 
 function onStateChange(player, quest, sequence)
 	local data = quest:GetData();
+
+
 
 	if (sequence == SEQ_000) then
 		quest:SetENpc(YSHTOLA);
@@ -152,15 +198,21 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(COCKAHOOP_COCKSWAIN);
 		quest:SetENpc(SENTENIOUS_SELLSWORD);
 		quest:SetENpc(SOLICITOUS_SELLSWORD);
+		quest:SetENpc(BLOCKER, QFLAG_NONE, false, true);
+		quest:SetENpc(NANAKA);
 	elseif (sequence == SEQ_003) then
+		quest:SetENpc(NANAKA);
 		quest:SetENpc(BADERON);
 	elseif (sequence == SEQ_005) then
 		quest:SetENpc(BADERON, QFLAG_TALK);
 	elseif (sequence == SEQ_006) then
+		data:SetCounter(CNTR_SEQ7_CUL, 0);
+		data:SetCounter(CNTR_SEQ7_MSK, 0);
 		quest:SetENpc(BADERON, QFLAG_TALK);
 	elseif (sequence == SEQ_007) then
 		local subseqCUL = data:GetCounter(CNTR_SEQ7_CUL);
 		local subseqMSK = data:GetCounter(CNTR_SEQ7_MSK);
+
 		-- Always active in this seqence
 		quest:SetENpc(BADERON);
 		quest:SetENpc(CHARLYS, subseqCUL == 0 and QFLAG_TALK or QFLAG_NONE);
@@ -182,27 +234,39 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(ADVENTURER1);
 		quest:SetENpc(ADVENTURER2);
 		quest:SetENpc(ADVENTURER3);
-		quest:SetENpc(ECHO_EXIT_TRIGGER, subseqMSK == 3 and QFLAG_PUSH or QFLAG_NONE, false, subseqMSK == 3);					
+		quest:SetENpc(ECHO_EXIT_TRIGGER, subseqMSK == 3 and QFLAG_PUSH or QFLAG_NONE, false, subseqMSK == 3);	
+		quest:SetENpc(CARRILAUT);
 	elseif (sequence == SEQ_035) then
 		quest:SetENpc(NNMULIKA, QFLAG_TALK);
 	elseif (sequence == SEQ_040) then
-		quest:SetENpc(SISIPU_EMOTE, QFLAG_TALK, true, false, true);
-		quest:SetENpc(NNMULIKA);
+		local emoteTestStep = data:GetCounter(CNTR_SEQ40_FSH);
+
+ 		quest:SetENpc(SISIPU_EMOTE, QFLAG_TALK, true, false, true);
+		quest:SetENpc(NNMULIKA); 
+		quest:SetENpc(CARRILAUT);
 	elseif (sequence == SEQ_048) then
+		quest:SetENpc(CARRILAUT);
 		quest:SetENpc(BADERON);
 		quest:SetENpc(ZEPHYR_TRIGGER, QFLAG_PUSH, false, true);
 		quest:SetENpc(NNMULIKA);
+	elseif (sequence == SEQ_050) then
+		quest:SetENpc(LIGHTHOUSE_TRIGGER, QFLAG_PUSH, false, true);
 	elseif (sequence == SEQ_055) then
 		quest:SetENpc(WINDWORN_CORPSE, QFLAG_TALK);
 		quest:SetENpc(GLASSYEYED_CORPSE);
 		quest:SetENpc(FEARSTRICKEN_CORPSE);
 		quest:SetENpc(SISIPU);
+		quest:SetENpc(ZEPHYR_TRIGGER, QFLAG_PUSH, false, true);
+		quest:SetENpc(BRICTT);
 	elseif (sequence == SEQ_060) then
 		quest:SetENpc(SISIPU, QFLAG_TALK);
 		quest:SetENpc(WINDWORN_CORPSE);
 		quest:SetENpc(GLASSYEYED_CORPSE);
 		quest:SetENpc(FEARSTRICKEN_CORPSE);
+		quest:SetENpc(ZEPHYR_TRIGGER, QFLAG_PUSH, false, true);
+		quest:SetENpc(BRICTT);
 	elseif (sequence == SEQ_065) then
+		quest:SetENpc(BRICTT);
 		quest:SetENpc(FSH_TRIGGER, QFLAG_PUSH, false, true);
 	elseif (sequence == SEQ_075) then	
 		quest:SetENpc(BODENOLF, QFLAG_TALK);
@@ -216,6 +280,7 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(WERNER);
 		quest:SetENpc(HIHINE);
 		quest:SetENpc(TRINNE);
+		quest:SetENpc(AENTFOET);
 	elseif (sequence == SEQ_085) then	
 		quest:SetENpc(HNAANZA);
 		quest:SetENpc(TATTOOED_PIRATE);
@@ -223,6 +288,7 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(HIHINE);
 		quest:SetENpc(TRINNE);
 		quest:SetENpc(ECHO_EXIT_TRIGGER2, QFLAG_PUSH, false, true);
+		quest:SetENpc(AENTFOET);
 	elseif (sequence == SEQ_092) then	
 		quest:SetENpc(BADERON, QFLAG_REWARD);
 	end	
@@ -289,7 +355,14 @@ function onTalk(player, quest, npc)
 				player:SendGameMessage(GetWorldMaster(), 25083, MESSAGE_TYPE_SYSTEM, 1);
 			end			
 		elseif (classId == NNMULIKA) then
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent600_2");
+			if(npc.CurrentArea.IsPrivate()) then
+				callClientFunction(player, "delegateEvent", player, quest, "processEvent600_2");
+			else
+				callClientFunction(player, "delegateEvent", player, quest, "processEvent600");
+				player:EndEvent();
+				GetWorldManager():WarpToPrivateArea(player, "PrivateAreaMasterPast", 5);
+				data:SetCounter(CNTR_SEQ40_FSH, 0);
+			end
 		end
 		player:EndEvent();
 	elseif (sequence == SEQ_048) then
@@ -305,7 +378,7 @@ function onTalk(player, quest, npc)
 				callClientFunction(player, "delegateEvent", player, quest, "processEvent615");
 				quest:StartSequence(SEQ_065);
 				player:EndEvent();
-				GetWorldManager():WarpToPublicArea(player, -42.0, 37.678, 155.694, -1.25);
+				GetWorldManager():DoZoneChange(player, 230, nil, 0, 15, -83.245, 30, 176.216, -0.764);
 				return;
 			else
 				callClientFunction(player, "delegateEvent", player, quest, "processEvent605_2");					
@@ -357,6 +430,9 @@ function onTalk(player, quest, npc)
 			callClientFunction(player, "delegateEvent", player, quest, "sqrwa", 300, 1, 1, 2);
 			player:EndEvent();
 			player:CompleteQuest(quest);
+			player:AddItem(1000001, 6000);
+			player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 6000);
+			player:AddExp(10000, player.GetCurrentClassOrJob(), 0);
 			return;
 		end
 	end
@@ -488,7 +564,14 @@ function seq080_085_onTalk(player, quest, npc, classId)
 	elseif (classId == JOELLAUT) then
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent630_8");
 	elseif (classId == BODENOLF) then
-		callClientFunction(player, "delegateEvent", player, quest, "processEvent630_9");
+		if (npc.CurrentArea.IsPrivate()) then
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent630_9");
+		else
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent630");
+			player:EndEvent();
+			quest:StartSequence(SEQ_080);
+			GetWorldManager():WarpToPrivateArea(player, "PrivateAreaMasterPast", 4, -504.985, 42.490, 433.712, 2.35);
+		end
 	end
 	player:EndEvent();
 end
@@ -498,7 +581,21 @@ function onPush(player, quest, npc)
 	local sequence = quest:getSequence();
 	local classId = npc:GetActorClassId();
 	
-	if (sequence == SEQ_007) then
+	if (sequence == SEQ_000) then
+		if (classId == BLOCKER) then
+
+		posz = player:GetPos()[3];
+
+			if (posz >= 170 and posz <= 175) then	
+				callClientFunction(player, "delegateEvent", player, quest, "processTtrBlkNml002");
+				GetWorldManager():DoPlayerMoveInZone(player, -448.171, 41.802, 172.497, 0, 0x11);
+			else 
+				callClientFunction(player, "delegateEvent", player, quest, "processTtrBlkNml001");
+				GetWorldManager():DoPlayerMoveInZone(player, -466.673, 40, 200.142, 1.957, 0x11);
+			end
+		end
+
+	elseif (sequence == SEQ_007) then
 		if (classId == MSK_TRIGGER) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent040");
 			data:IncCounter(CNTR_SEQ7_MSK);
@@ -522,19 +619,53 @@ function onPush(player, quest, npc)
 				-- DO ESCORT DUTY HERE
 				-- startMan0l1Content(player, quest);
 				-- For now just skip the sequence
+				callClientFunction(player, "delegateEvent", player, quest, "processEvent604");
+				GetWorldManager():DoZoneChange(player, 128, "", 0, 15, 94.053, 44.198, 1216.803, 0.291);
 				quest:StartSequence(SEQ_050);
-				callClientFunction(player, "delegateEvent", player, quest, "processEvent605");
-				player:EndEvent();
-				quest:StartSequence(SEQ_055);
-				GetWorldManager():DoZoneChange(player, 128, "PrivateAreaMasterPast", 2, 15, 137.44, 60.33, 1322.0, -1.60);
+				return;
+			end
+			player:EndEvent();
+		end
+	elseif (sequence == SEQ_050) then
+		if (classId == LIGHTHOUSE_TRIGGER) then
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent605");
+			GetWorldManager():DoZoneChange(player, 128, "PrivateAreaMasterPast", 2, 15, 137.44, 60.33, 1322.0, -1.60);
+			quest:StartSequence(SEQ_055);
+			player:EndEvent();
+		end
+	elseif (sequence == SEQ_055) then
+		if (classId == ZEPHYR_TRIGGER) then
+			local result = callClientFunction(player, "delegateEvent", player, quest, "contentsJoinAskInBasaClass");
+			if (result == 1) then
+				-- DO ESCORT DUTY HERE
+				-- startMan0l1Content(player, quest);
+				-- For now just skip the sequence
+				callClientFunction(player, "delegateEvent", player, quest, "processEvent604");
+				GetWorldManager():DoZoneChange(player, 128, "", 0, 15, 94.053, 44.198, 1216.803, 0.291);
+				quest:StartSequence(SEQ_050);
+				return;
+			end
+			player:EndEvent();
+		end
+	elseif (sequence == SEQ_060) then
+		if (classId == ZEPHYR_TRIGGER) then
+			local result = callClientFunction(player, "delegateEvent", player, quest, "contentsJoinAskInBasaClass");
+			if (result == 1) then
+				-- DO ESCORT DUTY HERE
+				-- startMan0l1Content(player, quest);
+				-- For now just skip the sequence
+				callClientFunction(player, "delegateEvent", player, quest, "processEvent604");
+				GetWorldManager():DoZoneChange(player, 128, "", 0, 15, 94.053, 44.198, 1216.803, 0.291);
+				quest:StartSequence(SEQ_050);
 				return;
 			end
 			player:EndEvent();
 		end
 	elseif (sequence == SEQ_065) then
 		if (classId == FSH_TRIGGER) then
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent620");			
-			-- Give 3000 gil
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent620");	
+			player:AddItem(1000001, 3000);		-- Give 3000 gil
+			player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 3000);
 			player:EndEvent();
 			quest:NewNpcLsMsg(1);
 			quest:StartSequence(SEQ_070);
@@ -722,10 +853,69 @@ function getJournalMapMarkerList(player, quest)
     local sequence = quest:getSequence();
 	local data = quest:GetData();
     local possibleMarkers = {};
-    local data = quest:GetData();
+	local subseqCUL = data:GetCounter(CNTR_SEQ7_CUL);
+	local subseqMSK = data:GetCounter(CNTR_SEQ7_MSK);
 	
 	if (sequence == SEQ_000) then
-		table.insert(possibleMarkers, MRKR_S0_BADERON);
+		table.insert(possibleMarkers, MRKR_BADERON);
+	elseif (sequence == SEQ_003) then
+		table.insert(possibleMarkers, MRKR_CAMPBEARDEDROCK);
+	elseif (sequence == SEQ_005) then
+		table.insert(possibleMarkers, MRKR_BADERON2);
+	elseif (sequence == SEQ_006) then
+		table.insert(possibleMarkers, MRKR_BADERON2);
+	elseif (sequence == SEQ_007) then
+		if (subseqCUL == 0) then
+			table.insert(possibleMarkers, MRKR_CULGUILD);
+		end
+		if (subseqMSK == 0) then
+			table.insert(possibleMarkers, MRKR_MSKGUILD);
+		elseif (subseqMSK == 1) then
+			table.insert(possibleMarkers, MRKR_MSKGUILD2);
+		elseif (subseqMSK == 2) then
+			table.insert(possibleMarkers, MRKR_MSKGUILD3);
+		elseif (subseqMSK == 4) then
+			table.insert(possibleMarkers, MRKR_MSKGUILD4);
+		end
+	elseif (sequence == SEQ_035) then
+			table.insert(possibleMarkers, MRKR_FSHGUILD);
+	elseif (sequence == SEQ_040) then
+		if (player.CurrentArea.IsPrivate()) then
+			table.insert(possibleMarkers, MRKR_SISIPU);
+		else
+			table.insert(possibleMarkers, MRKR_FSHGUILD);
+		end
+	elseif (sequence == SEQ_048) then
+		table.insert(possibleMarkers, MRKR_ESCORTSTART);
+	elseif (sequence == SEQ_050) then
+		table.insert(possibleMarkers, MRKR_LIGHTHOUSE);
+	elseif (sequence == SEQ_055) then
+		if (player.CurrentArea.IsPrivate()) then
+			table.insert(possibleMarkers, MRKR_CORPSE);
+		else
+			table.insert(possibleMarkers, MRKR_ESCORTSTART);
+		end
+	elseif (sequence == SEQ_060) then
+		if (player.CurrentArea.IsPrivate()) then
+			table.insert(possibleMarkers, MRKR_SISIPU2);
+		else
+			table.insert(possibleMarkers, MRKR_ESCORTSTART);
+		end
+	elseif (sequence == SEQ_065) then
+		table.insert(possibleMarkers, MRKR_FSHGUILD2);
+	elseif (sequence == SEQ_075) then	
+		table.insert(possibleMarkers, MRKR_BODENOLF);
+	elseif (sequence == SEQ_080) then
+		if (player.CurrentArea.IsPrivate()) then
+			table.insert(possibleMarkers, MRKR_HNAANZA);
+		else
+			table.insert(possibleMarkers, MRKR_BODENOLF);
+		end
+	elseif (sequence == SEQ_085) then
+		table.insert(possibleMarkers, MRKR_SEQ085PSH);
+	elseif (sequence == SEQ_092) then
+		table.insert(possibleMarkers, MRKR_QUESTCOMPLETE);
 	end
+
     return unpack(possibleMarkers)
 end

@@ -58,6 +58,13 @@ function onEventStarted(player, director, triggerName)
 	player:ChangeState(0); 
 	kickEventContinue(player, director, "noticeEvent", "noticeEvent");
 	callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEvent000_3", nil, nil, nil);	
+	player:EndEvent();
+
+	-- End Tutorial Mode
+	-- Forces Tutorial end to prevent crash bug from unsheathing weapon. 
+	callClientFunction(player, "delegateEvent", player, man0l0Quest, "processTtrBtl004", nil, nil, nil);
+	player:EndEvent();
+	endTutorialMode(player);
 	
 	--[[
 	IF DoW:
@@ -75,5 +82,5 @@ function onEventStarted(player, director, triggerName)
 	man0l0Quest:StartSequence(10);	
 	player.CurrentArea:ContentFinished();
 	GetWorldManager():DoZoneChange(player, 230, "PrivateAreaMasterPast", 1, 15, -826.868469, 6, 193.745865, -0.008368492);
-	player:EndEvent();
+	--player:EndEvent();
 end

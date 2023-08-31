@@ -8,7 +8,7 @@ Quest Script
 Name: 	Fade to White
 Code: 	Man200
 Id: 	110013
-Prereq: Etc2l0 or Etc2g0 or Etc2u0. Level 18, any class.
+Prereq: Man2l0 or Man2g0 or Man2u0. Level 18, any class.
 
 ]]
 
@@ -42,10 +42,10 @@ FENANA					= 1001376;
 NONORU					= 1001377;
 SERANELIEN				= 1001378;
 
-SNPC_START				= 1070001;
+SNPC_START				= 1070000;
 SNPC_END				= 1070166;
 
-MARKET_ENTRENCE			= 1090265;
+MARKET_ENTRANCE			= 1090265;
 EVENT_DOOR_EXIT			= 1090160;
 EVENT_DOOR_OFFICE_W		= 1090161;
 EVENT_DOOR_OFFICE_E		= 1090162;
@@ -53,12 +53,11 @@ EVENT_DOOR_OFFICE_E		= 1090162;
 MOMODI					= 1000841;
 
 -- Quest Markers
-MRKR_STEP1				= 11001301;
-MRKR_STEP2				= 11001302;
-MRKR_STEP3				= 11001303;
-MRKR_STEP4				= 11001304;
-MRKR_STEP5				= 11001305;
-MRKR_STEP6				= 11001306;
+MRKR_MINFILIA			= 11001301;
+MRKR_TATARU				= 11001303;
+MRKR_MARKETENTRANCE		= 11001305;
+MRKR_MOMODI				= 11001306;
+
 
 -- Quest Flags
 FLAG_VISITED			= 0;
@@ -73,21 +72,19 @@ function onFinish(player, quest)
 end
 
 function onStateChange(player, quest, sequence)
-	local data = quest:GetData();
-	if (sequence == SEQ_ACCEPT) then
-		quest:SetENpc(TATARU,QFLAG_TALK);
-	-- Sequence changing ENpcs
-	elseif (sequence == SEQ_000) then
+	local data = quest:GetData();	
+	if (sequence == SEQ_000) then
+--		local questStarted = (not data:GetFlag(FLAG_VISITED) and QFLAG_PUSH or QFLAG_NONE);
 		quest:SetENpc(EVENT_DOOR_OFFICE_W, QFLAG_PUSH, false, true);
 		quest:SetENpc(TATARU);
 	elseif (sequence == SEQ_005) then
 		quest:SetENpc(MINFILIA, QFLAG_TALK);
-		quest:SetENpc(EVENT_DOOR_OFFICE_W, QFLAG_PUSH, false, true);
+		quest:SetENpc(EVENT_DOOR_OFFICE_W, QFLAG_NONE, false, true);
 		quest:SetENpc(EVENT_DOOR_OFFICE_E, QFLAG_NONE, false, true);
 		quest:SetENpc(TATARU);
 	elseif (sequence == SEQ_010) then
 		quest:SetENpc(MINFILIA, QFLAG_TALK);
-		quest:SetENpc(EVENT_DOOR_OFFICE_W, QFLAG_PUSH, false, true);
+		quest:SetENpc(EVENT_DOOR_OFFICE_W, QFLAG_NONE, false, true);
 		quest:SetENpc(EVENT_DOOR_OFFICE_E, QFLAG_NONE, false, true);
 		quest:SetENpc(TATARU);
 	elseif (sequence == SEQ_020) then
@@ -96,8 +93,8 @@ function onStateChange(player, quest, sequence)
 	elseif (sequence == SEQ_025) then
 		quest:SetENpc(TATARU);
 	elseif (sequence == SEQ_027) then
-		if (quest:GetData():GetFlag(FLAG_DUTY_COMPLETE)) then
-			quest:SetENpc(MOMODI, QFLAG_TALK);
+		if (data:GetFlag(FLAG_DUTY_COMPLETE)) then
+			quest:SetENpc(MOMODI, QFLAG_REWARD);
 			quest:SetENpc(TATARU);
 		else
 			quest:SetENpc(TATARU, QFLAG_TALK);
@@ -106,8 +103,8 @@ function onStateChange(player, quest, sequence)
 	end
 	
 	-- All the other ENpcs in the Waking Sands
-	quest:SetENpc(MARKET_ENTRENCE, QFLAG_NONE, false, true);
-	quest:SetENpc(EVENT_DOOR_EXIT, QFLAG_PUSH, false, true);
+	quest:SetENpc(MARKET_ENTRANCE, QFLAG_NONE, false, true);
+	quest:SetENpc(EVENT_DOOR_EXIT, QFLAG_NONE, false, true);
 	quest:SetENpc(SATZFLOH);
 	quest:SetENpc(PERCEVAINS);
 	quest:SetENpc(UNA_TAYUUN);
@@ -132,15 +129,9 @@ end
 function onTalk(player, quest, npc)
 	local sequence = quest:getSequence();
 	local classId = npc:GetActorClassId();
+	local data = quest:GetData();
 
-	if (sequence == SEQ_ACCEPT) then
-		if (classId == TATARU) then
-			callClientFunction(player, "delegateEvent", player, quest, "pE00", "???", 1, 1, 1, player:GetInitialTown());
-			player:EndEvent();
-			player:AcceptQuest(quest, true);
-			return;
-		end
-	elseif (sequence == SEQ_000) then
+	if (sequence == SEQ_000) then
 		if (classId == TATARU) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent000_2");
 		end
@@ -170,7 +161,10 @@ function onTalk(player, quest, npc)
 			if (sNpcActorClassId != -1 and sNpcPersonality != -1) then
 				player:SetSNpc("???", sNpcActorClassId, sNpcPersonality);
 				player:AddNpcLs(6);
+				player:EndEvent();
 				quest:StartSequence(SEQ_025);
+				wait(60);
+				quest:NewNpcLsMsg(6);
 			end
 			player:EndEvent();
 			return;
@@ -178,24 +172,40 @@ function onTalk(player, quest, npc)
 	elseif (sequence == SEQ_025) then
 		if (classId == TATARU) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent040_2");
-			quest:NewNpcLsMsg(6);
+--			quest:NewNpcLsMsg(6);
 		end
 	elseif (sequence == SEQ_027) then
 		if (classId == MOMODI) then
-			callClientFunction(player, "delegateEvent", player, quest, "pE25", "???", 1, 1, 1, player:GetInitialTown());
+			if (data:GetFlag(FLAG_DUTY_COMPLETE)) then
+				callClientFunction(player, "delegateEvent", player, quest, "pE060", player:GetSNpcNickname(), player:GetSNpcSkin(), player:GetSNpcPersonality(), player:GetSNpcCoordinate(), player:GetInitialTown());
+				callClientFunction(player, "delegateEvent", player, quest, "sqrwa", 300, 1, 1, 2);
+				player:EndEvent();
+				player:CompleteQuest(quest);
+				player:AddItem(1000001, 45000);
+				player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 45000);
+				player:AddExp(70000, player.GetCurrentClassOrJob(), 0);
+				player:SendMessage(0x1D,"",">Thank you for playing.");
+				player:SendMessage(0x1D,"",">Please note, further MSQ Quests are still under development");
+			end
 		elseif (classId == TATARU) then
-			if (not quest:GetData():GetFlag(FLAG_DUTY_COMPLETE)) then
+			if (not data:GetFlag(FLAG_DUTY_COMPLETE)) then
 				startMan20001Content(player, quest);
-				return;
-			else
+--				callClientFunction(player, "delegateEvent", player, quest, "pE050", player:GetSNpcNickname(), player:GetSNpcSkin(), player:GetSNpcPersonality(), player:GetSNpcCoordinate(), player:GetInitialTown());
+--				GetWorldManager():DoZoneChange(player, 181, "PrivateAreaMasterPast", 11, 15, -200.262, 0, -159.890, -1.568);
+			else	
 				callClientFunction(player, "delegateEvent", player, quest, "pE050_2", player:GetSNpcNickname(), player:GetSNpcSkin(), player:GetSNpcPersonality(), player:GetSNpcCoordinate(), player:GetInitialTown());
+				player:EndEvent();
 			end
-		elseif (classId > SNPC_START and classId < SNPC_END) then
+		elseif (classId >= SNPC_START and classId <= SNPC_END) then  -- Path Companion Naming Sequence
 			local name = callClientFunction(player, "delegateEvent", player, quest, "pEN", player:GetSNpcPersonality());
-			if (not name == nil) then
-				player:SetSNpc(name, player:GetSNpcSkin(), player:GetSNpcPersonality());
-				--player:GetDirector("QuestEventMan20001"):SetData("NameSet", true);
-			end
+			if (name != nil) then
+				player:SetSNpc(name, SNPC_START + player:GetSNpcSkin(), player:GetSNpcPersonality());
+--				player:SetData("NameSet", true);
+				callClientFunction(player, "delegateEvent", player, quest, "pE055", player:GetSNpcNickname(), player:GetSNpcSkin(), player:GetSNpcPersonality(), player:GetSNpcCoordinate(), player:GetInitialTown());
+				player.CurrentArea:ContentFinished();
+				GetWorldManager():DoZoneChange(player, 181, nil, 0, 15, -200.262, 0, -159.890, 0);
+				data:SetFlag(FLAG_DUTY_COMPLETE);
+			end			
 		end
 	end
 	
@@ -222,7 +232,7 @@ function onTalk(player, quest, npc)
 	elseif (classId == UNA_TAYUUN) then
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent000_20");
 	end
-	
+	player:EndEvent();
 	player:EndEvent();
 	quest:UpdateENPCs();
 end
@@ -291,16 +301,20 @@ function onPush(player, quest, npc)
 	local data = quest:GetData();
 	local sequence = quest:getSequence();
 	local classId = npc:GetActorClassId();
-	
-	if (classId == MARKET_ENTRENCE) then
-		if (sequence == SEQ_000 and not data:GetFlag(FLAG_VISITED)) then
-			data:SetFlag(FLAG_VISITED);
+
+	if (classId == MARKET_ENTRANCE) then
+		if (sequence == SEQ_ACCEPT) then
 			callClientFunction(player, "delegateEvent", player, quest, "pE00", "???", 1, 1, 1, player:GetInitialTown());
-		elseif (sequence == SEQ_000 and not data:GetFlag(FLAG_VISITED)) then
+			player:EndEvent();
+			GetWorldManager():DoZoneChange(player, 181, nil, 0, 15, -205.25, 0, -160, 1.55);
+			player:AcceptQuest(quest, true);
+--			data:SetFlag(FLAG_VISITED);
+			return;
+		else
+			player:EndEvent();
+			GetWorldManager():DoZoneChange(player, 181, nil, 0, 15, -205.25, 0, -160, 1.55);
+			return;
 		end
-		player:EndEvent();
-		GetWorldManager():DoZoneChange(player, 181, nil, 0, 15, -205.25, 0, -160, 1.55);
-		return;
 	end
 	
 	if (classId == EVENT_DOOR_EXIT) then
@@ -308,12 +322,14 @@ function onPush(player, quest, npc)
 		GetWorldManager():DoZoneChange(player, 175, nil, 0, 15, -216.52, 190, 30.5, 2.32);
 	elseif (classId == EVENT_DOOR_OFFICE_W) then
 		if (sequence == SEQ_000) then
-			callClientFunction(player, "delegateEvent", player, quest, "pE10", "???", 1, 1, 1, player:GetInitialTown());
-			quest:StartSequence(SEQ_005);			
+			callClientFunction(player, "delegateEvent", player, quest, "pE10", "???", 1, 1, 1, player:GetInitialTown());	
+			GetWorldManager():WarpToPosition(player, -126.2, 1.2, -160, 1.6);
+			quest:StartSequence(SEQ_005);
+		else
+			player:EndEvent();
+			GetWorldManager():WarpToPosition(player, -126.2, 1.2, -160, 1.6);
+			return;
 		end
-		player:EndEvent();
-		GetWorldManager():WarpToPosition(player, -126.2, 1.2, -160, 1.6);
-		return;
 	elseif (classId == EVENT_DOOR_OFFICE_E) then
 		player:EndEvent();
 		GetWorldManager():WarpToPosition(player, -142.75, 1, -160, -1.6);
@@ -328,13 +344,16 @@ function onNpcLS(player, quest, from, msgStep)
 	local sequence = quest:getSequence();
 	
 	if (from == 6) then
-		player:SendGameMessageLocalizedDisplayName(quest, 435, MESSAGE_TYPE_NPC_LINKSHELL, 1500054);
-		quest:EndOfNpcLsMsgs();
-		quest:StartSequence(SEQ_027);		
+		if (sequence == SEQ_025 or sequence == SEQ_027) then
+			player:SendGameMessageLocalizedDisplayName(quest, 435, MESSAGE_TYPE_NPC_LINKSHELL, 1500054);
+			quest:EndOfNpcLsMsgs();
+			quest:StartSequence(SEQ_027);		
+		end
 	end
 	
 	player:EndEvent();
 end
+
 
 function getJournalInformation(player, quest)
 	if (quest:GetData():GetFlag(FLAG_DUTY_COMPLETE)) then
@@ -344,32 +363,55 @@ end
 
 function getJournalMapMarkerList(player, quest)
 	local sequence = quest:getSequence();
+	local data = quest:GetData();
+	local possibleMarkers = {};
 	
 	if (sequence == SEQ_000) then
-		return MRKR_STEP1;
+		if (player.CurrentArea.ZoneId == 181) then
+			table.insert(possibleMarkers, MRKR_MINFILIA);
+		else 
+			table.insert(possibleMarkers, MRKR_MARKETENTRANCE);
+		end
 	elseif (sequence == SEQ_005) then
-		return MRKR_STEP2;
+		if (player.CurrentArea.ZoneId == 181) then
+			table.insert(possibleMarkers, MRKR_MINFILIA);
+		else 
+			table.insert(possibleMarkers, MRKR_MARKETENTRANCE);
+		end
 	elseif (sequence == SEQ_010) then
-		return MRKR_STEP3;
+		if (player.CurrentArea.ZoneId == 181) then
+			table.insert(possibleMarkers, MRKR_MINFILIA);
+		else
+			table.insert(possibleMarkers, MRKR_MARKETENTRANCE);
+		end
 	elseif (sequence == SEQ_020) then
-		return MRKR_STEP4;
-	elseif (sequence == SEQ_025) then
-		return MRKR_STEP5;
+		if (player.CurrentArea.ZoneId == 181) then
+			table.insert(possibleMarkers, MRKR_TATARU);
+		else
+			table.insert(possibleMarkers, MRKR_MARKETENTRANCE);
+		end
 	elseif (sequence == SEQ_027) then
-		return MRKR_STEP6;
-	end	
+		if (not data:GetFlag(FLAG_DUTY_COMPLETE)) then
+			if (player.CurrentArea.ZoneId == 181) then
+				table.insert (possibleMarkers, MRKR_TATARU);
+			else
+				table.insert(possibleMarkers, MRKR_MARKETENTRANCE);
+			end
+		else
+			table.insert(possibleMarkers, MRKR_MOMODI);
+		end
+	end
+	return unpack(possibleMarkers)
 end
 
-function startMan20001Content(player, quest)
+function startMan20001Content(player, quest, npc)
 	local result = callClientFunction(player, "delegateEvent", player, quest, "contentsJoinAskInBasaClass");
 	if (result == 1) then
 		callClientFunction(player, "delegateEvent", player, quest, "pE050", player:GetSNpcNickname(), player:GetSNpcSkin(), player:GetSNpcPersonality(), player:GetSNpcCoordinate(), player:GetInitialTown());
 		-- DO NAMING DUTY HERE			
 		-- For now just skip the sequence
 		player:EndEvent();
-		GetWorldManager():DoZoneChange(player, 230, nil, 0, 0, -639.325, 1, 403.967, 1.655);
-		
-		local contentArea = player.CurrentArea:CreateContentArea(player, "/Area/PrivateArea/Content/PrivateAreaMasterSimpleContent", "man20001", "SimpleContent30002", "Quest/QuestDirectorEventMan20001");
+		contentArea = player.CurrentArea:CreateContentArea(player, "/Area/PrivateArea/Content/PrivateAreaMasterSimpleContent", "man20001", "SimpleContent30080", "Quest/QuestDirectorEventMan20001");
 		
 		if (contentArea == nil) then
 			return;
@@ -378,8 +420,14 @@ function startMan20001Content(player, quest)
 		director = contentArea:GetContentDirector();		
 		player:AddDirector(director);		
 		director:StartDirector(false);		
-		GetWorldManager():DoZoneChangeContent(player, contentArea, -200, 0 -160, -1.6, 2);		
+
+--		player:KickEvent(director, "noticeEvent", true);
+--		player:SetLoginDirector(director);
+
+		GetWorldManager():DoZoneChangeContent(player, contentArea, -200.262, 0, -159.890, -1.568);
+		player:ChangeMusic(44);
 		return;
+	else	
+		player:EndEvent();
 	end
-	player:EndEvent();
 end
