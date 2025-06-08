@@ -123,6 +123,7 @@ function onStateChange(player, quest, sequence)
 	quest:SetENpc(FENANA);
 	quest:SetENpc(NONORU);
 	quest:SetENpc(SERANELIEN);
+	quest:SetENpc(TATARU);
 	
 end
 
@@ -180,6 +181,7 @@ function onTalk(player, quest, npc)
 				callClientFunction(player, "delegateEvent", player, quest, "pE060", player:GetSNpcNickname(), player:GetSNpcSkin(), player:GetSNpcPersonality(), player:GetSNpcCoordinate(), player:GetInitialTown());
 				callClientFunction(player, "delegateEvent", player, quest, "sqrwa", 300, 1, 1, 2);
 				player:EndEvent();
+				player:AddQuest(110014, true);
 				player:CompleteQuest(quest);
 				player:AddItem(1000001, 45000);
 				player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 45000);
@@ -233,7 +235,7 @@ function onTalk(player, quest, npc)
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent000_20");
 	end
 	player:EndEvent();
-	player:EndEvent();
+
 	quest:UpdateENPCs();
 end
 
@@ -345,7 +347,7 @@ function onNpcLS(player, quest, from, msgStep)
 	
 	if (from == 6) then
 		if (sequence == SEQ_025 or sequence == SEQ_027) then
-			player:SendGameMessageLocalizedDisplayName(quest, 435, MESSAGE_TYPE_NPC_LINKSHELL, 1500054);
+			player:SendGameMessageLocalizedDisplayName(quest, 435, MESSAGE_TYPE_NPC_LINKSHELL, 1100449);
 			quest:EndOfNpcLsMsgs();
 			quest:StartSequence(SEQ_027);		
 		end

@@ -185,8 +185,9 @@ local defaultTalkFst = {
     --[1500061] = "defaultTalkWithFhrudhem_001",            -- Fruhdhem             [function typo] (Gridania) Chocobo Taxi - Will not fire, not PplStd.
     [1500127] = "tribeTalk",                                -- Prosperlain          (Gridania)
     [1700001] = "defaultTalkWithPenelope_001",              -- Penelope             (Gridania: Adv. Guild)
-    [1700038] = "defaultTalkWithAUBRENARD_100"              -- Aubrenard            (Gridania: Shaded Bower)
-    
+    [1700038] = "defaultTalkWithAUBRENARD_100",             -- Aubrenard            (Gridania: Shaded Bower)
+	[1200335] = "defaultTalkWithInn_ExitDoor",
+
 }
 --[[ TO:DO - Map the remainder of these
 
@@ -245,12 +246,18 @@ function onTalk(player, quest, npc, eventName)
         callClientFunction(player, "delegateEvent", player, quest, clientFunc, 1);
     elseif ((npcId >= 1002106) and (npcId <= 1002108)) then  -- Foundation Day 2012 NPCs
         talkWithSpecial(player, npcId, clientFunc)
+	elseif (npcId == 1200335) then
+		choice = callClientFunction(player, "delegateEvent", player, quest, clientFunc, nil, nil, nil);
+		if (choice == 1) then
+			GetWorldManager():DoZoneChange(player, 133, nil, 0, 15, -434.35, 40, 203.3, -2.67);
+		end
     else
         callClientFunction(player, "delegateEvent", player, quest, clientFunc); 
     end
     
     player:EndEvent();
 end
+
 
 function IsQuestENPC(player, quest, npc)
     return defaultTalkFst[npc:GetActorClassId()] ~= nil;

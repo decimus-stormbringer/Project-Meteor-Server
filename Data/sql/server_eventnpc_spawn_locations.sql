@@ -1799,7 +1799,27 @@ REPLACE INTO `server_eventnpc_spawn_locations` (`id`, `actorClassId`, `uniqueId`
 	(2728, 1290004, 'man0g1_seq070_privatearea_exit', 150, 'PrivateAreaMasterPast', 1, -796.481, 20, -1061.186, 0, 0),
 	(2729, 1290001, 'man0g1_seq090_privatearea_exit', 206, 'PrivateAreaMasterPast', 3, 187.5, 27, -1581.35, 0, 0),
 	(2730, 1290001, 'man0g1_seq095_privatearea_exit', 206, 'PrivateAreaMasterPast', 4, 187.5, 27, -1581.35, 0, 0),
-	(2731, 1290003, 'man1g0_seq035_privatearea_exit', 150, 'PrivateAreaMasterPast', 2, -633.662, 20.952, -1075.982, 0, 0);
+	(2731, 1290003, 'man1g0_seq035_privatearea_exit', 150, 'PrivateAreaMasterPast', 2, -633.662, 20.952, -1075.982, 0, 0),
+	(2732, 1000843, 'man206_merchward_minfilia', 181, 'PrivateAreaMasterPast', 11, -123.998, 1.2, -162.07, -0.784, 1017),
+	(2733, 1001046, 'man206_merchward_tataru', 181, 'PrivateAreaMasterPast', 11, -199.563, 0, -162.347, -1.5, 1017),
+	(2735, 1001373, 'man206_merchward_sahja_zhwan', 181, 'PrivateAreaMasterPast', 11, -156.327, 0, -156.19, -1.842, 1015),
+	(2736, 1001374, 'man206_merchward_nenekani', 181, 'PrivateAreaMasterPast', 11, -162.314, 0, -140.11, 3.1, 1017),
+	(2737, 1001375, 'man206_merchward_godfrey', 181, 'PrivateAreaMasterPast', 11, -188.765, 0, -155.78, -1.55, 1040),
+	(2738, 1001376, 'man206_merchward_fenana', 181, 'PrivateAreaMasterPast', 11, -197.455, -2, -178.362, 1, 1015),
+	(2739, 1001377, 'man206_merchward_nonoru', 181, 'PrivateAreaMasterPast', 11, -177.75, 0, -156.924, -3.135, 0),
+	(2740, 1001378, 'man206_merchward_seranelien', 181, 'PrivateAreaMasterPast', 11, -137.165, 1, -162.52, -1.516, 1016),
+	(2741, 1090160, 'man206_merchward_exit_eventdoor', 181, 'PrivateAreaMasterPast', 11, -209, 0, -160, 0, 0),
+	(2742, 1090161, 'man206_merchward_office_west_eventdoor', 181, 'PrivateAreaMasterPast', 11, -137, 1, -160, 0, 0),
+	(2743, 1090162, 'man206_merchward_office_east_eventdoor', 181, 'PrivateAreaMasterPast', 11, -134.5, 1, -160, 0, 0),
+	(2744, 1200135, 'man206_merchward_retainerbell', 181, 'PrivateAreaMasterPast', 11, -199.977, 0, -162.959, 0, 0),
+	(2745, 5900001, 'man206_merchward_mapobj_door1', 181, 'PrivateAreaMasterPast', 11, -193, -2, -181.78, 0, 0),
+	(2746, 5900001, 'man206_merchward_mapobj_door2', 181, 'PrivateAreaMasterPast', 11, -160, 0, -138.49, 0, 0),
+	(2747, 5900006, 'man206_merchward_mapobj_deco', 181, 'PrivateAreaMasterPast', 11, -200.5, 0, -164.6, 0, 0),
+	(2748, 5900006, 'man206_merchward_mapobj_flag', 181, 'PrivateAreaMasterPast', 11, -119.32, 7.729, -160, 0, 0),
+	(2749, 1001086, 'man206_merchward_zoxio', 181, 'PrivateAreaMasterPast', 11, -121.67, 1.2, -155.731, -2.918, 0),
+	(2750, 1001178, 'man206_merchward_diluxio', 181, 'PrivateAreaMasterPast', 11, -124.862, 1.2, -157.354, 2.749, 0),
+	(2751, 1001085, 'man206_merchward_almxio', 181, 'PrivateAreaMasterPast', 11, -126.080, 1.2, -164.375, -0.017, 0),
+	(2752, 1090177, 'man206_seq_10_gridania_snpc_trigger', 206, '', 0, -111.430, 16.85, -1342.049, 0, 0);
 
 /*!40000 ALTER TABLE `server_eventnpc_spawn_locations` ENABLE KEYS */;
 

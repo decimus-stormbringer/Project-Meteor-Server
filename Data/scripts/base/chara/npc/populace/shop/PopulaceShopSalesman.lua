@@ -601,22 +601,21 @@ function openShopMenu(player, menuId, shopPack, itemRangeStart, itemRangeEnd, sh
                         player:EndEvent();
                         return;
                 else
-                    player:SendMessage(0x20, "", "Item chosen: " .. itemChosen .. "  Quantity: ".. quantity);
-
-                    --[[
-                        TO-DO:  Request item information from server table and throw result to purchaseItem()
-
-                        requestItem = GetItemShopInfoThing(itemChosen);
-                        purchaseItem(player, INVENTORY_NORMAL, requestItem.id, quantity, requestItem.quality, requestItem.price, shopCurrency);
-                    --]]
+                    player:SendMessage(0x20, "", "Item chosen: " .. itemChosen .. "  Quantity: ".. quantity);					
+                       --TO-DO:  Request item information from server table and throw result to purchaseItem()
+					requestItem = GetShopData(itemChosen);
+                    purchaseItem(player, INVENTORY_NORMAL, requestItem.id, quantity, requestItem.quality, requestItem.price, shopCurrency)  
+					
                 end
-            end
-            
+            end            
         end  
-    end
- 
+    end 
 end
 
+function GetShopData()
+	shops.GetShopData()
+
+end
 
 
 function openSellMenu(player)

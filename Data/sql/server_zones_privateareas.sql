@@ -93,7 +93,8 @@ REPLACE INTO `server_zones_privateareas` (`id`, `parentZoneId`, `className`, `pr
 	(62, 181, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 8, 1, 61),
 	(63, 181, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 9, 1, 36),
 	(64, 181, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 10, 1, 36),
-	(65, 209, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 7, 0, 40);
+	(65, 209, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 7, 0, 40),
+	(66, 181, '/Area/PrivateArea/PrivateAreaMasterPast', 'PrivateAreaMasterPast', 11, 1, 58);	-- Waking Sands Instance for man206 SEQ_000
 
 	
 

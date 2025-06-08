@@ -1,13 +1,24 @@
-Project Meteor Server
+Project Buried Memory
 ========
-Compile and install instructions: http://ffxivclassic.fragmenterworks.com/wiki/index.php/Setting_up_the_project
 
-Welcome to the Project Meteor Server; a server emulator for FFXIV 1.23b.
-If you wish to discuss and help please join the Discord server.
+Welcome to the repository for Project Buried Memory; a server emulator for FFXIV v1.23b.
+This project is dedicated to rebuilding and preserving as much as FFXIV 1.0's experience
+as possible, with a current emphasis on questing. We also host an online server for
+people to easily be able to play and experience the project. 
 
-**Discord Server Invite**
+For more info on the project, and for instructions on how to play online, 
+please feel free to join us on our Discord server. 
+https://discord.gg/2r65CWjMjt
 
-https://discord.gg/fBmGkSZbaD
+How To Install
+========
+
+Text Guide (written by Project Meteor)
+http://ffxivclassic.fragmenterworks.com/wiki/index.php/Setting_up_the_project
+
+Video Guide (created by SlerpLederp)
+https://youtu.be/_y5K0w3ksVc
+
 
 Pull Requests
 ========
