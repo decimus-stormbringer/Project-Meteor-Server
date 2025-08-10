@@ -16,8 +16,12 @@ function init(npc)
 	return false, false, 0, 0;	
 end
 
-function onEventStarted(player, npc, triggerName)
-	
+
+function onEventStarted(player, npc, eventType, eventName, triggerName)
+	local classId = npc:GetActorClassId();
+	local zoneId = player.CurrentArea.ZoneId;
+	local currency = 1000001;
+
 	-- Special case for A Slippery Stone and Cutthroat Prices
 	if (player:HasQuest(110737) == true) then
 		require ("quests/etc/etc3g3");
@@ -46,11 +50,64 @@ function onEventStarted(player, npc, triggerName)
 	end
 	
 	-- Otherwise normal operation
-	callClientFunction(player, "eventIn", player, false, nil, 5);
-	
+	local farePrice				= 5000;		--price to ride airship
+	local flagDestinationLimsa		= false;	
+	local flagDestinationGridania	= false;	--set flags to True depending on player selection.  
+	local flagDestinationUldah		= false;	 
+
+	-- Purchase ticket, warp player to other side of gate, and set destination flag. 
+	if (classId == 1500003 or classId == 1500208 or classId == 1500055) then	-- Entry Gate NPCs	
+	choice = callClientFunction(player, "eventIn", player, false, nil, farePrice);
+		if (choice == 1) then
+			-- Checks if player has enough gil and purchases fare. 
+			if (player:GetItemPackage(INVENTORY_CURRENCY):HasItem(currency, farePrice)) then
+				player:GetItemPackage(INVENTORY_CURRENCY):removeItem(currency, farePrice);
+				if (zoneId == 133) then --If Limsa
+					GetWorldManager():WarpToPosition(player, -472, 92, 194, -0.3);					
+				elseif (zoneId == 155) then	--If Gridania
+					GetWorldManager():WarpToPosition(player, 54.5, -7, -1199, 0); 
+				elseif (zoneId == 209) then --If Ul'dah
+					GetWorldManager():WarpToPosition(player, -126, 271.2, 156.3, -1.3); 
+					flagDestinationLimsa = true
+					player:SendMessage(0x20, "", "Limsa flag: " ..tostring(flagDestinationLimsa));
+					player:SendMessage(0x20, "", "Gridania flag: " ..tostring(flagDestinationGridania));
+					player:SendMessage(0x20, "", "Ul'dah flag: " ..tostring(flagDestinationUldah));
+				end
+			else
+				player:SendGameMessage(player, worldMaster, 25065, MESSAGE_TYPE_SYSTEM);
+			end
+		elseif (choice == 2) then
+			-- Checks if player has enough gil and purchases fare.
+			if (player:GetItemPackage(INVENTORY_CURRENCY):HasItem(currency, farePrice)) then
+				player:GetItemPackage(INVENTORY_CURRENCY):removeItem(currency, farePrice);
+				if (zoneId == 133) then --If Limsa
+					GetWorldManager():WarpToPosition(player, -472, 92, 194, -0.3);
+				elseif (zoneId == 155) then	--If Gridania
+					GetWorldManager():WarpToPosition(player, 54.5, -7, -1199, 0); 
+				elseif (zoneId == 209) then --If Ul'dah
+					GetWorldManager():WarpToPosition(player, -126, 271.2, 156.3, -1.3); 
+					flagDestinationGridania = true
+					player:SendMessage(0x20, "", "Limsa flag: " ..tostring(flagDestinationLimsa));
+					player:SendMessage(0x20, "", "Gridania flag: " ..tostring(flagDestinationGridania));
+					player:SendMessage(0x20, "", "Ul'dah flag: " ..tostring(flagDestinationUldah));
+				end
+			else
+				player:SendGameMessage(player, worldMaster, 25065, MESSAGE_TYPE_SYSTEM);
+			end
+		end
+	elseif (classId == 1500209) then -- Exit Gate NPCs
+		if flagDestinationLimsa then
+			callClientFunction(player, "eventOut", player);
+		end
+--		else
+--			callClientFunction(player, "eventNG", player);
+--		GetWorldManager():WarpToPosition(player, -459, 91.5, 183.8, 2.75); --currently does this even when selecting "no"
+	end
+
 	player:EndEvent();
 end
 
+--[[
 function addPlayerToAirship(player, city)
 	if (city == 1) then
 		-- Limsa Airship
@@ -66,3 +123,4 @@ function addPlayerToAirship(player, city)
 		--GetWorldManager():AddPlayerToShipList(player, 4);
 	end
 end
+]]--

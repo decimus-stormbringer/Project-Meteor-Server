@@ -162,6 +162,12 @@ namespace Meteor.Map.Actors.QuestNS
             return data.GetNpcLsFrom() == from;
         }
 
+        public void RepeatNpcLsMsg()
+        {
+            data.GetMsgStep();
+            owner.SetNpcLs(data.GetNpcLsFrom(), Player.NPCLS_ACTIVE);
+        }
+
         public int GetNpcLsMsgStep()
         {
             return data.GetMsgStep();

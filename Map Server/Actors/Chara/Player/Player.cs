@@ -97,6 +97,7 @@ namespace Meteor.Map.Actors
         public const int SLOT_WRISTS = 19;
         public const int SLOT_RIGHTFINGER = 21;
         public const int SLOT_LEFTFINGER = 22;
+        public const int SLOT_JOBSTONE = 23;
 
         public static int[] MAXEXP = {570, 700, 880, 1100, 1500, 1800, 2300, 3200, 4300, 5000,                   //Level <= 10
                                      5900, 6800, 7700, 8700, 9700, 11000, 12000, 13000, 15000, 16000,            //Level <= 20
@@ -1002,6 +1003,14 @@ namespace Meteor.Map.Actors
         }
 
         public void SendGameMessageLocalizedDisplayName(Actor textIdOwner, ushort textId, byte log, uint displayId, params object[] msgParams)
+        {
+            if (msgParams == null || msgParams.Length == 0)
+                QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().Id, textIdOwner.Id, textId, displayId, log));
+            else
+                QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().Id, textIdOwner.Id, textId, displayId, log, LuaUtils.CreateLuaParamList(msgParams)));
+        }
+
+        public void SendGameMessageCustomDisplayName(Actor textIdOwner, ushort textId, byte log, string displayId, params object[] msgParams)
         {
             if (msgParams == null || msgParams.Length == 0)
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().Id, textIdOwner.Id, textId, displayId, log));
@@ -2323,6 +2332,14 @@ namespace Meteor.Map.Actors
 
             QueuePacket(SetChocoboNamePacket.BuildPacket(Id, chocoboName));
             QueuePacket(SetHasChocoboPacket.BuildPacket(Id, hasChocobo));
+        }
+
+        public void IssueGoobbue()
+        {
+            Database.IssuePlayerGoobbue(this);
+            hasGoobbue = true;
+          
+            QueuePacket(SetHasGoobbuePacket.BuildPacket(Id, hasGoobbue));
         }
 
         public void ChangeChocoboAppearance(byte appearanceId)

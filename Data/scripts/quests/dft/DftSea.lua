@@ -227,11 +227,12 @@ local defaultTalkSea = {
     [1500001] = "defaultTalkWithPiralnaut_001",     -- Piralnaut            (Limsa Upper Decks: Adv. Guild) - Will not fire, not PplStd.
     [1500003] = "defaultTalkWithFaezbroes_001",     -- <<<NOT IMPLEMENTED>>> - Faezbroes (Limsa: Airship Landing) - Will not fire, not PplStd.
     [1500004] = "defaultTalkWithGert_001",          -- Gert                 (Limsa Lower Decks: Ferry Docks)
-    [1500005] = "defaultTalkWihLorhzant_001",      -- Lorhzant             (Limsa Lower Decks: Ferry Docks)
+    [1500005] = "defaultTalkWithLorhzant_001",       -- Lorhzant             (Limsa Lower Decks: Ferry Docks)
     [1500006] = "defaultTalkWithIsleen_001",        -- Isleen               (Limsa Lower Decks: Bulwark Hall) Pre-Chocobo rental dialog. Obsolete
     [1500125] = "tribeTalk",                        -- Merewina             (Limsa Lower Decks)
     [1700037] = "defaultTalkWithANSGOR_100",        -- Ansgor               (Limsa Lower Decks) <<Verify ID from caps, might be 1500117?>>
 	[1200334] = "defaultTalkWithInn_ExitDoor",
+	[1500228] = "defaultTalkCaravanChocoboLim_001",							--Pack Chocobo
 }
 
 --[[ Need sourcing

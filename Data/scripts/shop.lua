@@ -1,3 +1,5 @@
+require ("global")
+
 --[[
 
 Shop Buy/Sell Functions
@@ -9,8 +11,8 @@ function purchaseItem(player, location, itemId, quantity, quality, price, curren
     local worldMaster = GetWorldMaster();          
     local invCheck = -1;
 
-    if (player:getItemPackage(INVENTORY_CURRENCY):hasItem(currency, price)) then
-        invCheck = player:getItemPackage(location):addItem(itemId, quantity, quality); 
+    if (player:GetItemPackage(INVENTORY_CURRENCY):HasItem(currency, price)) then
+        invCheck = player:GetItemPackage(location):AddItem(itemId, quantity, quality); 
     
         if (invCheck == INV_ERROR_FULL) then
             -- Your inventory is full.
@@ -21,7 +23,7 @@ function purchaseItem(player, location, itemId, quantity, quality, price, curren
         elseif (invCheck == INV_ERROR_SYSTEM_ERROR) then
             player:SendMessage(0x20, "", "[DEBUG] Server Error on adding item.");
         elseif (invCheck == INV_ERROR_SUCCESS) then
-            player:getItemPackage(INVENTORY_CURRENCY):removeItem(currency, price);
+            player:GetItemPackage(INVENTORY_CURRENCY):removeItem(currency, price);
             
             if (currency == 1000001) then  -- If Gil
                 -- You purchase <quantity> <itemId> <quality> for <price> gil.
@@ -44,12 +46,13 @@ function purchaseItem(player, location, itemId, quantity, quality, price, curren
 end
 
 
-function sellItem(player, itemId, quantity, quality, itemPrice, slot, currency)
+function sellItem(player, itemId, quantity, quality, itemPrice, slot)
     local worldMaster = GetWorldMaster();
     local cost = quantity * itemPrice;
+	local currency = 1000001; --forces currency to gil. May cause issues when selling for other currencies. 
     
-    player:getItemPackage(INVENTORY_CURRENCY):addItem(currency, cost);
-    player:getItemPackage(INVENTORY_NORMAL):removeItemAtSlot(slot, quantity);   
+    player:GetItemPackage(INVENTORY_CURRENCY):AddItem(currency, cost);
+    player:GetItemPackage(INVENTORY_NORMAL):RemoveItemAtSlot(slot, quantity);   
     -- You sell <quantity> <itemId> <quality> for <cost> gil.
     player:SendGameMessage(player, worldMaster, 25075, MESSAGE_TYPE_SYSTEM, itemId, quality, quantity, cost);
 end

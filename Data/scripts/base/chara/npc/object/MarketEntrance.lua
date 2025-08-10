@@ -33,7 +33,7 @@ Gridania - !warp 206 -192.57 23.48 -1407.58     ActorClass Id = 1090264
     Layout Id - [0x141]  321 (0x29b00001)
     Condition - in
     reactName - dtwi
-Ul'dah   - !warp 175 -235 189 50.5              ActorClass Id = 1500394
+Ul'dah   - !warp 175 -235 189 50.5              ActorClass Id = 1090265
     bgObj  Id - [0x102F] 4143
     Layout Id - [0x1A5] 421  (0x615a0001)
     Condition - in
