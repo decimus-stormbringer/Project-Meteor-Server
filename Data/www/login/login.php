@@ -57,7 +57,7 @@ if(isset($_POST["login"]))
 			
 			<div style="width: 80%; height: 300px; margin-left: auto; margin-right: auto; margin-top: 20%">
 				<div class="contentContainer" >
-					<img style="width: 100%;" src="./img/logo.png" />
+					<img style="width: 775px; height: 537.95px; margin-top: -50%; margin-left: -40%" src="./img/logo_new.png" />
 				</div>
 				
 				<div class="contentContainer">
