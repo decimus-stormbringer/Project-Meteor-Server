@@ -860,7 +860,7 @@ namespace Meteor.Map.Actors
             Database.SavePlayerPosition(this);
         }
 
-        //Experimental Timer Code to Save Player POS on Timed Interval. Does not work.
+        //Experimental Timer Code to Save Player POS on Timed Interval
         /*private static System.Timers.Timer updatePlayerPos;
 
         public static void UpdatePlayerPositionOnTimer(Player player)
@@ -998,6 +998,7 @@ namespace Meteor.Map.Actors
         {
             this.mountState = mountState;
             SendMountAppearance();
+            UpdatePosition();
         }
 
         public byte GetMountState()
@@ -1011,6 +1012,7 @@ namespace Meteor.Map.Actors
             SetMountState(0);
             ChangeSpeed(0.0f, 2.0f, 5.0f, 5.0f);
             ChangeState(0);
+            UpdatePosition();
         }
        
         public void DoEmote(uint targettedActor, uint animId, uint descId)
