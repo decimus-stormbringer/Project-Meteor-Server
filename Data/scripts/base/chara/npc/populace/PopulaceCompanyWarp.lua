@@ -74,6 +74,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
     local passLimsa = 2001014;
     local passGrid  = 2001015;
     local passUldah = 2001016;

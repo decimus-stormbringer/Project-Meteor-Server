@@ -32,6 +32,7 @@ function init(npc)
 end
 
 function onEventStarted(player, aetheryte, triggerName)
+	player.UpdatePosition();
 	
 	-- Main Scenario Intro Quests
 	if (player:HasQuest(110002) == true) then

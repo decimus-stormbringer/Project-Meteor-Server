@@ -187,6 +187,7 @@
     <Compile Include="Actors\Chara\Npc\Pet.cs" />
     <Compile Include="Actors\Chara\ItemPackage.cs" />
     <Compile Include="Actors\Chara\ReferencedItemPackage.cs" />
+    <Compile Include="Actors\Chara\ShopData.cs" />
     <Compile Include="Actors\Chara\SubState.cs" />
     <Compile Include="Actors\Chara\Work.cs" />
     <Compile Include="Actors\Debug\Debug.cs" />

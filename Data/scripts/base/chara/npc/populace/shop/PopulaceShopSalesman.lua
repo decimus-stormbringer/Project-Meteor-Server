@@ -450,7 +450,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
-
+	player.UpdatePosition();
     npcId = npc:GetActorClassId();
     
     if shopInfo[npcId] == nil then

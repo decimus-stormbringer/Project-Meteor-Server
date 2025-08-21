@@ -705,6 +705,8 @@ namespace Meteor.Map
             }
         }
 
+        private bool hasMerged = false;
+
         //Moves the actor to the new zone if exists. No packets are sent nor position changed. Merged zone is removed.
         public void DoSeamlessZoneChange(Player player, uint destinationZoneId)
         {
@@ -728,12 +730,38 @@ namespace Meteor.Map
             player.CurrentArea = newZone;
 
             player.zone2 = null;
+            player.zoneId2 = 0;
 
-            player.SendSeamlessZoneInPackets();
+            uint[] cities =
+                {133, 230, 175, 209, 155, 206};
+
+            uint[] dungeons =
+                {131, 132, 137, 157, 158, 159, 176, 178, 231, 235, 245, 246, 252, 253, 254, 255};
+
+            if (player.mountState != 0)
+            {
+                uint zoneId = player.CurrentArea.ZoneId;
+                //Forcefully dismounts players when entering city limits. 
+                if (cities.Contains(zoneId) || dungeons.Contains(zoneId))
+                {
+                    player.Dismount();                    
+                }
+                else
+                {
+                    player.SendSeamlessZoneInPacketsWithoutMusicChange();
+                }
+                
+            }
+            else
+            {
+                player.SendSeamlessZoneInPackets();
+            }
 
             player.SendMessage(0x20, "", "Doing Seamless Zone Change");
+            player.UpdatePosition();
 
             LuaEngine.GetInstance().CallLuaFunction(player, newZone, "onZoneIn", true);
+            hasMerged = false;
         }
 
         //Adds a second zone to pull actors from. Used for an improved seamless zone change.
@@ -746,14 +774,21 @@ namespace Meteor.Map
             if (mergedZone == null)
                 return;
 
-            mergedZone.AddActorToZone(player);
+            if (hasMerged == false)
+            {
+                mergedZone.AddActorToZone(player);
 
-            player.zone2 = mergedZone;
+                player.zone2 = mergedZone;
+                player.zoneId2 = mergedZone.Id;
+            
+                player.SendMessage(0x20, "", "Merging Zones");
 
-            player.SendMessage(0x20, "", "Merging Zones");
-
-            LuaEngine.GetInstance().CallLuaFunction(player, mergedZone, "onZoneIn", true);
+                LuaEngine.GetInstance().CallLuaFunction(player, mergedZone, "onZoneIn", true);
+                hasMerged = true;
+            }
         }
+
+
 
         //Checks all seamless bounding boxes in region to see if player needs to merge or zonechange
         public void SeamlessCheck(Player player)
@@ -780,20 +815,23 @@ namespace Meteor.Map
             foreach (SeamlessBoundry bounds in seamlessBoundryList[regionId])
             {
                 uint zoneId = player.CurrentArea.ZoneId;
-                uint zoneId2 = player.zone2.ZoneId;
+                //uint zoneId2 = player.zone2.ZoneId;
+                //uint zoneId2 = 0;
 
                 if (CheckPosInBounds(player.positionX, player.positionZ, bounds.zone1_x1, bounds.zone1_y1, bounds.zone1_x2, bounds.zone1_y2))
                 {
-                    if (zoneId == bounds.zoneId1 && zoneId2 == 0)
+                    if (zoneId == bounds.zoneId1 && player.zoneId2 == 0)
                         return;
 
+                    //player.UpdatePosition();
                     DoSeamlessZoneChange(player, bounds.zoneId1);
                 }
                 else if (CheckPosInBounds(player.positionX, player.positionZ, bounds.zone2_x1, bounds.zone2_y1, bounds.zone2_x2, bounds.zone2_y2))
                 {
-                    if (zoneId == bounds.zoneId2 && zoneId2 == 0)
+                    if (zoneId == bounds.zoneId2 && player.zoneId2 == 0)
                         return;
 
+                    //player.UpdatePosition();
                     DoSeamlessZoneChange(player, bounds.zoneId2);
                 }
                 else if (CheckPosInBounds(player.positionX, player.positionZ, bounds.merge_x1, bounds.merge_y1, bounds.merge_x2, bounds.merge_y2))
@@ -805,7 +843,7 @@ namespace Meteor.Map
                         merged = bounds.zoneId1;
 
                     //Already merged
-                    if (zoneId2 == merged)
+                    if (player.zoneId2 == merged)
                         return;
 
                     MergeZones(player, merged);
@@ -880,6 +918,7 @@ namespace Meteor.Map
             player.SendZoneInPackets(this, spawnType);
             player.playerSession.ClearInstance();
             player.SendInstanceUpdate();
+            Database.SavePlayerPosition(player);
 
             player.playerSession.LockUpdates(false);
 
@@ -912,6 +951,7 @@ namespace Meteor.Map
 
                 player.playerSession.LockUpdates(false);
                 player.SendInstanceUpdate();
+                Database.SavePlayerPosition(player);
             }            
         }
 
@@ -959,6 +999,7 @@ namespace Meteor.Map
 
                 player.playerSession.LockUpdates(false);
                 player.SendInstanceUpdate();
+                Database.SavePlayerPosition(player);
             }
         }
 

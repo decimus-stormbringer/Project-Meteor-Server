@@ -20,6 +20,7 @@ function init(npc)
 end
 
 function onEventStarted(player, location, npc, triggerName, quantity, quality)
+	player.UpdatePosition();
 	local worldMaster = GetWorldMaster(); 
 	local invCheck = -1;
 	local gysahlPrice = 20;

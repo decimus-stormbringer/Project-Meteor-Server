@@ -57,6 +57,7 @@ gcOfficer = {
 }
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
 
     callClientFunction(player, "talkOutsider");
 

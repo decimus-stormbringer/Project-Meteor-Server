@@ -333,6 +333,7 @@ namespace Meteor.Map.actors.director
             else
                 args2[0] = this;
 
+            
             Coroutine coroutine = directorScript.CreateCoroutine(directorScript.Globals["onEventStarted"]).Coroutine;
             DynValue value = coroutine.Resume(args2);
             LuaEngine.GetInstance().ResolveResume(player, coroutine, value);

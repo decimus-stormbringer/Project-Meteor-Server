@@ -24,6 +24,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
     
     local npcActorClass = npc:GetActorClassId()
     local retainerIndex = 3001100;

@@ -18,6 +18,7 @@ end
 
 
 function onEventStarted(player, npc, eventType, eventName, triggerName)
+	player.UpdatePosition();
 	local classId = npc:GetActorClassId();
 	local zoneId = player.CurrentArea.ZoneId;
 	local currency = 1000001;

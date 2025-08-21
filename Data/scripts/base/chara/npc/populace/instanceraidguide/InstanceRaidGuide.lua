@@ -20,6 +20,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, eventType, eventName)
+	player.UpdatePosition();
 
     npcId = npc:GetActorClassId()
     

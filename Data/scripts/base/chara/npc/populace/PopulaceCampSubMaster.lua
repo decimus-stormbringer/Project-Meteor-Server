@@ -17,7 +17,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
-	
+	player.UpdatePosition();	
 	choice = callClientFunction(player, "talkWelcome", player, 1, false);
 	
 	if (choice == 1) then

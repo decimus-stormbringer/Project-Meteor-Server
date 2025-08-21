@@ -54,6 +54,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
 	local areaName = 1;
     local areaName2 = 3;
     local playerGC = 1;

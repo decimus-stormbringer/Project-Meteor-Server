@@ -47,7 +47,7 @@ using Meteor.Map.packets.send.actor.battle;
 using Meteor.Map.packets.receive.events;
 using static Meteor.Map.LuaUtils;
 using Meteor.Map.packets.send.actor.events;
-using System.Text;
+using System.Timers;
 
 namespace Meteor.Map.Actors
 {
@@ -233,31 +233,31 @@ namespace Meteor.Map.Actors
             charaWork.property[2] = 1;
             charaWork.property[4] = 1;
 
-            charaWork.command[0] =  0xA0F00000 | 21001;
-            charaWork.command[1] =  0xA0F00000 | 21001;
+            charaWork.command[0] = 0xA0F00000 | 21001;
+            charaWork.command[1] = 0xA0F00000 | 21001;
 
-            charaWork.command[2] =  0xA0F00000 | 21002;
-            charaWork.command[3] =  0xA0F00000 | 12004;
-            charaWork.command[4] =  0xA0F00000 | 21005;
-            charaWork.command[5] =  0xA0F00000 | 21006;
-            charaWork.command[6] =  0xA0F00000 | 21007;
-            charaWork.command[7] =  0xA0F00000 | 12009;
-            charaWork.command[8] =  0xA0F00000 | 12010;
-            charaWork.command[9] =  0xA0F00000 | 12005;
+            charaWork.command[2] = 0xA0F00000 | 21002;
+            charaWork.command[3] = 0xA0F00000 | 12004;
+            charaWork.command[4] = 0xA0F00000 | 21005;
+            charaWork.command[5] = 0xA0F00000 | 21006;
+            charaWork.command[6] = 0xA0F00000 | 21007;
+            charaWork.command[7] = 0xA0F00000 | 12009;
+            charaWork.command[8] = 0xA0F00000 | 12010;
+            charaWork.command[9] = 0xA0F00000 | 12005;
             charaWork.command[10] = 0xA0F00000 | 12007;
             charaWork.command[11] = 0xA0F00000 | 12011;
             charaWork.command[12] = 0xA0F00000 | 22012;
             charaWork.command[13] = 0xA0F00000 | 22013;
             charaWork.command[14] = 0xA0F00000 | 29497;
-            charaWork.command[15] = 0xA0F00000 | 22015;            
+            charaWork.command[15] = 0xA0F00000 | 22015;
 
             charaWork.commandAcquired[27150 - 26000] = true;
-            
+
             playerWork.questGuildleveComplete[120050 - 120001] = true;
 
-            for (int i = 0; i < charaWork.additionalCommandAcquired.Length; i++ )
+            for (int i = 0; i < charaWork.additionalCommandAcquired.Length; i++)
                 charaWork.additionalCommandAcquired[i] = true;
-            
+
             for (int i = 0; i < charaWork.commandCategory.Length; i++)
                 charaWork.commandCategory[i] = 1;
 
@@ -601,6 +601,11 @@ namespace Meteor.Map.Actors
             QueuePacket(SetWeatherPacket.BuildPacket(Id, SetWeatherPacket.WEATHER_CLEAR, 1));
         }
 
+        public void SendSeamlessZoneInPacketsWithoutMusicChange()
+        {
+            QueuePacket(SetWeatherPacket.BuildPacket(Id, SetWeatherPacket.WEATHER_CLEAR, 1));
+        }
+
         public void SendZoneInPackets(WorldManager world, ushort spawnType)
         {
             QueuePacket(SetActorIsZoningPacket.BuildPacket(Id, false));
@@ -821,7 +826,7 @@ namespace Meteor.Map.Actors
             {
                 if (quest != null)
                     quest.GetData().Save();
-            }    
+            }
         }
 
         public void CleanupAndSave(uint destinationZone, ushort spawnType, float destinationX, float destinationY, float destinationZ, float destinationRot)
@@ -849,6 +854,35 @@ namespace Meteor.Map.Actors
             Database.SavePlayerPosition(this);
             Database.SavePlayerStatusEffects(this);
         }
+
+        public void UpdatePosition()
+        {
+            Database.SavePlayerPosition(this);
+        }
+
+        //Experimental Timer Code to Save Player POS on Timed Interval. Does not work.
+        /*private static System.Timers.Timer updatePlayerPos;
+
+        public static void UpdatePlayerPositionOnTimer(Player player)
+        {
+            SetTimer();
+            Database.SavePlayerPosition(player);
+            updatePlayerPos.Stop();
+            updatePlayerPos.Dispose();
+        }
+
+        private static void SetTimer()
+        {
+            updatePlayerPos = new System.Timers.Timer(10000);
+            updatePlayerPos.Elapsed += OnTimedEvent;
+            updatePlayerPos.AutoReset = true;
+            updatePlayerPos.Enabled = true;
+        }
+
+        private static void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            Console.WriteLine("The Elapsed event was raised at {0:HH:mm:ss.fff}",e.SignalTime);
+        }*/
 
         public void SendMessage(uint logType, string sender, string message)
         {
@@ -971,6 +1005,14 @@ namespace Meteor.Map.Actors
             return mountState;
         }
 
+        public void Dismount()
+        {
+            ChangeMusic(CurrentArea.bgmDay);
+            SetMountState(0);
+            ChangeSpeed(0.0f, 2.0f, 5.0f, 5.0f);
+            ChangeState(0);
+        }
+       
         public void DoEmote(uint targettedActor, uint animId, uint descId)
         {
             BroadcastPacket(ActorDoEmotePacket.BuildPacket(Id, targettedActor, animId, descId), true);
@@ -2223,9 +2265,9 @@ namespace Meteor.Map.Actors
             BroadcastPacket(StartCountdownPacket.BuildPacket(Id, countdownLength, syncTime, "Go!"), true);
         }
         
-        public void SendInstanceUpdate(bool force = false)
+        public void SendInstanceUpdate(bool force = true)  //set to false to disable seamless zones
         {
-            //Server.GetWorldManager().SeamlessCheck(this); 
+            Server.GetWorldManager().SeamlessCheck(this); 
 
             //Update Instance
             List<Actor> aroundMe = new List<Actor>();
@@ -2234,7 +2276,7 @@ namespace Meteor.Map.Actors
                 aroundMe.AddRange(CurrentArea.GetActorsAroundActor(this, 50));
             if (zone2 != null)
                 aroundMe.AddRange(zone2.GetActorsAroundActor(this, 50));
-            playerSession.UpdateInstance(aroundMe, force);
+                playerSession.UpdateInstance(aroundMe, force);
         }
 
         public bool IsInParty()

@@ -321,6 +321,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
 
     local leveAllowances = 16;
     local quest = 120438;

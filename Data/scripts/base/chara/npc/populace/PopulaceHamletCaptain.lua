@@ -5,6 +5,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
 	callClientFunction(player, "getAleportText", player);
 	player:EndEvent();
 end

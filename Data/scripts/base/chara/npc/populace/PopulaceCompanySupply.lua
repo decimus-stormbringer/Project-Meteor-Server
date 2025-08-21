@@ -199,6 +199,7 @@ local gcCheckProceed = false; -- Debug
 
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
     local playerGC = player.gcCurrent;
     local limsaRank = player.gcRankLimsa;
     local gridaniaRank = player.gcRankGridania;

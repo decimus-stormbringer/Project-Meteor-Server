@@ -22,6 +22,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, eventType, eventName)
+	player.UpdatePosition();
 	local chosenQuest = nil;
 
 	if (eventType == 1) then

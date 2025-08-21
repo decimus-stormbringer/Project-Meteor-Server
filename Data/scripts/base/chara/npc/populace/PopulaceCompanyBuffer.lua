@@ -24,6 +24,7 @@ local gcRep = {
 }
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
     local playerGC = player.gcCurrent;
     local playerGCRanks = {player.gcRankLimsa, player.gcRankGridania, player.gcRankUldah};
     

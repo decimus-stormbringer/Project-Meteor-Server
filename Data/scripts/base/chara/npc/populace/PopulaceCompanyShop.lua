@@ -451,6 +451,7 @@ shopInfo = { -- [index] = { itemID, itemQuality, itemQuantity, itemCost, gcRank,
 }
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
     skipGCcheck = 0; -- 0 No,  1 Yes
     playerGC = player.gcCurrent;
     playerGCSeal = 1000200 + playerGC;

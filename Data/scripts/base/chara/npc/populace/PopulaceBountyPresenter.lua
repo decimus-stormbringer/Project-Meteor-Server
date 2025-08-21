@@ -19,6 +19,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
 	local playerLevel = player.GetLevel();
 	local hasGoobbue = player.hasGoobbue;
 	local zone = player.CurrentArea.ZoneId;

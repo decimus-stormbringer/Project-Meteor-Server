@@ -30,6 +30,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
 	local GC = 3;
     local playerGC = 1; 
     local areaName = 0;

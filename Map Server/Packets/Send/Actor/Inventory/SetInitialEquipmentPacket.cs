@@ -53,7 +53,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
 		public const int SLOT_EARS				    = 0x11;
 		public const int SLOT_WRISTS				= 0x13;
 		public const int SLOT_RIGHTFINGER		    = 0x15;
-		public const int SLOT_LEFTFINGER			= 0x16;
+        public const int SLOT_LEFTFINGER            = 0x16;
 
         private uint[] equipment = new uint[0x17];
 

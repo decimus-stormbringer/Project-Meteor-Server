@@ -38,6 +38,7 @@ function disbandLinkshell(player, name, crest)
 end
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
 
 	local hasNoActiveLS = false;
 	

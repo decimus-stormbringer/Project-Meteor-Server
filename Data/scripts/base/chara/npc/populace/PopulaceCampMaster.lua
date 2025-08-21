@@ -15,7 +15,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
-	
+	player.UpdatePosition();	
 	favLocation = callClientFunction(player, "defTalk", player, 0, 1280004, 1280005);
 	
 	--if (hasThree) then

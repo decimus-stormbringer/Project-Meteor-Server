@@ -25,6 +25,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc)
+	player.UpdatePosition();
 
 	::MENU_LOOP::
 	menuChoice = callClientFunction(player, "eventTalkType", 0x30, true, 0x02CE, 0x356, 0x367, true, 0, nil, 0x29, 0,0,0);	

@@ -38,6 +38,7 @@ gcOfficer = {
 }
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
 
     playerGC = player.gcCurrent;
     playerGCSeal = 1000200 + playerGC;

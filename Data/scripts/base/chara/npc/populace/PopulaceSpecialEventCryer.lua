@@ -37,6 +37,7 @@ local gcRep = {
 
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
     local playerGC = player.gcCurrent;
     local npcId = npc:GetActorClassId();
     local npcGC = gcRep[npcId]; 

@@ -17,6 +17,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
+	player.UpdatePosition();
 	
 	callClientFunction(player, "eventTalkStep0", player, 0);
 	

@@ -29,6 +29,7 @@ function init(npc)
 end
 
 function onEventStarted(player, aetheryte, triggerName)	
+	player.UpdatePosition();
 	
 	if (player:GetGuildleveDirector() ~= nil) then
 		doGuildleveMenu(player, aetheryte);

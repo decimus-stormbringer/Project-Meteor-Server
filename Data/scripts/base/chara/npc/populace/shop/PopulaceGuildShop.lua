@@ -48,7 +48,7 @@ guildShopInfo = { -- [actor id] = { saySheetId, guildmarkCurrency }
 
 
 function onEventStarted(player, npc)
-
+	player.UpdatePosition();
     local npcId = npc:GetActorClassId();
     local saySheetId = guildShopInfo[npcId][1];
     local shopCurrency = guildShopInfo[npcId][2];

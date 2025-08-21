@@ -59,7 +59,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
-
+	player.UpdatePosition();
     commemorativeCoin = 10011251;
     commemorativeCoinValue = 25000;
     gilCurrency = 1000001;

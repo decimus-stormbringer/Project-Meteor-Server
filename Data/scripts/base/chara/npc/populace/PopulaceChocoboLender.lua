@@ -53,6 +53,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)	
+	player.UpdatePosition();
     local classId = npc:GetActorClassId();
 	local curLevel = 20; -- TODO: pull from character
 	local hasIssuance = player:GetItemPackage(INVENTORY_KEYITEMS):HasItem(gcIssuances[classId]);

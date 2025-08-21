@@ -17,7 +17,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
-	
+	player.UpdatePosition();
 	callClientFunction(player, "eventTalkWelcome", player);	
 	callClientFunction(player, "eventSearchItemAsk", nil, 0);	
 	callClientFunction(player, "eventTalkStepBreak", player);	

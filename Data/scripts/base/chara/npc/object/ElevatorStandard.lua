@@ -90,6 +90,7 @@ function onEventStarted(player, npc, eventType, eventName)
 			endEventAndWarp(player, 209, -116.78, 222, 115.7, 2.85);
 		end
 	end
+	player:EndEvent();
 	
 end
 

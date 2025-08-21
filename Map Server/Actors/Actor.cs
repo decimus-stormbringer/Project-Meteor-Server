@@ -74,6 +74,7 @@ namespace Meteor.Map.Actors
         public ushort moveState, oldMoveState;
         public float[] moveSpeeds = new float[4];
 
+        public uint zoneId2;
         public Area CurrentArea { set; get; }
         public bool IsZoneing { set; get; }
 
