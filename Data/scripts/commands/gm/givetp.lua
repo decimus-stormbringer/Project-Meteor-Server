@@ -5,14 +5,13 @@ properties = {
     parameters = "sss",
     description =
 [[
-Sets player or <targetname>'s maximum tp to <tp> and heals them to full.
-!setmaxtp <tp> |
-!setmaxtp <tp> <targetname>
+Adds TP <amount> to player. 
+!givetp <tp> |
 ]],
 }
 
 function onTrigger(player, argc, tp)
-    local sender = "[setmaxtp] ";
+    local sender = "[givetp] ";
     
     tp = tonumber(tp) or 0;
 	player:AddTP(tp);
