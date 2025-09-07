@@ -155,6 +155,63 @@ namespace Meteor.Map.Actors
             this.aiContainer = new AIContainer(this, null, new PathFind(this), new TargetFind(null));
         }
 
+        //For handling battle NPCs
+        public Npc(int actorNumber, ActorClass actorClass, string uniqueId, string displayName, Area spawnedArea, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, uint mapObjLayoutId = 0, uint mapObjInstanceId = 0)
+            : base((4 << 28 | spawnedArea.Id << 19 | ((uint)actorNumber + 5)))
+        {
+            
+            this.positionX = posX;
+            this.positionY = posY;
+            this.positionZ = posZ;
+            this.rotation = rot;
+            this.currentMainState = actorState;
+            this.animationId = animationId;
+
+            this.DisplayName = displayName;                                    //Fetch name as typed in Database
+            //this.LocalizedDisplayName = actorClass.displayNameId;            //Fetch name from DisplayNameID in GameData_Actor_Class
+
+            this.uniqueIdentifier = uniqueId;
+
+            CurrentArea = spawnedArea;
+
+            this.actorClassId = actorClass.actorClassId;
+
+            this.currentSubState.motionPack = (ushort)animationId;
+
+            LoadNpcAppearance(actorClass.actorClassId);
+
+            className = actorClass.classPath.Substring(actorClass.classPath.LastIndexOf("/") + 1);
+            this.classPath = String.Format("{0}/{1}", actorClass.classPath.Substring(0, actorClass.classPath.LastIndexOf('/')).ToLower(), className);
+
+            charaWork.battleSave.potencial = 1.0f;
+
+            // todo: these really need to be read from db etc
+            {
+                //charaWork.parameterSave.state_mainSkill[0] = 3;
+                //charaWork.parameterSave.state_mainSkill[2] = 3;
+                //charaWork.parameterSave.state_mainSkillLevel = 1;
+
+                
+            }
+            for (int i = 0; i < 32; i++)
+                charaWork.property[i] = (byte)(((int)actorClass.propertyFlags >> i) & 1);
+
+            npcWork.pushCommand = actorClass.pushCommand;
+            npcWork.pushCommandSub = actorClass.pushCommandSub;
+            npcWork.pushCommandPriority = actorClass.pushCommandPriority;
+
+            if (mapObjLayoutId != 0 && mapObjInstanceId != 0)
+            {
+                isStatic = true;
+                IsMapObjChara = true;
+                MapObjLayoutId = mapObjLayoutId;
+                MapObjInstanceId = mapObjInstanceId;
+            }
+
+            GenerateActorName((int)actorNumber);
+            this.aiContainer = new AIContainer(this, null, new PathFind(this), new TargetFind(this));
+        }
+
         public SubPacket CreateAddActorPacket()
         {
             return AddActorPacket.BuildPacket(Id, 8);
@@ -291,7 +348,12 @@ namespace Meteor.Map.Actors
         {
             return actorClassId;
         }
-        
+
+        public int GetLocalizedDisplayName()
+        {
+            return LocalizedDisplayName;
+        }
+
         public void ChangeNpcAppearance(uint id)
         {
             LoadNpcAppearance(id);

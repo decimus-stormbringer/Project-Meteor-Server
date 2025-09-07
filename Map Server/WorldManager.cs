@@ -40,6 +40,7 @@ using Meteor.Map.actors.chara.ai;
 using Meteor.Map.actors.chara;
 using Meteor.Map.actors.chara.player;
 using Meteor.Map.packets.send.actor.inventory;
+using Meteor.Map.actors.chara.ai.controllers;
 
 namespace Meteor.Map
 {
@@ -56,9 +57,6 @@ namespace Meteor.Map
         private Dictionary<Tuple<byte, short>, List<ushort>> battleCommandIdByLevel = new Dictionary<Tuple<byte, short>, List<ushort>>();//Holds battle command ids keyed by class id and level (in that order)
         private Dictionary<ushort, BattleTrait> battleTraitList = new Dictionary<ushort, BattleTrait>();
         private Dictionary<byte, List<ushort>> battleTraitIdsForClass = new Dictionary<byte, List<ushort>>();
-        private Dictionary<uint, ModifierList> battleNpcGenusMods = new Dictionary<uint, ModifierList>();
-        private Dictionary<uint, ModifierList> battleNpcPoolMods = new Dictionary<uint, ModifierList>();
-        private Dictionary<uint, ModifierList> battleNpcSpawnMods = new Dictionary<uint, ModifierList>();
 
         private Server mServer;
 
@@ -391,9 +389,6 @@ namespace Meteor.Map
 
         public void LoadBattleNpcs()
         {
-            LoadBattleNpcModifiers("server_battlenpc_genus_mods", "genusId", battleNpcGenusMods);
-            LoadBattleNpcModifiers("server_battlenpc_pool_mods", "poolId", battleNpcPoolMods);
-            LoadBattleNpcModifiers("server_battlenpc_spawn_mods", "bnpcId", battleNpcSpawnMods);
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -401,19 +396,16 @@ namespace Meteor.Map
                 {
                     conn.Open();
                     var query = @"
-                    SELECT bsl.bnpcId, bsl.groupId, bsl.positionX, bsl.positionY, bsl.positionZ, bsl.rotation, 
-                    bgr.groupId, bgr.poolId, bgr.scriptName, bgr.minLevel, bgr.maxLevel, bgr.respawnTime, bgr.hp, bgr.mp,
-                    bgr.dropListId, bgr.allegiance, bgr.spawnType, bgr.animationId, bgr.actorState, bgr.privateAreaName, bgr.privateAreaLevel, bgr.zoneId,
-                    bpo.poolId, bpo.genusId, bpo.actorClassId, bpo.currentJob, bpo.combatSkill, bpo.combatDelay, bpo.combatDmgMult, bpo.aggroType,
-                    bpo.immunity, bpo.linkType, bpo.skillListId, bpo.spellListId,
-                    bge.genusId, bge.modelSize, bge.speed, bge.kindredId, bge.detection, bge.hpp, bge.mpp, bge.tpp, bge.str, bge.vit, bge.dex,
-                    bge.int, bge.mnd, bge.pie, bge.att, bge.acc, bge.def, bge.eva, bge.slash, bge.pierce, bge.h2h, bge.blunt,
-                    bge.fire, bge.ice, bge.wind, bge.lightning, bge.earth, bge.water, bge.element
+                    SELECT 
+                    bsl.id, bsl.bnpcId, bsl.uniqueId, bsl.zoneId, bsl.posX, bsl.posY, bsl.posZ, bsl.rot ,bsl.privateArea, bsl.privateAreaLevel,
+                    bsl.hpp, bsl.mpp, bsl.tpp, bsl.actorState, bsl.animId, bsl.roams, bsl.roamDelay, bsl.modelSize, bsl.immunity,    
+
+                    bmt.bnpcId, bmt.actorId, bmt.displayName, bmt.speed, bmt.aggroType, bmt.detection, bmt.respawntime, bmt.combatDelay, bmt.allegiance, bmt.currentJob, bmt.level,
+                    bmt.hp, bmt.hpMax, bmt.mpMax, bmt.str, bmt.vit, bmt.dex, bmt.int, bmt.mnd, bmt.pie, bmt.att, bmt.acc, bmt.def, bmt.eva, 
+                    bmt.slash, bmt.pierce, bmt.h2h, bmt.blunt, bmt.fire, bmt.ice, bmt.wind, bmt.lightning, bmt.earth, bmt.water, bmt.element
                     FROM server_battlenpc_spawn_locations bsl
-                    INNER JOIN server_battlenpc_groups bgr ON bsl.groupId = bgr.groupId
-                    INNER JOIN server_battlenpc_pools bpo ON bgr.poolId = bpo.poolId
-                    INNER JOIN server_battlenpc_genus bge ON bpo.genusId = bge.genusId
-                    WHERE bgr.zoneId = @zoneId GROUP BY bsl.bnpcId;
+                    INNER JOIN server_battlenpc_mob_types bmt ON bsl.bnpcId = bmt.bnpcId
+                    WHERE bsl.zoneId = @zoneId GROUP BY bsl.id;
                     ";
 
                     var count = 0;
@@ -428,43 +420,31 @@ namespace Meteor.Map
                         {
                             while (reader.Read())
                             {
-                                int actorId = zone.GetActorCount() + 1;
-
+                                int actorId = zone.GetActorCount() + 1;                           
+                                ActorClass bnpcId = Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorId"));
                                 // todo: add to private areas, set up immunity, mob linking,
-                                // - load skill/spell/drop lists, set detection icon, load pool/family/group mods
+                                // - load skill/spell/drop lists, set detection icon, load pool/family/group mods                            
 
-                                var battleNpc = new BattleNpc(actorId, Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorClassId")),
-                                    reader.GetString("scriptName"), zone, reader.GetFloat("positionX"), reader.GetFloat("positionY"), reader.GetFloat("positionZ"), reader.GetFloat("rotation"),
-                                    reader.GetUInt16("actorState"), reader.GetUInt32("animationId"), "");
+                                BattleNpc battleNpc = new BattleNpc(actorId, bnpcId, reader.GetString("uniqueId"), reader.GetString("displayName"),
+                                zone, reader.GetFloat("posX"), reader.GetFloat("posY"), reader.GetFloat("posZ"),
+                                reader.GetFloat("rot"), reader.GetUInt16("actorState"), reader.GetUInt32("animId"));
 
                                 battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
-
-                                battleNpc.poolId = reader.GetUInt32("poolId");
-                                battleNpc.genusId = reader.GetUInt32("genusId");
-                                battleNpcPoolMods.TryGetValue(battleNpc.poolId, out battleNpc.poolMods);
-                                battleNpcGenusMods.TryGetValue(battleNpc.genusId, out battleNpc.genusMods);
-                                battleNpcSpawnMods.TryGetValue(battleNpc.GetBattleNpcId(), out battleNpc.spawnMods);
-
-                                battleNpc.SetMod((uint)Modifier.MovementSpeed, reader.GetByte("speed"));
                                 battleNpc.neutral = reader.GetByte("aggroType") == 0;
-
                                 battleNpc.SetDetectionType(reader.GetUInt32("detection"));
-                                battleNpc.kindredType = (KindredType)reader.GetUInt32("kindredId");
-                                battleNpc.npcSpawnType = (NpcSpawnType)reader.GetUInt32("spawnType");
 
                                 battleNpc.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte("currentJob");
-                                battleNpc.charaWork.parameterSave.state_mainSkillLevel = (short)Program.Random.Next(reader.GetByte("minLevel"), reader.GetByte("maxLevel"));
+                                battleNpc.charaWork.parameterSave.state_mainSkillLevel = reader.GetByte("level");
+                                battleNpc.charaWork.parameterSave.hp[0] = (short) reader.GetUInt32("hp");
+                                battleNpc.charaWork.parameterSave.hpMax[0] = (short) reader.GetUInt32("hpMax");
 
                                 battleNpc.allegiance = (CharacterTargetingAllegiance)reader.GetByte("allegiance");
 
                                 // todo: setup private areas and other crap and
-                                // set up rest of stat resists
-                                battleNpc.SetMod((uint)Modifier.Hp, reader.GetUInt32("hp"));
+                                // set up rest of stat resists 
                                 battleNpc.SetMod((uint)Modifier.HpPercent, reader.GetUInt32("hpp"));
-                                battleNpc.SetMod((uint)Modifier.Mp, reader.GetUInt32("mp"));
                                 battleNpc.SetMod((uint)Modifier.MpPercent, reader.GetUInt32("mpp"));
                                 battleNpc.SetMod((uint)Modifier.TpPercent, reader.GetUInt32("tpp"));
-
                                 battleNpc.SetMod((uint)Modifier.Strength, reader.GetUInt32("str"));
                                 battleNpc.SetMod((uint)Modifier.Vitality, reader.GetUInt32("vit"));
                                 battleNpc.SetMod((uint)Modifier.Dexterity, reader.GetUInt32("dex"));
@@ -475,17 +455,18 @@ namespace Meteor.Map
                                 battleNpc.SetMod((uint)Modifier.Accuracy, reader.GetUInt32("acc"));
                                 battleNpc.SetMod((uint)Modifier.Defense, reader.GetUInt32("def"));
                                 battleNpc.SetMod((uint)Modifier.Evasion, reader.GetUInt32("eva"));
-
-                                battleNpc.dropListId = reader.GetUInt32("dropListId");
-                                battleNpc.spellListId = reader.GetUInt32("spellListId");
-                                battleNpc.skillListId = reader.GetUInt32("skillListId");
-
-                                //battleNpc.SetMod((uint)Modifier.ResistFire, )
-
-                                // todo: this is dumb
+                                battleNpc.SetMod((uint)Modifier.MovementSpeed, reader.GetByte("speed"));
+                                battleNpc.SetMobMod((uint)MobModifier.Roams, reader.GetByte("roams"));
+                                battleNpc.SetMobMod((uint)MobModifier.RoamDelay, reader.GetUInt32("roamDelay"));
+                                battleNpc.SetRespawnTime(reader.GetUInt32("respawnTime"));
+                                //battleNpc.SetMod((uint)Modifier.ResistFire, reader.GetUInt("fire"));
+                        
+                                // handles spawning conditionsb (ie. Night/Day/Weather/Etc).
                                 if (battleNpc.npcSpawnType == NpcSpawnType.Normal)
                                 {
                                     zone.AddActorToZone(battleNpc);
+                                    battleNpc.LoadEventConditions(bnpcId.eventConditions);
+                                    battleNpc.ResetMoveSpeeds();
                                     count++;
                                 }
                             }
@@ -521,25 +502,23 @@ namespace Meteor.Map
                 {
                     conn.Open();
                     var query = @"
-                    SELECT bsl.bnpcId, bsl.groupId, bsl.positionX, bsl.positionY, bsl.positionZ, bsl.rotation, 
-                    bgr.groupId, bgr.poolId, bgr.scriptName, bgr.minLevel, bgr.maxLevel, bgr.respawnTime, bgr.hp, bgr.mp,
-                    bgr.dropListId, bgr.allegiance, bgr.spawnType, bgr.animationId, bgr.actorState, bgr.privateAreaName, bgr.privateAreaLevel, bgr.zoneId,
-                    bpo.poolId, bpo.genusId, bpo.actorClassId, bpo.currentJob, bpo.combatSkill, bpo.combatDelay, bpo.combatDmgMult, bpo.aggroType,
-                    bpo.immunity, bpo.linkType, bpo.skillListId, bpo.spellListId,
-                    bge.genusId, bge.modelSize, bge.speed, bge.kindredId, bge.detection, bge.hpp, bge.mpp, bge.tpp, bge.str, bge.vit, bge.dex,
-                    bge.int, bge.mnd, bge.pie, bge.att, bge.acc, bge.def, bge.eva, bge.slash, bge.pierce, bge.h2h, bge.blunt,
-                    bge.fire, bge.ice, bge.wind, bge.lightning, bge.earth, bge.water, bge.element
+                    SELECT
+                    bsl.id, bsl.bnpcId, bsl.uniqueId, bsl.zoneId, bsl.posX, bsl.posY, bsl.posZ, bsl.rot, bsl.privateArea, bsl.privateAreaLevel,
+                    bsl.hpp, bsl.mpp, bsl.tpp, bsl.actorState, bsl.animId, bsl.roams, bsl.roamDelay, bsl.modelSize, bsl.immunity, 
+
+                    bmt.bnpcId, bmt.actorId, bmt.displayName, bmt.speed, bmt.aggroType, bmt.detection, bmt.respawntime, bmt.combatDelay, bmt.allegiance, bmt.currentJob, bmt.level,
+                    bmt.hp, bmt.hpMax, bmt.mpMax, bmt.str, bmt.vit, bmt.dex, bmt.int, bmt.mnd, bmt.pie, bmt.att, bmt.acc, bmt.def, bmt.eva, 
+                    bmt.slash, bmt.pierce, bmt.h2h, bmt.blunt, bmt.fire, bmt.ice, bmt.wind, bmt.lightning, bmt.earth, bmt.water, bmt.element
+
                     FROM server_battlenpc_spawn_locations bsl
-                    INNER JOIN server_battlenpc_groups bgr ON bsl.groupId = bgr.groupId
-                    INNER JOIN server_battlenpc_pools bpo ON bgr.poolId = bpo.poolId
-                    INNER JOIN server_battlenpc_genus bge ON bpo.genusId = bge.genusId
-                    WHERE bsl.bnpcId = @bnpcId GROUP BY bsl.bnpcId;
+                    INNER JOIN server_battlenpc_mob_types bmt ON bsl.bnpcId = bmt.bnpcId
+                    WHERE bsl.id = @id GROUP BY bsl.id;
                     ";
 
                     var count = 0;
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@bnpcId", id);
+                    cmd.Parameters.AddWithValue("@id", id);
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
@@ -547,6 +526,7 @@ namespace Meteor.Map
                         {
                             area = area ?? Server.GetWorldManager().GetArea(reader.GetUInt16("zoneId"));
                             int actorId = area.GetActorCount() + 1;
+
                             bnpc = area.GetBattleNpcById(id);
 
                             if (bnpc != null)
@@ -554,49 +534,36 @@ namespace Meteor.Map
                                 bnpc.ForceRespawn();
                                 break;
                             }
-
+                            ActorClass bnpcId = Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorId")); 
                             // todo: add to private areas, set up immunity, mob linking,
                             // - load skill/spell/drop lists, set detection icon, load pool/family/group mods
                             var allegiance = (CharacterTargetingAllegiance)reader.GetByte("allegiance");
                             BattleNpc battleNpc = null;
 
                             if (allegiance == CharacterTargetingAllegiance.Player)
-                                battleNpc = new Ally(actorId, Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorClassId")),
-                                reader.GetString("scriptName"), area, reader.GetFloat("positionX"), reader.GetFloat("positionY"), reader.GetFloat("positionZ"), reader.GetFloat("rotation"),
-                                reader.GetUInt16("actorState"), reader.GetUInt32("animationId"), "");
+                                battleNpc = new Ally(actorId, bnpcId, reader.GetString("uniqueId"), reader.GetString("displayName"),
+                                area, reader.GetFloat("posX"), reader.GetFloat("posY"), reader.GetFloat("posZ"),
+                                reader.GetFloat("rot"), reader.GetUInt16("actorState"), reader.GetUInt32("animId"));
                             else
-                                battleNpc = new BattleNpc(actorId, Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorClassId")),
-                                reader.GetString("scriptName"), area, reader.GetFloat("positionX"), reader.GetFloat("positionY"), reader.GetFloat("positionZ"), reader.GetFloat("rotation"),
-                                reader.GetUInt16("actorState"), reader.GetUInt32("animationId"), "");
-                            
+                                battleNpc = new BattleNpc(actorId, bnpcId, reader.GetString("uniqueId"), reader.GetString("displayName"),
+                                area, reader.GetFloat("posX"), reader.GetFloat("posY"), reader.GetFloat("posZ"),
+                                reader.GetFloat("rot"), reader.GetUInt16("actorState"), reader.GetUInt32("animId"));
+
                             battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
-                            battleNpc.SetMod((uint)Modifier.MovementSpeed, reader.GetByte("speed"));
                             battleNpc.neutral = reader.GetByte("aggroType") == 0;
-
-                            // set mob mods
-                            battleNpc.poolId = reader.GetUInt32("poolId");
-                            battleNpc.genusId = reader.GetUInt32("genusId");
-                            battleNpcPoolMods.TryGetValue(battleNpc.poolId, out battleNpc.poolMods);
-                            battleNpcGenusMods.TryGetValue(battleNpc.genusId, out battleNpc.genusMods);
-                            battleNpcSpawnMods.TryGetValue(battleNpc.GetBattleNpcId(), out battleNpc.spawnMods);
-
                             battleNpc.SetDetectionType(reader.GetUInt32("detection"));
-                            battleNpc.kindredType = (KindredType)reader.GetUInt32("kindredId");
-                            battleNpc.npcSpawnType = (NpcSpawnType)reader.GetUInt32("spawnType");
 
                             battleNpc.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte("currentJob");
-                            battleNpc.charaWork.parameterSave.state_mainSkillLevel = (short)Program.Random.Next(reader.GetByte("minLevel"), reader.GetByte("maxLevel"));
-
+                            battleNpc.charaWork.parameterSave.state_mainSkillLevel = reader.GetByte("level");
+                            battleNpc.charaWork.parameterSave.hp[0] = (short) reader.GetUInt32("hp");
+                            battleNpc.charaWork.parameterSave.hpMax[0] = (short) reader.GetUInt32("hpMax");
                             battleNpc.allegiance = (CharacterTargetingAllegiance)reader.GetByte("allegiance");
 
                             // todo: setup private areas and other crap and
-                            // set up rest of stat resists
-                            battleNpc.SetMod((uint)Modifier.Hp, reader.GetUInt32("hp"));
+                            // set up rest of stat resists  
                             battleNpc.SetMod((uint)Modifier.HpPercent, reader.GetUInt32("hpp"));
-                            battleNpc.SetMod((uint)Modifier.Mp, reader.GetUInt32("mp"));
                             battleNpc.SetMod((uint)Modifier.MpPercent, reader.GetUInt32("mpp"));
                             battleNpc.SetMod((uint)Modifier.TpPercent, reader.GetUInt32("tpp"));
-
                             battleNpc.SetMod((uint)Modifier.Strength, reader.GetUInt32("str"));
                             battleNpc.SetMod((uint)Modifier.Vitality, reader.GetUInt32("vit"));
                             battleNpc.SetMod((uint)Modifier.Dexterity, reader.GetUInt32("dex"));
@@ -607,54 +574,18 @@ namespace Meteor.Map
                             battleNpc.SetMod((uint)Modifier.Accuracy, reader.GetUInt32("acc"));
                             battleNpc.SetMod((uint)Modifier.Defense, reader.GetUInt32("def"));
                             battleNpc.SetMod((uint)Modifier.Evasion, reader.GetUInt32("eva"));
-
-                            if (battleNpc.poolMods != null)
-                            {
-                                foreach (var a in battleNpc.poolMods.mobModList)
-                                {
-                                    battleNpc.SetMobMod(a.Value.id, (long)(a.Value.value));
-                                }
-                                foreach (var a in battleNpc.poolMods.modList)
-                                {
-                                    battleNpc.SetMod(a.Key, (long)(a.Value.value));
-                                }
-                            }
-
-                            if (battleNpc.genusMods != null)
-                            {
-                                foreach (var a in battleNpc.genusMods.mobModList)
-                                {
-                                    battleNpc.SetMobMod(a.Key, (long)(a.Value.value));
-                                }
-                                foreach (var a in battleNpc.genusMods.modList)
-                                {
-                                    battleNpc.SetMod(a.Key, (long)(a.Value.value));
-                                }
-                            }
-
-                            if(battleNpc.spawnMods != null)
-                            {
-                                foreach (var a in battleNpc.spawnMods.mobModList)
-                                {
-                                    battleNpc.SetMobMod(a.Key, (long)(a.Value.value));
-                                }
-
-                                foreach (var a in battleNpc.spawnMods.modList)
-                                {
-                                    battleNpc.SetMod(a.Key, (long)(a.Value.value));
-                                }
-                            }
-
-                            battleNpc.dropListId = reader.GetUInt32("dropListId");
-                            battleNpc.spellListId = reader.GetUInt32("spellListId");
-                            battleNpc.skillListId = reader.GetUInt32("skillListId");
-                            battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
+                            battleNpc.SetMod((uint)Modifier.MovementSpeed, reader.GetByte("speed"));
                             battleNpc.SetRespawnTime(reader.GetUInt32("respawnTime"));
+                            battleNpc.SetMobMod((uint)MobModifier.Roams, reader.GetByte("roams"));
+                            battleNpc.SetMobMod((uint)MobModifier.RoamDelay, reader.GetUInt32("roamDelay"));
                             battleNpc.CalculateBaseStats();
                             battleNpc.RecalculateStats();
                             //battleNpc.SetMod((uint)Modifier.ResistFire, )
+
                             bnpc = battleNpc;
                             area.AddActorToZone(battleNpc);
+                            battleNpc.LoadEventConditions(bnpcId.eventConditions);
+                            battleNpc.ResetMoveSpeeds();
                             count++;
                         }
                     }
@@ -670,39 +601,6 @@ namespace Meteor.Map
                 }
             }
             return bnpc;
-        }
-
-        public void LoadBattleNpcModifiers(string tableName, string primaryKey, Dictionary<uint, ModifierList> list)
-        {
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                try
-                {
-                    conn.Open();
-                    var query = $"SELECT {primaryKey}, modId, modVal, isMobMod FROM {tableName}";
-
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            var id = reader.GetUInt32(primaryKey);
-                            ModifierList modList = list.TryGetValue(id, out modList) ? modList : new ModifierList(id);
-                            modList.SetModifier(reader.GetUInt16("modId"), reader.GetInt64("modVal"), reader.GetBoolean("isMobMod"));
-                            list[id] = modList;
-                        }
-                    }
-                }
-                catch (MySqlException e)
-                {
-                    Program.Log.Error(e.ToString());
-                }
-                finally
-                {
-                    conn.Dispose();
-                }
-            }
         }
 
         private bool hasMerged = false;

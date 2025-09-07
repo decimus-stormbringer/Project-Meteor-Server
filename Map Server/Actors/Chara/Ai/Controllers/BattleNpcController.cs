@@ -231,7 +231,7 @@ namespace Meteor.Map.actors.chara.ai.controllers
                 Disengage();
                 return;
             }
-            owner.SetMod((uint)Modifier.MovementSpeed, 5);
+            owner.SetMod((uint)Modifier.MovementSpeed, 30);
             if ((tick - lastCombatTickScript).TotalSeconds > 3)
             {
                 Move();

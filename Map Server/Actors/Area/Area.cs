@@ -525,7 +525,7 @@ namespace Meteor.Map.Actors
             }
         }
 
-        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0, bool isMob = false)
+        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0)
         {
             lock (mActorList)
             {
@@ -535,14 +535,32 @@ namespace Meteor.Map.Actors
                     return null;
 
                 Npc npc;
-                if (isMob)
-                    npc = new BattleNpc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
-                else
                     npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
 
                 npc.LoadEventConditions(actorClass.eventConditions);
                 npc.SetMaxHP(100);
                 npc.SetHP(100);
+                npc.ResetMoveSpeeds();
+
+                AddActorToZone(npc);
+
+                return npc;
+            }
+        }
+
+        //For handling BattleNpcs
+        public Npc SpawnActor(uint classId, string uniqueId, string displayName, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0)
+        {
+            lock (mActorList)
+            {
+                ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
+
+                if (actorClass == null)
+                    return null;
+
+                Npc npc = new BattleNpc(mActorList.Count + 1, actorClass, uniqueId, displayName, this, x, y, z, rot, state, animId);
+
+                npc.LoadEventConditions(actorClass.eventConditions);
                 npc.ResetMoveSpeeds();
 
                 AddActorToZone(npc);
@@ -569,7 +587,8 @@ namespace Meteor.Map.Actors
                 return npc;
             }
         }
-
+        
+        //For handling path companions. 
         public Npc SpawnActor(uint classId, string uniqueId, string displayName, float x, float y, float z, float rot)
         {
             lock (mActorList)

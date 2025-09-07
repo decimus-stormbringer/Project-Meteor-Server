@@ -18,36 +18,45 @@
 --
 -- Table structure for table `server_battlenpc_spawn_locations`
 --
+CREATE DATABASE if NOT EXISTS `ffxiv_server` /*!40100 DEFAULT CHARACTER SET latin1 */;
+USE `ffxiv_server`;
 
 DROP TABLE IF EXISTS `server_battlenpc_spawn_locations`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `server_battlenpc_spawn_locations` (
-  `bnpcId` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `customDisplayName` varchar(32) NOT NULL DEFAULT '',
-  `groupId` int(10) unsigned NOT NULL,
-  `positionX` float NOT NULL,
-  `positionY` float NOT NULL,
-  `positionZ` float NOT NULL,
-  `rotation` float NOT NULL,
-  PRIMARY KEY (`bnpcId`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE IF NOT EXISTS `server_battlenpc_spawn_locations` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `bnpcId` int(10) unsigned NOT NULL,
+  `uniqueId` varchar(255) NOT NULL DEFAULT '',
+  `zoneId` smallint(5) unsigned NOT NULL,
+  `posX` float NOT NULL,
+  `posY` float NOT NULL,
+  `posZ` float NOT NULL,
+  `rot` float NOT NULL,
+  `privateArea` varchar(32) NOT NULL DEFAULT '',
+  `privateAreaLevel` int(11) NOT NULL DEFAULT '0',
+  `hpp` smallint(5) unsigned NOT NULL DEFAULT '100',
+  `mpp` smallint(5) unsigned NOT NULL DEFAULT '100',
+  `tpp` smallint(5) unsigned NOT NULL DEFAULT '100',
+  `actorState` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `animId` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `roams` boolean NOT NULL DEFAULT '1',
+  `roamDelay` tinyint(3) unsigned NOT NULL DEFAULT '10',
+  `modelSize` tinyint(3) unsigned NOT NULL DEFAULT '1',
+  `immunity` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = 'utf8' */;
 
 --
 -- Dumping data for table `server_battlenpc_spawn_locations`
---
-
-LOCK TABLES `server_battlenpc_spawn_locations` WRITE;
 /*!40000 ALTER TABLE `server_battlenpc_spawn_locations` DISABLE KEYS */;
-set autocommit=0;
-INSERT INTO `server_battlenpc_spawn_locations` VALUES (1,'test',1,25.584,200,-450,-2.514);
-INSERT INTO `server_battlenpc_spawn_locations` VALUES (2,'test',1,20,200,-444,-3.14);
-INSERT INTO `server_battlenpc_spawn_locations` VALUES (3,'bloodthirsty_wolf',2,374.427,4.4,-698.711,-1.942);
-INSERT INTO `server_battlenpc_spawn_locations` VALUES (4,'bloodthirsty_wolf',2,375.377,4.4,-700.247,-1.992);
-INSERT INTO `server_battlenpc_spawn_locations` VALUES (5,'bloodthirsty_wolf',2,375.125,4.4,-703.591,-1.54);
-INSERT INTO `server_battlenpc_spawn_locations` VALUES (6,'yda',3,365.266,4.122,-700.73,1.5659);
-INSERT INTO `server_battlenpc_spawn_locations` VALUES (7,'papalymo',4,365.89,4.0943,-706.72,-0.718);
+REPLACE INTO `server_battlenpc_spawn_locations` (`id`, `bnpcId`, `uniqueId`, `zoneId`, `posX`, `posY`, `posZ`, `rot`, `privateArea`, `privateAreaLevel`, `hpp`, `mpp`, `tpp`, `actorState`, `animId`, `roams`, `roamDelay`, `modelSize`, `immunity`) VALUES
+(1,1,'wharf_rat_1',			170,-17,184.4,-66,-2.51,'',0,		100,100,100,		0,0,1,10,1,0),
+(2,1,'wharf_rat_2',			170,-10,183.6,-70,-3.14,'',0,		100,100,100,		0,0,1,10,1,0),
+(3,1,'wharf_rat_3',			170,-15,184.5,-75,-3.15,'',0,		100,100,100,		0,0,1,10,1,0),
+(4,2,'sheep_1',				170,-12.5,183.6,-72.1,0,'',0,		100,100,100,		0,0,1,10,1,0),
+(5,2,'sheep_2',				170,-10.4,183.6,-66,0,'',0,			100,100,100,		0,0,1,10,1,0);
+
+
 /*!40000 ALTER TABLE `server_battlenpc_spawn_locations` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;

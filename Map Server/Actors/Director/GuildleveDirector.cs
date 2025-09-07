@@ -98,7 +98,7 @@ namespace Meteor.Map.actors.director
             propertyBuilder.AddProperty("guildleveWork.startTime");
             SendPacketsToPlayers(propertyBuilder.Done());            
         }
-
+        /*
         public void EndGuildleve(bool wasCompleted)
         {
             if (isEnded)
@@ -161,7 +161,7 @@ namespace Meteor.Map.actors.director
             EndGuildleve(false);
             EndDirector();
         }
-
+        */
         //Delete ContentGroup, change music back
         public void EndGuildleveDirector()
         {            

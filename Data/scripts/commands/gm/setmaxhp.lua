@@ -26,8 +26,9 @@ function onTrigger(player, argc, hp, name, lastName)
         hp = tonumber(hp) or 1;
         location = INVENTORY_CURRENCY;
         
-        player:hpstuff(hp);
+        player:SetMaxHP(hp);
+		player:AddHP(hp);
     else
-        print(sender.."unable to add experience, ensure player name is valid.");
+        print(sender.."unable to add hp, ensure player name is valid.");
     end;
 end;

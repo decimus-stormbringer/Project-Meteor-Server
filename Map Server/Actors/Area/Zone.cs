@@ -212,7 +212,7 @@ namespace Meteor.Map.actors.area
             {
                 if (this.pathCalls > 0)
                 {
-                    Program.Log.Debug("Number of pathfinding calls {0} average time {1}ms. {2} this tick", pathCalls, (float)(pathCallTime / pathCalls), pathCalls - prevPathCalls);
+                    //Program.Log.Debug("Number of pathfinding calls {0} average time {1}ms. {2} this tick", pathCalls, (float)(pathCallTime / pathCalls), pathCalls - prevPathCalls);
                     prevPathCalls = pathCalls;
                 }
                 lastUpdate = tick;

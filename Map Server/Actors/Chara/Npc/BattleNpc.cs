@@ -32,6 +32,7 @@ using Meteor.Map.packets.send.actor.battle;
 using Meteor.Map.actors.chara.ai.utils;
 using Meteor.Map.actors.group;
 using Meteor.Map.Actors.Chara;
+using Meteor.Map.packets.send.actor;
 
 namespace Meteor.Map.Actors
 {
@@ -73,32 +74,31 @@ namespace Meteor.Map.Actors
         protected uint spawnDistance;
         protected uint bnpcId;
         public Character lastAttacker;
+        public string uniqueIdentifier;
 
         public uint spellListId, skillListId, dropListId;
         public Dictionary<uint, BattleCommand> skillList = new Dictionary<uint, BattleCommand>();
         public Dictionary<uint, BattleCommand> spellList = new Dictionary<uint, BattleCommand>();
 
-        public uint poolId, genusId;
-        public ModifierList poolMods;
-        public ModifierList genusMods;
-        public ModifierList spawnMods;
 
-        protected Dictionary<MobModifier, Int64> mobModifiers = new Dictionary<MobModifier, Int64>();
+        protected Dictionary<MobModifier, Int64> mobModifiers = new Dictionary<MobModifier, Int64>();      
 
-        public BattleNpc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot,
-            ushort actorState, uint animationId, string customDisplayName)
-            : base(actorNumber, actorClass, uniqueId, spawnedArea, posX, posY, posZ, rot, actorState, animationId, customDisplayName)  
+        public BattleNpc(int actorNumber, ActorClass bnpcId, string uniqueId, string displayName, Area spawnedArea, float posX, float posY, float posZ, float rot,
+            ushort actorState, uint animId)
+            : base(actorNumber, bnpcId, uniqueId, displayName, spawnedArea, posX, posY, posZ, rot, actorState, animId)  
         {
             this.aiContainer = new AIContainer(this, new BattleNpcController(this), new PathFind(this), new TargetFind(this));
 
             //this.currentSubState = SetActorStatePacket.SUB_STATE_MONSTER;
-            //this.currentMainState = SetActorStatePacket.MAIN_STATE_ACTIVE;
+            this.currentMainState = SetActorStatePacket.MAIN_STATE_ACTIVE;
 
-            //charaWork.property[2] = 1;
-            //npcWork.hateType = 1;
+            charaWork.property[2] = 1;
+            npcWork.hateType = 1;
             
             this.hateContainer = new HateContainer(this);
             this.allegiance = CharacterTargetingAllegiance.BattleNpcs;
+
+            this.uniqueIdentifier = uniqueId;
 
             spawnX = posX;
             spawnY = posY;
@@ -188,6 +188,8 @@ namespace Meteor.Map.Actors
                 var propPacketUtil = new ActorPropertyPacketUtil("charaWork/stateAtQuicklyForAll", this);
                 propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[0]");
                 propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
+                propPacketUtil.AddProperty("charaWork.parameterSave.hp[0]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.hpMax[0]");
 
                 propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[0]");
                 propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[1]");
@@ -355,7 +357,7 @@ namespace Meteor.Map.Actors
                 // recover hp
                 if (GetHPP() < 100)
                 {
-                    AddHP(GetMaxHP() / 10);
+                    AddHP(GetMaxHP() / 1);
                 }
                 else
                 {

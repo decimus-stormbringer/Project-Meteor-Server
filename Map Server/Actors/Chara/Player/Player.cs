@@ -47,6 +47,8 @@ using Meteor.Map.packets.send.actor.battle;
 using Meteor.Map.packets.receive.events;
 using static Meteor.Map.LuaUtils;
 using Meteor.Map.packets.send.actor.events;
+using System.Threading.Tasks;
+using System.Threading;
 using System.Timers;
 
 namespace Meteor.Map.Actors
@@ -174,6 +176,7 @@ namespace Meteor.Map.Actors
         public byte SNpcSkin { set; get; }
         public byte SNpcPersonality { set; get; }
         public short SNpcCoordinate { set; get; }
+
 
         List<ushort> hotbarSlotsToUpdate = new List<ushort>();
 
@@ -860,29 +863,6 @@ namespace Meteor.Map.Actors
             Database.SavePlayerPosition(this);
         }
 
-        //Experimental Timer Code to Save Player POS on Timed Interval
-        /*private static System.Timers.Timer updatePlayerPos;
-
-        public static void UpdatePlayerPositionOnTimer(Player player)
-        {
-            SetTimer();
-            Database.SavePlayerPosition(player);
-            updatePlayerPos.Stop();
-            updatePlayerPos.Dispose();
-        }
-
-        private static void SetTimer()
-        {
-            updatePlayerPos = new System.Timers.Timer(10000);
-            updatePlayerPos.Elapsed += OnTimedEvent;
-            updatePlayerPos.AutoReset = true;
-            updatePlayerPos.Enabled = true;
-        }
-
-        private static void OnTimedEvent(Object source, ElapsedEventArgs e)
-        {
-            Console.WriteLine("The Elapsed event was raised at {0:HH:mm:ss.fff}",e.SignalTime);
-        }*/
 
         public void SendMessage(uint logType, string sender, string message)
         {
@@ -1014,7 +994,9 @@ namespace Meteor.Map.Actors
             ChangeState(0);
             UpdatePosition();
         }
-       
+
+
+
         public void DoEmote(uint targettedActor, uint animId, uint descId)
         {
             BroadcastPacket(ActorDoEmotePacket.BuildPacket(Id, targettedActor, animId, descId), true);
@@ -2437,7 +2419,6 @@ namespace Meteor.Map.Actors
         
         public override void Update(DateTime tick)
         {
-            
             // Chocobo Rental Expirey
             if (rentalExpireTime != 0)
             {
@@ -2518,6 +2499,30 @@ namespace Meteor.Map.Actors
             }
             
             base.PostUpdate(tick, packets);
+        }
+
+        public void RegenHp(DateTime tick)
+        {
+            if (this.GetState() == SetActorStatePacket.MAIN_STATE_ACTIVE)
+            {
+                AddHP(GetMaxHP() / 64);
+            }
+            else if (this.GetState() == SetActorStatePacket.MAIN_STATE_PASSIVE)
+            {
+                AddHP(GetMaxHP() / 16);
+            }
+        }
+
+        public void RegenMp(DateTime tick)
+        {
+            if (this.GetState() == SetActorStatePacket.MAIN_STATE_ACTIVE)
+            {
+                AddMP(3);
+            }
+            else if (this.GetState() == SetActorStatePacket.MAIN_STATE_PASSIVE)
+            {
+                AddMP(20);
+            }
         }
 
         public override void Die(DateTime tick, CommandResultContainer actionContainer = null)

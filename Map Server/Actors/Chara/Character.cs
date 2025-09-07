@@ -642,7 +642,7 @@ namespace Meteor.Map.Actors
         public void SetMP(uint mp)
         {
             charaWork.parameterSave.mp = (short)mp;
-            if (mp > charaWork.parameterSave.mpMax)
+            if (mp > charaWork.parameterSave.mp)
                 SetMaxMP(mp);
 
             updateFlags |= ActorUpdateFlags.HpTpMp;
@@ -650,7 +650,7 @@ namespace Meteor.Map.Actors
 
         public void SetMaxMP(uint mp)
         {
-            charaWork.parameterSave.mp = (short)mp;
+            charaWork.parameterSave.mpMax = (short)mp;
             updateFlags |= ActorUpdateFlags.HpTpMp;
         }
 

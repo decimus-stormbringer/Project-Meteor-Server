@@ -20,22 +20,29 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 */
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Meteor.Map.Actors;
 
 namespace Meteor.Map.actors.chara.ai.controllers
 {
     class PlayerController : Controller
     {
+
+        protected DateTime waitTime;
+
         private new Player owner;
         public PlayerController(Player owner) :
             base(owner)
         {
             this.owner = owner;
             this.lastUpdate = DateTime.Now;
+            this.waitTime = lastUpdate.AddSeconds(5);
         }
 
         public override void Update(DateTime tick)
         {
+            lastUpdate = tick;
             /*
             if (owner.newMainState != owner.currentMainState)
             {
@@ -49,6 +56,17 @@ namespace Meteor.Map.actors.chara.ai.controllers
                 }
                 owner.currentMainState = (ushort)owner.newMainState;
             }*/
+
+            //regen health
+            if (!owner.IsDead() && owner.GetHPP() < 100)
+            {
+                DoRegenTick(tick);
+            }
+
+            if (!owner.IsDead() && owner.GetMPP() < 100)
+            {
+                DoRegenTick(tick);
+            }
         }
 
         public override void ChangeTarget(Character target)
@@ -104,5 +122,17 @@ namespace Meteor.Map.actors.chara.ai.controllers
         {
             owner.aiContainer.InternalUseItem(target, slot, itemId);
         }
+
+        protected virtual void DoRegenTick(DateTime tick)
+        {
+            if (tick >= waitTime)
+            {
+                waitTime = tick.AddSeconds(5);
+                owner.RegenHp(tick);
+                owner.RegenMp(tick);
+
+            }
+        }
     }
+
 }

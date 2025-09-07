@@ -13,7 +13,7 @@ Gives player X amount of HP.
 function onTrigger(player, argc, hp)
     local sender = "[givehp] ";
     
-    mp = tonumber(hp) or 0;
+    hp = tonumber(hp) or 0;
 	player:AddHP(hp);
     
 end;

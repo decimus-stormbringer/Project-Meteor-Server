@@ -5,14 +5,14 @@ properties = {
     parameters = "sss",
     description =
 [[
-Sets player or <targetname>'s maximum hp to <hp> and heals them to full.
-!setmaxhp <hp> |
-!setmaxhp <hp> <targetname>
+Sets player or <targetname>'s maximum mp to <mp> and restores to full. 
+!setmaxmp <mp> |
+!setmaxmp <mp> <targetname>
 ]],
 }
 
-function onTrigger(player, argc, hp, name, lastName)
-    local sender = "[setmaxhp] ";
+function onTrigger(player, argc, mp, name, lastName)
+    local sender = "[setmaxmp] ";
     
     if name then
         if lastName then
@@ -23,11 +23,12 @@ function onTrigger(player, argc, hp, name, lastName)
     end;
     
     if player then
-        hp = tonumber(hp) or 1;
+        mp = tonumber(mp) or 1;
         location = INVENTORY_CURRENCY;
         
-        player:hpstuff(hp);
+        player:SetMaxMP(mp);
+		player:AddMP(mp);
     else
-        print(sender.."unable to add experience, ensure player name is valid.");
+        print(sender.."unable to add mp, ensure player name is valid.");
     end;
 end;

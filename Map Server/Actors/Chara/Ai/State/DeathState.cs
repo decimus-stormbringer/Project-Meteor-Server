@@ -34,8 +34,8 @@ namespace Meteor.Map.actors.chara.ai.state
             owner.Disengage();
             owner.ChangeState(SetActorStatePacket.MAIN_STATE_DEAD);
             owner.statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnDeath);
-            //var deathStatePacket = SetActorStatePacket.BuildPacket(owner.actorId, SetActorStatePacket.MAIN_STATE_DEAD2, owner.currentSubState);
-            //owner.zone.BroadcastPacketAroundActor(owner, deathStatePacket);
+            //var deathStatePacket = SetActorStatePacket.BuildPacket(owner.Id, SetActorStatePacket.MAIN_STATE_DEAD2, owner.currentSubState);
+            //owner.CurrentArea.BroadcastPacketAroundActor(owner, deathStatePacket);
             canInterrupt = false;
             startTime = tick;
             despawnTime = startTime.AddSeconds(timeToFadeOut);

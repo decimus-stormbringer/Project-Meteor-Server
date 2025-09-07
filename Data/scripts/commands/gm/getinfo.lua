@@ -21,7 +21,7 @@ function onTrigger(player)
         return
     end
     
-	
+	--player:SendMessage(messageID, sender, string.format("UniqueId: ", targetActor.GetUniqueId()));   --TO DO: Figure out how to get this to work
 	player:SendMessage(messageID, sender, string.format("Position (XYZ-O): %.3f, %.3f, %.3f - %.3f", targetActor.positionX, targetActor.positionY, targetActor.positionZ, targetActor.rotation));
 	player:SendMessage(messageID, sender, string.format("Actor ID: 0x%X", targetActor.Id));
 	player:SendMessage(messageID, sender, string.format("Class Name: %s", targetActor.className));
