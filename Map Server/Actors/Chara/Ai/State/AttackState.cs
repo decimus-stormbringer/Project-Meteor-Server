@@ -24,6 +24,7 @@ using Meteor.Common;
 using Meteor.Map.Actors;
 using Meteor.Map.packets.send.actor;
 using Meteor.Map.packets.send.actor.battle;
+using NLog.LayoutRenderers.Wrappers;
 namespace Meteor.Map.actors.chara.ai.state
 {
     class AttackState : State
@@ -126,17 +127,62 @@ namespace Meteor.Map.actors.chara.ai.state
             //Some mobs have multiple unique auto attacks that they switch between as well as ranged auto attacks, so we'll need a way to handle that
             //For now, just use a temporary hardcoded BattleCommand that's the same for everyone.
             BattleCommand attackCommand = new BattleCommand(22104, "Attack");
-            attackCommand.range = 5;
+            attackCommand.range = 6;
             attackCommand.rangeHeight = 10;
             attackCommand.worldMasterTextId = 0x765D;
             attackCommand.mainTarget = (ValidTarget)768;
             attackCommand.validTarget = (ValidTarget)17152;
             attackCommand.commandType = CommandType.AutoAttack;
             attackCommand.numHits = (byte)owner.GetMod(Modifier.HitCount);
-            attackCommand.basePotency = 100;
+            //attackCommand.basePotency = 8;
             ActionProperty property = (owner.GetMod(Modifier.AttackType) != 0) ? (ActionProperty)owner.GetMod(Modifier.AttackType) : ActionProperty.Slashing;
             attackCommand.actionProperty = property;
             attackCommand.actionType = ActionType.Physical;
+
+            // Fetch current class/job
+            Job currentClass = owner.GetCurrentClassOrJob();
+
+            // Adjust basePotency based on class
+            switch (currentClass)
+            {
+                // For handling mob damage.
+                default:
+                    attackCommand.basePotency += (ushort)((ushort)(owner.GetMod(Modifier.Damage) + (short)(owner.GetMod(Modifier.Attack))));
+                    break;
+                case Job.Gladiator:
+                case Job.Paladin:
+                    attackCommand.basePotency += (ushort)((ushort)((owner.GetMod(Modifier.Damage) * 0.75) + (short)(owner.GetMod(Modifier.Strength) * 0.85) + (ushort)(owner.GetMod(Modifier.Mind) * 0.65)));
+                    break;
+                case Job.Marauder:
+                case Job.Warrior:
+                    attackCommand.basePotency += (ushort)((ushort)((owner.GetMod(Modifier.Damage) * 0.50) + (short)(owner.GetMod(Modifier.Strength) * 0.85) + (ushort)(owner.GetMod(Modifier.Vitality) * 0.65)));
+                    break;
+                case Job.Lancer:
+                case Job.Dragoon:
+                    attackCommand.basePotency += (ushort)((ushort)((owner.GetMod(Modifier.Damage) * 0.75) + (short)(owner.GetMod(Modifier.Strength) * 0.85) + (ushort)(owner.GetMod(Modifier.Piety) * 0.65)));
+                    break;
+                case Job.Pugilist:
+                case Job.Monk:
+                    attackCommand.basePotency += (ushort)(((ushort)(owner.GetMod(Modifier.Damage) + (short)(owner.GetMod(Modifier.Strength) * 0.85) + (ushort)(owner.GetMod(Modifier.Intelligence) * 0.65))) / 2);
+                    break;
+                case Job.Archer:
+                case Job.Bard:
+                    attackCommand.basePotency += (ushort)((ushort)(owner.GetMod(Modifier.Damage) + (short)(owner.GetMod(Modifier.Dexterity) * 0.85) + (ushort)(owner.GetMod(Modifier.Piety) * 0.65)));
+                    break;
+                case Job.Conjurer:
+                case Job.WhiteMage:
+                    attackCommand.basePotency += (ushort)((ushort)(owner.GetMod(Modifier.Damage) + (short)(owner.GetMod(Modifier.Mind) * 0.85) + (ushort)(owner.GetMod(Modifier.Piety) * 0.65)));
+                    break;
+                case Job.Thaumaturge:
+                case Job.BlackMage:
+                    attackCommand.basePotency += (ushort)((ushort)(owner.GetMod(Modifier.Damage) + (short)(owner.GetMod(Modifier.Mind) * 0.85) + (ushort)(owner.GetMod(Modifier.Piety) * 0.65)));
+                    break;
+            }
+
+            // Apply ~25% variance in basePotency for added randomness. 
+            Random rng = new Random();
+            double variance = 0.75 + (rng.NextDouble() * 0.5); // [0.75, 1.25]
+            attackCommand.basePotency = (ushort)(attackCommand.basePotency * variance);
 
             uint anim = (17 << 24 | 1 << 12);
 

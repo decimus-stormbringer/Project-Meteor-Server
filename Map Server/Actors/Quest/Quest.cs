@@ -19,6 +19,7 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using Meteor.Map.DataObjects;
 using Meteor.Map.lua;
 using System;
 using System.Collections.Generic;
@@ -64,7 +65,7 @@ namespace Meteor.Map.Actors.QuestNS
         {
             this.owner = owner;
             currentSequence = sequence;
-            data = new QuestData(owner, this, flags, counter1, counter2, counter3, counter4, npcLsFrom, npcLsMsgStep);
+            data = new QuestData(owner, this, sequence, flags, counter1, counter2, counter3, counter4, npcLsFrom, npcLsMsgStep);
             questState = new QuestState(owner, this);
             questState.UpdateState();
         }
@@ -283,6 +284,19 @@ namespace Meteor.Map.Actors.QuestNS
             currentSequence = SEQ_NOT_STARTED;
             data = null;
             questState.UpdateState();
+        }
+
+        public static string GetQuestName(uint questId)
+        {
+            var gamedata = Database.GetQuestGamedata();
+
+            if (gamedata.TryGetValue(questId, out QuestGameData data))
+            {
+                return data.Name;
+            }
+
+            Program.Log.Warn($"GetQuestName: Quest ID {questId} not found in gamedata_quests.");
+            return "Unknown Quest";
         }
     }
 }

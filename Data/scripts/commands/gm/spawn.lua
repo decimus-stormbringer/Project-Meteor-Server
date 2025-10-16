@@ -26,24 +26,23 @@ function onTrigger(player, argc, actorClassId, width, height, blockCount)
 
          
 	local actorClassId = tonumber(actorClassId);
-	--local displayName = npc:GetLocalizedDisplayName();    -- Figure out how to get this to work. 
 
 	-- if battlenpc
 	if (actorClassId >= 2000000 and actorClassId <= 3000000) then
 		for b = 0, blocks do
 			for i = 0, w do
 				for j = 0, h do
-					actor = player.CurrentArea:SpawnActor(actorClassId, "", "Wharf Rat", x + (i - (w / 2) * 3), y, z + (j - (h / 2) * 3), rot, 0, 0);
-					--actor.SetAppearance(1001149)
-					actor.SetMaxHP(500);
-					actor.SetHP(500);
-					--actor.SetMod(modifiersGlobal.CanBlock, 1);
-					--actor.SetMod(modifiersGlobal.AttackRange, 3);
-					--actor.SetMod(modifiersGlobal.MovementSpeed, 5);
-					--actor.SetMobMod(mobModifiersGlobal.Roams, 1);
-					--actor.SetMobMod(mobModifiersGlobal.RoamDelay, 10);
-					actor.charaWork.parameterSave.state_mainSkill[0] = 0;
-					actor.charaWork.parameterSave.state_mainSkillLevel = 20;
+					actor = player.CurrentArea:SpawnEnemy(actorClassId, "", x + (i - (w / 2) * 3), y, z + (j - (h / 2) * 3), rot);
+					actor.Level = 1;
+					actor:SetMod(Hp, 500);
+					actor:SetMod(Attack, 0);
+					actor:SetMod(Damage, 0);
+					actor:SetMod(MovementSpeed, 5);
+					actor:SetMobMod(Roams, 1);
+					actor:SetMobMod(RoamDelay, 5);
+					actor.isHostile = true;
+                    actor:SetDetectionType(0);
+					actor:CalculateStats();
 				end
 			end
 			x = x + 500

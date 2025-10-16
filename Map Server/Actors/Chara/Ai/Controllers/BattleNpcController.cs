@@ -96,7 +96,7 @@ namespace Meteor.Map.actors.chara.ai.controllers
         {
             if (tick >= neutralTime && !owner.isMovingToSpawn)
             {
-                if (!owner.neutral && owner.IsAlive())
+                if (owner.isHostile && owner.IsAlive())
                 {
                     foreach (var chara in owner.CurrentArea.GetActorsAroundActor<Character>(owner, 50))
                     {
@@ -231,7 +231,8 @@ namespace Meteor.Map.actors.chara.ai.controllers
                 Disengage();
                 return;
             }
-            owner.SetMod((uint)Modifier.MovementSpeed, 30);
+            //owner.SetMod((uint)Modifier.MovementSpeed, 5);
+
             if ((tick - lastCombatTickScript).TotalSeconds > 3)
             {
                 Move();
@@ -328,9 +329,9 @@ namespace Meteor.Map.actors.chara.ai.controllers
 
         public virtual bool CanAggroTarget(Character target)
         {
-            if (owner.neutral || owner.detectionType == DetectionType.None || owner.IsDead())
+            if (owner.isHostile || owner.detectionType != DetectionType.None || owner.IsAlive())
             {
-                return false;
+                return true;
             }
 
             // todo: can mobs aggro mounted targets?
@@ -365,6 +366,8 @@ namespace Meteor.Map.actors.chara.ai.controllers
             if (verticalDistance > 8)
                 return false;
 
+
+
             var distance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ);
 
             bool detectSight = forceSight || (owner.detectionType & DetectionType.Sight) != 0;
@@ -372,39 +375,49 @@ namespace Meteor.Map.actors.chara.ai.controllers
             bool hasInvisible = false;
             bool isFacing = owner.IsFacing(target);
 
-            // use the mobmod sight range before defaulting to 20 yalms
-            if (detectSight && !hasInvisible && isFacing && distance < owner.GetMobMod((uint)MobModifier.SightRange))
-                return CanSeePoint(target.positionX, target.positionY, target.positionZ);
+            float? aggroRange = owner.GetMobMod((uint)MobModifier.DetectionRange);
 
-            // todo: check line of sight and aggroTypes
-            if (distance > 20)
-            {
+            // Prevents detection if AggroRange is 0 or null. 
+            if (!aggroRange.HasValue || aggroRange.Value <= 0)
                 return false;
-            }
 
-            // todo: seems ffxiv doesnt even differentiate between sneak/invis?
+            if (distance < aggroRange.Value)
             {
-                hasSneak = target.GetMod(Modifier.Stealth) > 0;
-                hasInvisible = hasSneak;
+                // Detect by Sight
+                if (detectSight && !hasInvisible && isFacing)
+                {
+                    if (CanSeePoint(target))
+                        return true;
+                }
+
+                // Detect by Sound
+                if ((owner.detectionType & DetectionType.Sound) != 0 && !hasSneak)
+                {
+                    if (CanSeePoint(target))
+                        return true;
+                }
+
+                // Detect by Magic usage
+                if ((owner.detectionType & DetectionType.Magic) != 0 && target.aiContainer.IsCurrentState<MagicState>())
+                {
+                    if (CanSeePoint(target))
+                        return true;
+                }
+
+                // Detect by Low HP
+                if ((owner.detectionType & DetectionType.LowHp) != 0 && target.HPP < 75)
+                {
+                    if (CanSeePoint(target))
+                        return true;
+                }
             }
-
-
-
-            if ((owner.detectionType & DetectionType.Sound) != 0 && !hasSneak && distance < owner.GetMobMod((uint)MobModifier.SoundRange))
-                return CanSeePoint(target.positionX, target.positionY, target.positionZ);
-
-            if ((owner.detectionType & DetectionType.Magic) != 0 && target.aiContainer.IsCurrentState<MagicState>())
-                return CanSeePoint(target.positionX, target.positionY, target.positionZ);
-
-            if ((owner.detectionType & DetectionType.LowHp) != 0 && target.GetHPP() < 75)
-                return CanSeePoint(target.positionX, target.positionY, target.positionZ);
 
             return false;
         }
 
-        public virtual bool CanSeePoint(float x, float y, float z)
+        public virtual bool CanSeePoint(Character target)
         {
-            return NavmeshUtils.CanSee((Zone)owner.CurrentArea, owner.positionX, owner.positionY, owner.positionZ, x, y, z);
+            return NavmeshUtils.CanSee((Zone)owner.CurrentArea, owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ);
         }
 
         protected virtual void HandleHate()

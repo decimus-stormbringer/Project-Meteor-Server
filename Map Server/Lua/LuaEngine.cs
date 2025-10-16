@@ -20,41 +20,35 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 */
 
 
-using Meteor.Map.actors.director;
-using Meteor.Map.Actors;
-using Meteor.Map.packets.receive.events;
-using Meteor.Map.packets.send;
-using Meteor.Map.packets.send.events;
-using MoonSharp.Interpreter;
-using MoonSharp.Interpreter.Loaders;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using Meteor.Common;
+using Meteor.Map.actors;
 using Meteor.Map.actors.area;
-using Meteor.Map.Actors.Chara;
-using System.Threading;
+using Meteor.Map.actors.chara;
 using Meteor.Map.actors.chara.ai;
 using Meteor.Map.actors.chara.ai.controllers;
-using Meteor.Map.actors.chara.player;
-using Meteor.Map.actors.chara;
-using Meteor.Map.actors.group;
-using static Meteor.Map.LuaUtils;
-using Meteor.Map.actors.chara.npc;
 using Meteor.Map.actors.chara.ai.state;
-using Meteor.Map.DataObjects.chara;
+using Meteor.Map.actors.chara.npc;
+using Meteor.Map.actors.chara.player;
+using Meteor.Map.actors.director;
+using Meteor.Map.actors.director.Work;
+using Meteor.Map.actors.group;
+using Meteor.Map.actors.group.Work;
+using Meteor.Map.Actors;
+using Meteor.Map.Actors.Chara;
+using Meteor.Map.Actors.Chara.Player;
 using Meteor.Map.Actors.QuestNS;
 using Meteor.Map.DataObjects;
-using Meteor.Map.actors;
-using Meteor.Map.actors.director.Work;
-using Meteor.Map.actors.group.Work;
+using Meteor.Map.DataObjects.chara;
 using Meteor.Map.packets.receive;
+using Meteor.Map.packets.receive.events;
 using Meteor.Map.packets.receive.recruitment;
 using Meteor.Map.packets.receive.social;
+using Meteor.Map.packets.send;
 using Meteor.Map.packets.send.actor;
 using Meteor.Map.packets.send.actor.battle;
 using Meteor.Map.packets.send.actor.events;
 using Meteor.Map.packets.send.actor.inventory;
+using Meteor.Map.packets.send.events;
 using Meteor.Map.packets.send.group;
 using Meteor.Map.packets.send.groups;
 using Meteor.Map.packets.send.login;
@@ -67,6 +61,15 @@ using Meteor.Map.packets.WorldPackets.Send;
 using Meteor.Map.packets.WorldPackets.Send.Group;
 using Meteor.Map.Properties;
 using Meteor.Map.utils;
+using MoonSharp.Interpreter;
+using MoonSharp.Interpreter.Interop;
+using MoonSharp.Interpreter.Loaders;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using static Meteor.Map.LuaUtils;
 
 namespace Meteor.Map.lua
 {
@@ -93,6 +96,8 @@ namespace Meteor.Map.lua
             luaTimer = new Timer(new TimerCallback(PulseSleepingOnTime),
                            null, TimeSpan.Zero, TimeSpan.FromMilliseconds(50));
 
+            //Using this is not recommended but can be useful for LUA debugging. 
+            //Allows LUA files universal access to call Methods/Types from .cs Classes
             //UserData.RegistrationPolicy = InteropRegistrationPolicy.Automatic;
 
             //Classes
@@ -127,14 +132,12 @@ namespace Meteor.Map.lua
             UserData.RegisterType<BattleTemp>();
             UserData.RegisterType<EventSave>();
             UserData.RegisterType<EventTemp>();
-            UserData.RegisterType<Modifier>();
             UserData.RegisterType<ModifierList>();
             UserData.RegisterType<SubState>();
             UserData.RegisterType<Work>();
             UserData.RegisterType<Ally>();
             UserData.RegisterType<ActorClass>();
             UserData.RegisterType<BattleNpc>();
-            UserData.RegisterType<MobModifier>();
             UserData.RegisterType<NpcWork>();
             UserData.RegisterType<Pet>();
             UserData.RegisterType<BattleCommand>();
@@ -163,36 +166,15 @@ namespace Meteor.Map.lua
             UserData.RegisterType<Retainer>();
             UserData.RegisterType<Session>();
             UserData.RegisterType<WeaponItem>();
-            UserData.RegisterType<BattleCommandCastType>();
-            UserData.RegisterType<BattleCommandPositionBonus>();
-            UserData.RegisterType<BattleCommandProcRequirement>();
-            UserData.RegisterType<BattleCommandRequirements>();
-            UserData.RegisterType<BattleCommandValidUser>();
             UserData.RegisterType<BattleTrait>();
-            UserData.RegisterType<CommandType>();
             UserData.RegisterType<HateEntry>();
-            UserData.RegisterType<ValidTarget>();
             UserData.RegisterType<EventList>();
-            UserData.RegisterType<ActorUpdateFlags>();
-            UserData.RegisterType<CharacterTargetingAllegiance>();
-            UserData.RegisterType<DamageTakenType>();
-            UserData.RegisterType<DetectionType>();
             UserData.RegisterType<Judge>();
-            UserData.RegisterType<KindredType>();
-            UserData.RegisterType<NpcSpawnType>();
             UserData.RegisterType<Shops>();
             UserData.RegisterType<StaticActors>();
             UserData.RegisterType<SpawnLocation>();
             UserData.RegisterType<ModifierListEntry>();
             UserData.RegisterType<AetheryteWork>();
-            UserData.RegisterType<KnockbackType>();
-            UserData.RegisterType<PathFindFlags>();
-            UserData.RegisterType<StatusEffectFlags>();
-            UserData.RegisterType<StatusEffectId>();
-            UserData.RegisterType<StatusEffectOverwrite>();
-            UserData.RegisterType<TargetFindAOETarget>();
-            UserData.RegisterType<TargetFindAOEType>();
-            UserData.RegisterType<TargetFindCharacterType>();
             UserData.RegisterType<GuildleveDirector>();
             UserData.RegisterType<GuildleveWork>();
             UserData.RegisterType<GLContentGroup>();
@@ -209,21 +191,144 @@ namespace Meteor.Map.lua
             UserData.RegisterType<PartyWork>();
             UserData.RegisterType<RelationWork>();
             UserData.RegisterType<GuildleveData>();
-            UserData.RegisterType<InventoryItem.ItemModifier>();
             UserData.RegisterType<QuestGameData>();
             UserData.RegisterType<Recipe>();
             UserData.RegisterType<RecipeResolver>();
-            UserData.RegisterType<RecruitmentDetails>();            
+            UserData.RegisterType<RecruitmentDetails>();
             UserData.RegisterType<AIContainer>();
+            UserData.RegisterType<PlayerAttributePointAllotment>();
+            UserData.RegisterType<CompatibilityData>();
+            UserData.RegisterType<GuardianData>();
+            UserData.RegisterType<MateriaItem>();
+            UserData.RegisterType<TribeData>();
+            UserData.RegisterType<ModifierData>();
+            UserData.RegisterType<ModifierContainer>();
+            UserData.RegisterType<QuestStateManager>();
+            UserData.RegisterType<AccessoryItem>();
+            UserData.RegisterType<SeamlessBoundry>();
+            UserData.RegisterType<SearchEntry>();
+            UserData.RegisterType<CommandProcessor>();
+            UserData.RegisterType<ItemOfferParam>();
+            UserData.RegisterType<ItemRefParam>();
+            UserData.RegisterType<Actor>();
+            UserData.RegisterType<ParameterTemp>();
+            UserData.RegisterType<BattleCommand>();
+            UserData.RegisterType<Director>();
+            UserData.RegisterType<Party>();
+            UserData.RegisterType<QuestState>();
 
-            //Packet Classes           
-            UserData.RegisterType<ActionProperty>();
-            UserData.RegisterType<ActionType>();
-            UserData.RegisterType<CommandResult>();
-            UserData.RegisterType<CommandResultContainer>();
+            //Enumarators
+            UserData.RegisterType<Modifier>();
+            UserData.RegisterType<MobModifier>();
+            UserData.RegisterType<ModifierOrigin>();
+            UserData.RegisterType<IEnumerable<Modifier>>();
+            UserData.RegisterType<IEnumerable<ModifierData>>();
+            UserData.RegisterType<BattleCommandCastType>();
+            UserData.RegisterType<BattleCommandPositionBonus>();
+            UserData.RegisterType<BattleCommandProcRequirement>();
+            UserData.RegisterType<BattleCommandRequirements>();
+            UserData.RegisterType<BattleCommandValidUser>();
+            UserData.RegisterType<CommandType>();
+            UserData.RegisterType<ValidTarget>();
+            UserData.RegisterType<ActorUpdateFlags>();
+            UserData.RegisterType<CharacterTargetingAllegiance>();
+            UserData.RegisterType<DamageTakenType>();
+            UserData.RegisterType<DetectionType>();
+            UserData.RegisterType<KindredType>();
+            UserData.RegisterType<NpcSpawnType>();
+            UserData.RegisterType<KnockbackType>();
+            UserData.RegisterType<PathFindFlags>();
+            UserData.RegisterType<StatusEffectFlags>();
+            UserData.RegisterType<StatusEffectId>();
+            UserData.RegisterType<StatusEffectOverwrite>();
+            UserData.RegisterType<TargetFindAOETarget>();
+            UserData.RegisterType<TargetFindAOEType>();
+            UserData.RegisterType<TargetFindCharacterType>();
+            UserData.RegisterType<Job>();
+            UserData.RegisterType<GeneralParameterIndex>();
+            UserData.RegisterType<Guardian>();
+            UserData.RegisterType<MateriaType>();
+            UserData.RegisterType<Tribe>();
+            UserData.RegisterType<EquipmentSlot>();
             UserData.RegisterType<HitDirection>();
             UserData.RegisterType<HitEffect>();
             UserData.RegisterType<HitType>();
+            UserData.RegisterType<ActionProperty>();
+            UserData.RegisterType<ActionType>();
+            UserData.RegisterType<IEnumerable<StatusEffect>>();
+
+            //Dictionaries
+            UserData.RegisterType<Dictionary<ushort, ItemPackage>>();
+            UserData.RegisterType<Dictionary<ushort, UInt64>>();
+            UserData.RegisterType<Dictionary<EquipmentSlot, IList<ModifierData>>>();
+            UserData.RegisterType<Dictionary<uint, Session>>();
+            UserData.RegisterType<Dictionary<uint, ItemData>>();
+            UserData.RegisterType<Dictionary<uint, GuildleveData>>();
+            UserData.RegisterType<Dictionary<uint, QuestGameData>>();
+            UserData.RegisterType<Dictionary<uint, GuardianData>>();
+            UserData.RegisterType<Dictionary<uint, TribeData>>();
+            UserData.RegisterType<Dictionary<int, CompatibilityData>>();
+            UserData.RegisterType<Dictionary<uint, Recipe>>();
+            UserData.RegisterType<Dictionary<HitType, ushort>>();
+            UserData.RegisterType<Dictionary<HitType, HitEffect>>();
+            UserData.RegisterType<Dictionary<KnockbackType, HitEffect>>();
+            UserData.RegisterType<Dictionary<byte, ushort>>();
+            UserData.RegisterType<Dictionary<uint, BattleCommand>>();
+            UserData.RegisterType<Dictionary<MobModifier, Int64>>();
+            UserData.RegisterType<Dictionary<uint, Zone>>();
+            UserData.RegisterType<Dictionary<uint, List<SeamlessBoundry>>>();
+            UserData.RegisterType<Dictionary<uint, ActorClass>>();
+            UserData.RegisterType<Dictionary<ulong, Party>>();
+            UserData.RegisterType<Dictionary<uint, StatusEffect>>();
+            UserData.RegisterType<Dictionary<Tuple<byte, short>, List<ushort>>>();
+            UserData.RegisterType<Dictionary<ushort, BattleTrait>>();
+            UserData.RegisterType<Dictionary<byte, List<ushort>>>();
+            UserData.RegisterType<Dictionary<ulong, Group>>();
+            UserData.RegisterType<Dictionary<ulong, RelationGroup>>();
+            UserData.RegisterType<Dictionary<ulong, TradeGroup>>();
+            UserData.RegisterType<IDictionary<Modifier, double>>();
+            UserData.RegisterType<Dictionary<ModifierOrigin, IDictionary<Modifier, double>>>();
+            UserData.RegisterType<Dictionary<uint, Director>>();
+            UserData.RegisterType<Dictionary<uint, Actor>>();
+            UserData.RegisterType<Dictionary<int, PrivateArea>>();
+            UserData.RegisterType<Dictionary<string, Dictionary<int, PrivateArea>>>();
+            UserData.RegisterType<Dictionary<string, List<PrivateAreaContent>>>();
+            UserData.RegisterType<Dictionary<Character, HateEntry>>();
+            UserData.RegisterType<Dictionary<uint, ModifierListEntry>>();
+            UserData.RegisterType<Dictionary<uint, QuestState>>();
+            UserData.RegisterType<Dictionary<string, List<Recipe>>>();
+
+            //Lists
+            //UserData.RegisterType<System.Collections.IList>();  //Broadly Registers IList Type. Fixes starting gear but breaks PopulaceStandard?
+            //UserData.RegisterType<List<InventoryItem>>();
+            //UserData.RegisterType<List<ushort>>();
+            //UserData.RegisterType<List<SubPacket>>();
+            //UserData.RegisterType<List<ItemPackage>>();
+            //UserData.RegisterType<List<SeamlessBoundry>>();
+            //UserData.RegisterType<List<Actor>>();
+            //UserData.RegisterType<List<LuaParam>>();
+            //UserData.RegisterType<List<Vector3>>();
+            //UserData.RegisterType<List<float>>();
+            //UserData.RegisterType<List<CommandResult>>();
+            //UserData.RegisterType<List<Modifier>>();
+            //UserData.RegisterType<IList<ModifierData>>();
+            //UserData.RegisterType<List<ModifierData>>();
+            //UserData.RegisterType<List<Character>>();
+            //UserData.RegisterType<List<Director>>();
+            //UserData.RegisterType<List<SpawnLocation>>();
+            //UserData.RegisterType<List<Player>>();
+            //UserData.RegisterType<List<BattleNpc>>();
+            //UserData.RegisterType<List<Ally>>();
+            //UserData.RegisterType<List<short>>();
+            //UserData.RegisterType<List<Recipe>>();
+            //UserData.RegisterType<List<Tuple<ushort, uint>>>();
+            //UserData.RegisterType<List<string>>();
+            //UserData.RegisterType<List<PrivateAreaContent>>();
+            //UserData.RegisterType<List<Quest>>();
+
+            //Classes from Packet Send/Receive Namespaces        
+            UserData.RegisterType<CommandResult>();
+            UserData.RegisterType<CommandResultContainer>();
             UserData.RegisterType<GroupMember>();
             UserData.RegisterType<ItemSearchResult>();
             UserData.RegisterType<PlayerSearchResult>();
@@ -232,8 +337,14 @@ namespace Meteor.Map.lua
 
             //Pretty sure there aren't any LUA scripts that use these but keeping
             //them here just incase so I don't have to ever re-type them. 
+            //UserData.RegisterType<SetInitialEquipmentPacket>();
+            //UserData.RegisterType<Database>();
+            //UserData.RegisterType<LuaUtils>();
+            //UserData.RegisterType<Program>();
+            //UserData.RegisterType<Server>();
             //UserData.RegisterType<CharacterUtils>();
             //UserData.RegisterType<Resources>();
+            //UserData.RegisterType<PacketProcessor>();
             //UserData.RegisterType<StartRecruitingResponse>();
             //UserData.RegisterType<CreateNamedGroupMultiple>();
             //UserData.RegisterType<CreateNamedGroup>();
@@ -404,6 +515,7 @@ namespace Meteor.Map.lua
             //UserData.RegisterType<PartyLeavePacket>();
             //UserData.RegisterType<PartyModifyPacket>();
             //UserData.RegisterType<ActorPropertyPacketUtil>();
+            //UserData.RegisterType<LockTargetPacket>();
         }
 
         public static LuaEngine GetInstance()
@@ -1216,7 +1328,18 @@ namespace Meteor.Map.lua
             //script.Globals["GetRecipeResolver"] = (Func<RecipeResolver>)Server.ResolveRecipe;
             script.Globals["GetLuaInstance"] = (Func<LuaEngine>)LuaEngine.GetInstance;
 
+            foreach (Modifier mod in Enum.GetValues(typeof(Modifier)))
+            {
+                script.Globals[mod.ToString()] = mod;
+            }
+
+            foreach (MobModifier mobMod in Enum.GetValues(typeof(MobModifier)))
+            {
+                script.Globals[mobMod.ToString()] = mobMod;
+            }
+
             script.Options.DebugPrint = s => { Program.Log.Debug(s); };
+
             return script;
         }
 

@@ -131,7 +131,6 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(TRIGGER_SEAFLD3, QFLAG_PUSH, false, true);
 		quest:SetENpc(YSHTOLA);
 	elseif (sequence == SEQ_070) then
-		player:SendMessage(0x1D,"",">Talk to Baderon to complete Never the Twain Shall Meet");
 		quest:SetENpc(BADERON, QFLAG_REWARD);
 	end	
 	
@@ -170,7 +169,6 @@ function onTalk(player, quest, npc)
 		if (classId == BADERON) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent050");
 			quest:StartSequence(SEQ_037);
-			player:SendMessage(0x1D,"",">Use Journal to find location.");
 		end		
 	elseif (sequence == SEQ_037) then
 		if (classId == BADERON) then
@@ -199,7 +197,7 @@ function onTalk(player, quest, npc)
 --			player:AddItem(2001006, 1);
 --			player:SendGameMessage(GetWorldMaster(), 25117, 0x20, 2001006);
 			player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 30000);
-			player:AddExp(50000, player.GetCurrentClassOrJob(), 0);
+			player:AddExp(50000, player:GetCurrentClassOrJobId(), 0);
 			return;
 		end
 	end	
@@ -283,7 +281,7 @@ function onPush(player, quest, npc)
 		if (classId == TRIGGER_SEAFLD1) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent060");
 			player:EndEvent();
-			quest:StartSequence(SEQ_040);	-- Should be SEQ_040, Skipped to SEQ_042 due to unable to call Baderon on LS.
+			quest:StartSequence(SEQ_040);
 			quest:NewNpcLsMsg(1);
 		end
 	elseif (sequence == SEQ_042 and classId == TRIGGER_MSK) then
@@ -319,7 +317,7 @@ function onNpcLS(player, quest, from, msgStep)
 	end
 
 	-- Quick way to handle all msgs nicely.
-	player:SendGameMessageLocalizedDisplayName(quest, NPCLS_MSGS[msgPack][msgStep], MESSAGE_TYPE_NPC_LINKSHELL, player:GetSNpcNickname());
+	player:SendGameMessageLocalizedDisplayName(quest, NPCLS_MSGS[msgPack][msgStep], MESSAGE_TYPE_NPC_LINKSHELL, 1000015);
 	if (msgStep >= #NPCLS_MSGS[msgPack]) then
 		quest:EndOfNpcLsMsgs();
 	else

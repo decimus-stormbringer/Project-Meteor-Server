@@ -36,6 +36,9 @@ using Meteor.Map.packets.send.actor.battle;
 using Meteor.Map.actors.chara.ai.state;
 using Meteor.Map.actors.chara.ai.utils;
 using Meteor.Map.actors.chara.npc;
+using System.Linq;
+using System.Collections.Immutable;
+
 
 namespace Meteor.Map.Actors
 {
@@ -139,7 +142,7 @@ namespace Meteor.Map.Actors
 
         public Pet pet;
 
-        private Dictionary<Modifier, double> modifiers = new Dictionary<Modifier, double>();
+        private ModifierContainer modifiers;
 
         protected ushort hpBase, hpMaxBase, mpBase, mpMaxBase, tpBase;
         protected BattleTemp baseStats = new BattleTemp();
@@ -166,12 +169,14 @@ namespace Meteor.Map.Actors
                 charaWork.statusShownTime[i] = 0;
 
             this.statusEffects = new StatusEffectContainer(this);
+            modifiers = new ModifierContainer();
 
-            // todo: move this somewhere more appropriate
-            // todo: base this on equip and shit
-            SetMod((uint)Modifier.AttackRange, 3);
-            SetMod((uint)Modifier.Delay, (Program.Random.Next(30, 60) * 100));
-            SetMod((uint)Modifier.MovementSpeed, (uint)moveSpeeds[2]);
+            // TODO: try to remove the concept of a "defualt mod"? move these into where the values are retrieved?
+            SetModDefault(Modifier.AttackRange, 3);
+            SetModDefault(Modifier.Delay, (Program.Random.Next(30, 60) * 100));
+            SetModDefault(Modifier.HitCount, 1);
+            SetModDefault(Modifier.AttackType, (double)ActionProperty.Slashing);
+            SetModDefault(Modifier.MovementSpeed, (uint)moveSpeeds[2]);
 
             spawnX = positionX;
             spawnY = positionY;
@@ -301,6 +306,941 @@ namespace Meteor.Map.Actors
             }            
         }
 
+
+        public short GetClass()
+        {
+            return charaWork.parameterSave.state_mainSkill[0];
+        }
+
+        public short ClassId
+        {
+            get
+            {
+                return charaWork.parameterSave.state_mainSkill[0];
+            }
+        }
+
+        public short GetLevel()
+        {
+            return charaWork.parameterSave.state_mainSkillLevel;
+        }
+
+        public Job CurrentClass
+        {
+            get
+            {
+                ushort classId = (ushort)ClassId;
+                return Enum.IsDefined(typeof(Job), classId) ? (Job)classId : Job.Adventurer;
+            }
+        }
+
+        //Gets the id of the player's current job. If they aren't a job, gets the id of their class
+        public byte GetCurrentClassOrJobId()
+        {
+            if (currentJob != 0)
+                return (byte)currentJob;
+            return charaWork.parameterSave.state_mainSkill[0];
+        }
+        public byte CurrentJobOrClassId
+        {
+            get
+            {
+                if (currentJob != 0)
+                    return (byte)currentJob;
+                return (byte)ClassId;
+            }
+        }
+        public Job CurrentJobOrClass
+        {
+            get
+            {
+                ushort classOrJobId = (ushort)CurrentJobOrClassId;
+                return Enum.IsDefined(typeof(Job), classOrJobId) ? (Job)classOrJobId : Job.Adventurer;
+            }
+        }
+
+        public Job GetCurrentClassOrJob()
+        {
+            var classOrJobId = (ushort)GetCurrentClassOrJobId();
+            return Enum.IsDefined(typeof(Job), classOrJobId) ? (Job)classOrJobId : Job.Adventurer;
+        }
+
+        public bool HasTrait(ushort id)
+        {
+            BattleTrait trait = Server.GetWorldManager().GetBattleTrait(id);
+
+            return HasTrait(trait);
+        }
+
+        public bool HasTrait(BattleTrait trait)
+        {
+            return (trait != null) && (trait.job == GetClass()) && (trait.level <= GetLevel());
+        }
+
+        public ReferencedItemPackage GetEquipment()
+        {
+            return equipment;
+        }
+
+        #region HP, MP, TP, Stats, and Mods
+
+        public short Level
+        {
+            get
+            {
+                return charaWork.parameterSave.state_mainSkillLevel;
+            }
+            set
+            {
+                value = value.Clamp<short>(1, 50);
+                charaWork.parameterSave.state_mainSkillLevel = value;
+            }
+        }
+         
+
+        public short HP
+        {
+            get
+            {
+                return charaWork.parameterSave.hp[0];
+            }
+
+            set
+            {
+                value = value.Clamp(MinHP, MaxHP);
+
+                charaWork.parameterSave.hp[0] = value;
+
+                updateFlags |= ActorUpdateFlags.HpTpMp;
+            }
+        }
+
+        public short MaxHP
+        {
+            get
+            {
+                return charaWork.parameterSave.hpMax[0];
+            }
+
+            set
+            {
+                value = value.Clamp(MinHP, short.MaxValue);
+
+                charaWork.parameterSave.hpMax[0] = value;
+
+                if (MaxHP < HP)
+                {
+                    HP = MaxHP;
+                }
+
+                updateFlags |= ActorUpdateFlags.HpTpMp;
+            }
+        }
+
+        public short MinHP
+        { 
+           get
+            {
+                double minHp = GetMod(Modifier.MinimumHpLock);
+                return (short) (minHp >= 0 ? minHp : 0);
+            }
+        }   
+
+        public short MP
+        {
+            get
+            {
+                return charaWork.parameterSave.mp;
+            }
+
+            set
+            {
+                value = value.Clamp(MinMP, MaxMP);
+
+                charaWork.parameterSave.mp = value;
+
+                updateFlags |= ActorUpdateFlags.HpTpMp;
+            }
+        }
+
+        public short MaxMP
+        {
+            get
+            {
+                return charaWork.parameterSave.mpMax;
+            }
+
+            set
+            {
+                value = value.Clamp(MinMP, value);
+
+                charaWork.parameterSave.mpMax = value;
+
+                if (MaxMP < MP)
+                {
+                    MP = MaxMP;
+                }
+
+                updateFlags |= ActorUpdateFlags.HpTpMp;
+            }
+        }
+
+        public short MinMP
+        {
+            get
+            {
+                double minMp = GetMod(Modifier.MinimumMpLock);
+                return (short)(minMp >= 0 ? minMp : 0);
+            }
+        }
+
+        public short TP
+        {
+            get
+            {
+                return charaWork.parameterTemp.tp;
+            }
+            set
+            {
+                value = value.Clamp(MinTP, MaxTP);
+                charaWork.parameterTemp.tp = value;
+
+                updateFlags |= ActorUpdateFlags.HpTpMp;
+            }
+        }
+
+        public short MaxTP
+        {
+            get
+            {
+                return 3000;
+            }
+        }
+
+        public short MinTP
+        {
+            get
+            {
+                double minTp = GetMod(Modifier.MinimumTpLock);
+                return (short)(minTp >= 0 ? minTp : 0);
+            }
+        }
+
+        public byte HPP
+        {
+            get
+            {
+                return (byte)(HP <= 0 || MaxHP <= 0 ? 0 : (double)HP / MaxHP * 100);
+            }
+        }
+
+        public byte MPP
+        {
+            get
+            {
+                return (byte)(MP <= 0 || MaxMP <= 0 ? 0 : (double)MP / MaxMP * 100);
+            }
+        }
+
+        public byte TPP
+        {
+            get
+            {
+                return (byte)(TP <= 0 || MaxTP <= 0 ? 0 : (double)TP / MaxTP * 100);
+            }
+        }
+
+        public void AddHP(int hp, CommandResultContainer resultContainer = null)
+        {
+            if (!IsAlive() || hp == 0)
+            {
+                return;
+            }
+
+            HP = (short)(HP + hp);
+
+            if (HP < 1)
+            {
+                Die(Program.Tick, resultContainer);
+            }
+        }
+
+        public void AddMP(int mp)
+        {
+            if (!IsAlive() || mp == 0)
+            {
+                return;
+            }
+
+            MP = (short)(MP + mp);
+
+            // todo: check hidden effects and shit
+        }
+
+        public void AddTP(int tp)
+        {
+            if (!IsAlive() || tp == 0)
+            {
+                return;
+            }
+
+            TP = (short)(TP + tp);
+
+            if (TP >= 1000)
+            {
+                lua.LuaEngine.GetInstance().OnSignal("tpOver1000");
+            }
+        }
+
+        public void DelHP(int hp, CommandResultContainer resultContainer = null)
+        {
+            AddHP((short)-hp, resultContainer);
+        }
+
+        public void DelMP(int mp)
+        {
+            AddMP(-mp);
+        }
+
+        public void DelTP(int tp)
+        {
+            AddTP(-tp);
+        }
+
+        public double GetMod(Modifier modifier)
+        {
+            return modifiers.GetMod(modifier);
+        }
+
+        public double GetMod(uint modifier)
+        {
+            return GetMod((Modifier)modifier);
+        }
+
+        public void SetMod(Modifier modifier, double val, ModifierOrigin origin)
+        {
+            modifiers.SetMod(modifier, val, origin);
+        }
+
+        public void SetMod(uint modifier, double val, ModifierOrigin origin = ModifierOrigin.Miscellaneous)
+        {
+            SetMod((Modifier)modifier, val, origin);
+        }
+
+        public void SetMod(string modName, int value)
+        {
+            if (!Enum.TryParse(modName, true, out Modifier mod))
+                throw new ArgumentException($"Invalid modifier name: {modName}");
+
+            SetMod((uint)mod, value, ModifierOrigin.Base);
+        }
+
+        public void SetModDefault(Modifier modifier, double val)
+        {
+            modifiers.SetModDefault(modifier, val);
+        }
+
+        public void AddMod(Modifier modifier, double val, ModifierOrigin origin)
+        {
+            modifiers.AddMod(modifier, val, origin);
+        }
+
+        public void AddMod(uint modifier, double val, ModifierOrigin origin = ModifierOrigin.Miscellaneous)
+        {
+            AddMod((Modifier)modifier, val, origin);
+        }
+
+        public void SubtractMod(Modifier modifier, double val, ModifierOrigin origin)
+        {
+            modifiers.SubtractMod(modifier, val, origin);
+        }
+
+        public void SubtractMod(uint modifier, double val, ModifierOrigin origin = ModifierOrigin.Miscellaneous)
+        {
+            SubtractMod((Modifier)modifier, val, origin);
+        }
+
+        public void MultiplyMod(Modifier modifier, double val)
+        {
+            modifiers.MultiplyMod(modifier, val);
+        }
+
+        public void MultiplyMod(uint modifier, double val)
+        {
+            MultiplyMod((Modifier)modifier, val);
+        }
+
+        public void DivideMod(Modifier modifier, double val)
+        {
+            modifiers.DivideMod(modifier, val);
+        }
+
+        public void DivideMod(uint modifier, double val)
+        {
+            DivideMod((Modifier)modifier, val);
+        }
+
+        public void ClearMods(params ModifierOrigin[] origins)
+        {
+            modifiers.ClearMods(origins);
+        }
+
+        public virtual float GetSpeed()
+        {
+            // todo: for battlenpc/player calculate speed
+            return (float)GetMod(Modifier.MovementSpeed);
+        }
+
+        private static readonly IEnumerable<Modifier> StatModifiers = new List<Modifier>
+        {
+            Modifier.Strength,
+            Modifier.Vitality,
+            Modifier.Dexterity,
+            Modifier.Intelligence,
+            Modifier.Mind,
+            Modifier.Piety,
+            Modifier.FireResistance,
+            Modifier.IceResistance,
+            Modifier.WindResistance,
+            Modifier.EarthResistance,
+            Modifier.LightningResistance,
+            Modifier.WaterResistance,
+            Modifier.Accuracy,
+            Modifier.Evasion,
+            Modifier.Attack,
+            Modifier.Defense,
+            Modifier.AttackMagicPotency,
+            Modifier.HealingMagicPotency,
+            Modifier.EnhancementMagicPotency,
+            Modifier.EnfeeblingMagicPotency,
+            Modifier.MagicAccuracy,
+            Modifier.MagicEvasion,
+            Modifier.Craftsmanship,
+            Modifier.MagicCraftsmanship,
+            Modifier.Control,
+            Modifier.Gathering,
+            Modifier.Output,
+            Modifier.Perception
+        };
+
+        private int GetStatIndex(Modifier modifier)
+        {
+            switch (modifier)
+            {
+                case Modifier.Strength: return (int)GeneralParameterIndex.Strength;
+                case Modifier.Vitality: return (int)GeneralParameterIndex.Vitality;
+                case Modifier.Dexterity: return (int)GeneralParameterIndex.Dexterity;
+                case Modifier.Intelligence: return (int)GeneralParameterIndex.Intelligence;
+                case Modifier.Mind: return (int)GeneralParameterIndex.Mind;
+                case Modifier.Piety: return (int)GeneralParameterIndex.Piety;
+                case Modifier.FireResistance: return (int)GeneralParameterIndex.FireResistance;
+                case Modifier.IceResistance: return (int)GeneralParameterIndex.IceResistance;
+                case Modifier.WindResistance: return (int)GeneralParameterIndex.WindResistance;
+                case Modifier.EarthResistance: return (int)GeneralParameterIndex.EarthResistance;
+                case Modifier.LightningResistance: return (int)GeneralParameterIndex.LightningResistance;
+                case Modifier.WaterResistance: return (int)GeneralParameterIndex.WaterResistance;
+                case Modifier.Accuracy: return (int)GeneralParameterIndex.Accuracy;
+                case Modifier.Evasion: return (int)GeneralParameterIndex.Evasion;
+                case Modifier.Attack: return (int)GeneralParameterIndex.Attack;
+                case Modifier.Defense: return (int)GeneralParameterIndex.Defense;
+                case Modifier.AttackMagicPotency: return (int)GeneralParameterIndex.AttackMagicPotency;
+                case Modifier.HealingMagicPotency: return (int)GeneralParameterIndex.HealingMagicPotency;
+                case Modifier.EnhancementMagicPotency: return (int)GeneralParameterIndex.EnhancementMagicPotency;
+                case Modifier.EnfeeblingMagicPotency: return (int)GeneralParameterIndex.EnfeeblingMagicPotency;
+                case Modifier.MagicAccuracy: return (int)GeneralParameterIndex.MagicAccuracy;
+                case Modifier.MagicEvasion: return (int)GeneralParameterIndex.MagicEvasion;
+                case Modifier.Craftsmanship: return (int)GeneralParameterIndex.Craftsmanship;
+                case Modifier.MagicCraftsmanship: return (int)GeneralParameterIndex.MagicCraftsmanship;
+                case Modifier.Control: return (int)GeneralParameterIndex.Control;
+                case Modifier.Gathering: return (int)GeneralParameterIndex.Gathering;
+                case Modifier.Output: return (int)GeneralParameterIndex.Output;
+                case Modifier.Perception: return (int)GeneralParameterIndex.Perception;
+                default: return -1;
+            }
+        }
+
+        private void SetStat(Modifier modifier, short value)
+        {
+            int statIndex = GetStatIndex(modifier);
+            if (statIndex < 0 || statIndex >= charaWork.battleTemp.generalParameter.Length)
+            {
+                return;
+            }
+
+            charaWork.battleTemp.generalParameter[statIndex] = value;
+
+            updateFlags |= ActorUpdateFlags.Stats;
+        }
+
+        private short GetStat(Modifier modifier)
+        {
+            int statIndex = GetStatIndex(modifier);
+            if (statIndex < 0 || statIndex >= charaWork.battleTemp.generalParameter.Length)
+            {
+                return 0;
+            }
+
+            return charaWork.battleTemp.generalParameter[statIndex];
+        }
+
+        public IEnumerable<ModifierData> GetStats()
+        {
+            return StatModifiers.Select(m => new ModifierData { Modifier = m, EndValue = GetStat(m) });
+        }
+
+        public virtual void CalculateStats(bool resetHpMp = true, params ModifierOrigin[] modifiersToCalculate)
+        {
+            // Calculate all modifiers for the character, then set stats based on modifiers
+
+            if (modifiersToCalculate.Length == 0 || modifiersToCalculate.Contains(ModifierOrigin.BattleTrait))
+            {
+                CalculateClassBattleTraitMods();
+            }
+
+            if (modifiersToCalculate.Length == 0 || modifiersToCalculate.Contains(ModifierOrigin.Job))
+            {
+                CalculateJobClassLevelMods();
+            }
+
+            if (modifiersToCalculate.Length == 0 || modifiersToCalculate.Contains(ModifierOrigin.Equipment) || modifiersToCalculate.Contains(ModifierOrigin.StatusEffect))
+            {
+                CalculateEquipmentMods();
+            }
+
+            CalculateModsDependentOnMods();
+
+            // Set HP, MP and Stats after calculating all modifiers
+            SetMaxHpFromMods();
+            SetMaxMpFromMods();
+            SetStatsFromMods();
+
+            if (resetHpMp)
+            {
+                HP = MaxHP;
+                MP = MaxMP;
+            }
+        }
+
+        public void RecalculateStats(params ModifierOrigin[] modifiersToCalculate)
+        {
+            // Recalculate all modifiers for the character, then set stats based on modifiers
+            CalculateStats(false, modifiersToCalculate);
+        }
+
+        private void CalculateClassBattleTraitMods()
+        {
+            // Calculate and set modifiers received from battle traits applicable to the character's class/job and level
+
+            ClearMods(ModifierOrigin.BattleTrait);
+
+            WorldManager worldManager = Server.GetWorldManager();
+            List<ushort> traitIds = worldManager.GetAllBattleTraitIdsForClass((byte)GetClass());
+
+            foreach (ushort traitId in traitIds)
+            {
+                BattleTrait trait = worldManager.GetBattleTrait(traitId);
+                if (HasTrait(trait))
+                {
+                    AddMod((Modifier)trait.modifier, trait.bonus, ModifierOrigin.BattleTrait);
+                }
+            }
+        }
+
+        private void CalculateJobClassLevelMods()
+        {
+            // Calculate and set modifiers received due to the character being a certain class/job and level
+
+            // Data (ARR 2.0) was retrieved from https://web.archive.org/web/20160501222505/http://valk.dancing-mad.com/tables/attribute-table/
+            // TODO: Update values and modifiers to reflect 1.23b verified data
+
+            ClearMods(ModifierOrigin.Job);
+
+            // common mods. Values for GetJobLevelAdjustedMods are StartingValue, EndingValue, and GrowthRate
+            AddMod(Modifier.CriticalHitRating, GetJobLevelAdjustedMod(0, 341, 1.06), ModifierOrigin.Job);
+            AddMod(Modifier.MagicCriticalHitRating, GetJobLevelAdjustedMod(0, 341, 1.06), ModifierOrigin.Job);
+            AddMod(Modifier.Accuracy, GetJobLevelAdjustedMod(0, 341, 1.06), ModifierOrigin.Job);
+            AddMod(Modifier.MagicAccuracy, GetJobLevelAdjustedMod(0, 341, 1.06), ModifierOrigin.Job);
+            AddMod(Modifier.Parry, GetJobLevelAdjustedMod(0, 341, 1.06), ModifierOrigin.Job);
+            AddMod(Modifier.Evasion, GetJobLevelAdjustedMod(0, 341, 1.06), ModifierOrigin.Job);
+            AddMod(Modifier.SlashingResistance, GetJobLevelAdjustedMod(0, 100, 1.06), ModifierOrigin.Job);
+            AddMod(Modifier.PiercingResistance, GetJobLevelAdjustedMod(0, 100,1.06), ModifierOrigin.Job);
+            AddMod(Modifier.BluntResistance, GetJobLevelAdjustedMod(0, 100, 1.06), ModifierOrigin.Job);
+            AddMod(Modifier.FireResistance, GetJobLevelAdjustedMod(0, 269, 1.06), ModifierOrigin.Job);
+            AddMod(Modifier.IceResistance, GetJobLevelAdjustedMod(0, 269, 1.06), ModifierOrigin.Job);
+            AddMod(Modifier.WindResistance, GetJobLevelAdjustedMod(0, 269, 1.06), ModifierOrigin.Job);
+            AddMod(Modifier.EarthResistance, GetJobLevelAdjustedMod(0, 269, 1.06), ModifierOrigin.Job);
+            AddMod(Modifier.LightningResistance, GetJobLevelAdjustedMod(0, 269, 1.06), ModifierOrigin.Job);
+            AddMod(Modifier.WaterResistance, GetJobLevelAdjustedMod(0, 269, 1.06), ModifierOrigin.Job);
+
+            // class specific mods
+            IList<ModifierData> classModifiers;
+            if (JobClassLvl50Attributes.TryGetValue(CurrentClass, out classModifiers))
+            {
+                foreach (ModifierData classModifier in classModifiers)
+                {
+                    AddMod(classModifier.Modifier, GetJobLevelAdjustedMod(classModifier.StartValue, classModifier.EndValue, classModifier.GrowthRate), ModifierOrigin.Job);
+                }
+            }
+
+            // job specific mods (soul stone)
+            IList<ModifierData> jobModifiers;
+            if (JobSoulStoneAttributes.TryGetValue(GetCurrentClassOrJob(), out jobModifiers))
+            {
+                foreach (ModifierData jobModifier in jobModifiers)
+                {
+                    AddMod(jobModifier.Modifier, GetJobLevelAdjustedMod(jobModifier.StartValue, jobModifier.EndValue, jobModifier.GrowthRate), ModifierOrigin.Job);
+                }
+            }
+        }
+
+        // Data (ARR 2.0) was retrieved from https://web.archive.org/web/20160501222505/http://valk.dancing-mad.com/tables/attribute-table/
+        // TODO: Update values and modifiers to reflect 1.23b verified data
+        // TODO: add gatherers and crafters. no stats in blitzball exist
+
+        // GrowthRate determines how quickly the stat grows to reach max level value. 
+        private static readonly IImmutableDictionary<Job, IList<ModifierData>> JobClassLvl50Attributes = ImmutableDictionary.Create<Job, IList<ModifierData>>()
+            .Add(Job.Gladiator, new List<ModifierData>
+            {
+                new ModifierData { Modifier = Modifier.Hp,             StartValue = 120,    EndValue = 2044,     GrowthRate = 0.45 },
+                new ModifierData { Modifier = Modifier.Mp,             StartValue = 65,     EndValue = 1196,     GrowthRate = 0.55 },
+                new ModifierData { Modifier = Modifier.Strength,       StartValue = 0,      EndValue = 188,      GrowthRate = 1 },
+                new ModifierData { Modifier = Modifier.Vitality,       StartValue = 0,      EndValue = 211,      GrowthRate = 1 },
+                new ModifierData { Modifier = Modifier.Dexterity,      StartValue = 0,      EndValue = 177,      GrowthRate = 1 },
+                new ModifierData { Modifier = Modifier.Intelligence,   StartValue = 0,      EndValue = 98,       GrowthRate = 1 },
+                new ModifierData { Modifier = Modifier.Mind,           StartValue = 0,      EndValue = 188,      GrowthRate = 1 },
+                new ModifierData { Modifier = Modifier.Piety,          StartValue = 0,      EndValue = 158,      GrowthRate = 1 },
+            })
+
+            .Add(Job.Marauder, new List<ModifierData>
+            {
+                new ModifierData { Modifier = Modifier.Hp,             StartValue = 130,    EndValue = 2129,     GrowthRate = 0.5 },
+                new ModifierData { Modifier = Modifier.Mp,             StartValue = 50,     EndValue = 558,      GrowthRate = 0.6 },
+                new ModifierData { Modifier = Modifier.Strength,       StartValue = 0,      EndValue = 199,      GrowthRate = 1 },
+                new ModifierData { Modifier = Modifier.Vitality,       StartValue = 0,      EndValue = 211,      GrowthRate = 1 },
+                new ModifierData { Modifier = Modifier.Dexterity,      StartValue = 0,      EndValue = 178,      GrowthRate = 1 },
+                new ModifierData { Modifier = Modifier.Intelligence,   StartValue = 0,      EndValue = 57,       GrowthRate = 1 },
+                new ModifierData { Modifier = Modifier.Mind,           StartValue = 0,      EndValue = 98,       GrowthRate = 1 },
+                new ModifierData { Modifier = Modifier.Piety,          StartValue = 0,      EndValue = 77,       GrowthRate = 1 },
+            })
+
+            .Add(Job.Lancer, new List<ModifierData>
+            {
+                new ModifierData { Modifier = Modifier.Hp,             StartValue = 110,    EndValue = 1870,    GrowthRate = 0.5  },
+                new ModifierData { Modifier = Modifier.Mp,             StartValue = 70,     EndValue = 904,     GrowthRate = 0.6  },
+                new ModifierData { Modifier = Modifier.Strength,       StartValue = 0,      EndValue = 221,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Vitality,       StartValue = 0,      EndValue = 199,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Dexterity,      StartValue = 0,      EndValue = 188,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Intelligence,   StartValue = 0,      EndValue = 77,      GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mind,           StartValue = 0,      EndValue = 118,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Piety,          StartValue = 0,      EndValue = 138,     GrowthRate = 1  },
+            })
+
+            .Add(Job.Pugilist, new List<ModifierData>
+            {
+                new ModifierData { Modifier = Modifier.Hp,             StartValue = 110,    EndValue = 1625,    GrowthRate = 0.45  },
+                new ModifierData { Modifier = Modifier.Mp,             StartValue = 75,     EndValue = 745,     GrowthRate = 0.55  },
+                new ModifierData { Modifier = Modifier.Strength,       StartValue = 0,      EndValue = 211,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Vitality,       StartValue = 0,      EndValue = 188,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Dexterity,      StartValue = 0,      EndValue = 199,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Intelligence,   StartValue = 0,      EndValue = 87,      GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mind,           StartValue = 0,      EndValue = 168,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Piety,          StartValue = 0,      EndValue = 118,     GrowthRate = 1  },
+            })
+
+            .Add(Job.Archer, new List<ModifierData>
+            {
+                new ModifierData { Modifier = Modifier.Hp,             StartValue = 100,    EndValue = 1541,    GrowthRate = 0.45  },
+                new ModifierData { Modifier = Modifier.Mp,             StartValue = 170,    EndValue = 1674,    GrowthRate = 0.55  },
+                new ModifierData { Modifier = Modifier.Strength,       StartValue = 0,      EndValue = 168,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Vitality,       StartValue = 0,      EndValue = 188,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Dexterity,      StartValue = 0,      EndValue = 219,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Intelligence,   StartValue = 0,      EndValue = 158,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mind,           StartValue = 0,      EndValue = 148,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Piety,          StartValue = 0,      EndValue = 158,     GrowthRate = 1  },
+            })
+
+            .Add(Job.Conjurer, new List<ModifierData>
+            {
+                new ModifierData { Modifier = Modifier.Hp,             StartValue = 100,    EndValue = 1541,    GrowthRate = 0.45  },
+                new ModifierData { Modifier = Modifier.Mp,             StartValue = 120,    EndValue = 3210,    GrowthRate = 0.55  },
+                new ModifierData { Modifier = Modifier.Strength,       StartValue = 0,      EndValue = 98,      GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Vitality,       StartValue = 0,      EndValue = 188,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Dexterity,      StartValue = 0,      EndValue = 199,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Intelligence,   StartValue = 0,      EndValue = 199,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mind,           StartValue = 0,      EndValue = 221,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Piety,          StartValue = 0,      EndValue = 219,     GrowthRate = 1  },
+            })
+
+            .Add(Job.Thaumaturge, new List<ModifierData>
+            {
+                new ModifierData { Modifier = Modifier.Hp,             StartValue = 100,    EndValue = 1541,    GrowthRate = 0.45  },
+                new ModifierData { Modifier = Modifier.Mp,             StartValue = 130,    EndValue = 3429,    GrowthRate = 0.55  },
+                new ModifierData { Modifier = Modifier.Strength,       StartValue = 0,      EndValue = 77,      GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Vitality,       StartValue = 0,      EndValue = 188,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Dexterity,      StartValue = 0,      EndValue = 188,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Intelligence,   StartValue = 0,      EndValue = 221,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mind,           StartValue = 0,      EndValue = 138,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Piety,          StartValue = 0,      EndValue = 229,     GrowthRate = 1  },
+            });
+
+        // Data (ARR 2.0) was retrieved from https://web.archive.org/web/20160501222505/http://valk.dancing-mad.com/tables/attribute-table/
+        // TODO: Update values and modifiers to reflect 1.23b verified data
+        private static readonly IImmutableDictionary<Job, IList<ModifierData>> JobSoulStoneAttributes = ImmutableDictionary.Create<Job, IList<ModifierData>>()
+            .Add(Job.Paladin, new List<ModifierData>
+            {
+                new ModifierData { Modifier = Modifier.Hp,             StartValue = 0,      EndValue = 460,    GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mp,             StartValue = 0,      EndValue = 278,    GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Strength,       StartValue = 0,      EndValue = 11,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Vitality,       StartValue = 0,      EndValue = 20,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Dexterity,      StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Intelligence,   StartValue = 0,      EndValue = 20,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mind,           StartValue = 0,      EndValue = 11,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Piety,          StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+            })
+
+            .Add(Job.Warrior, new List<ModifierData>
+            {
+                new ModifierData { Modifier = Modifier.Hp,             StartValue = 0,      EndValue = 460,    GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mp,             StartValue = 0,      EndValue = 212,    GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Strength,       StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Vitality,       StartValue = 0,      EndValue = 20,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Dexterity,      StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Intelligence,   StartValue = 0,      EndValue = 20,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mind,           StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Piety,          StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+            })
+
+            .Add(Job.Dragoon, new List<ModifierData>
+            {
+                new ModifierData { Modifier = Modifier.Hp,             StartValue = 0,      EndValue = 230,    GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mp,             StartValue = 0,      EndValue = 259,    GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Strength,       StartValue = 0,      EndValue = 20,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Vitality,       StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Dexterity,      StartValue = 0,      EndValue = 11,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Intelligence,   StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mind,           StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Piety,          StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+            })
+
+            .Add(Job.Monk, new List<ModifierData>
+            {
+                new ModifierData { Modifier = Modifier.Hp,             StartValue = 0,      EndValue = 245,    GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mp,             StartValue = 0,      EndValue = 242,    GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Strength,       StartValue = 0,      EndValue = 20,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Vitality,       StartValue = 0,      EndValue = 11,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Dexterity,      StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Intelligence,   StartValue = 0,      EndValue = 11,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mind,           StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Piety,          StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+            })
+
+            .Add(Job.Bard, new List<ModifierData>
+            {
+                new ModifierData { Modifier = Modifier.Hp,             StartValue = 0,      EndValue = 244,    GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mp,             StartValue = 0,      EndValue = 291,    GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Strength,       StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Vitality,       StartValue = 0,      EndValue = 11,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Dexterity,      StartValue = 0,      EndValue = 20,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Intelligence,   StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mind,           StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Piety,          StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+            })
+
+            .Add(Job.WhiteMage, new List<ModifierData>
+            {
+                new ModifierData { Modifier = Modifier.Hp,             StartValue = 0,      EndValue = 244,    GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mp,             StartValue = 0,      EndValue = 298,    GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Strength,       StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Vitality,       StartValue = 0,      EndValue = 11,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Dexterity,      StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Intelligence,   StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mind,           StartValue = 0,      EndValue = 20,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Piety,          StartValue = 0,      EndValue = 20,     GrowthRate = 1  },
+            })
+
+            .Add(Job.BlackMage, new List<ModifierData>
+            {
+                new ModifierData { Modifier = Modifier.Hp,             StartValue = 0,      EndValue = 244,    GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mp,             StartValue = 0,      EndValue = 225,    GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Strength,       StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Vitality,       StartValue = 0,      EndValue = 11,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Dexterity,      StartValue = 0,      EndValue = 11,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Intelligence,   StartValue = 0,      EndValue = 20,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Mind,           StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+                new ModifierData { Modifier = Modifier.Piety,          StartValue = 0,      EndValue = 10,     GrowthRate = 1  },
+            });
+
+
+        private short GetJobLevelAdjustedMod(double startValue, double endValue, double growthRate)
+        {
+            const double maxLevel = 50;
+            double level = GetLevel();
+
+            double t = (level - 1.0) / (maxLevel - 1.0);
+            if (t < 0) t = 0;
+            if (t > 1) t = 1;
+
+            double fraction = Math.Pow(t, 1.0 / growthRate);
+            double result = startValue + (endValue - startValue) * fraction;
+            return (short)Math.Round(result);
+        }
+
+        private IList<ModifierData> GetEquipmentModifiers(EquipmentSlot equipmentSlot)
+        {
+            // Get the modifiers provided by a specific equipped item 
+            return GetEquipment()?.GetItemAtSlot(equipmentSlot)?.GetEquipmentModifiers(GetLevel(), CurrentJobOrClass) ?? new List<ModifierData>();
+        }
+
+        private void CalculateEquipmentMods()
+        {
+            // Calculate and set modifiers provided from equipped items
+
+            // TODO: handle special gear like weapon vs. throwing weapon, MH vs. OH (crafting and gathering), etc.
+            // we don't want to add the modifier to their regular attack damage (and other mods)
+            // we also don't want regular attack damage to modify thrown weapon damage though, so maybe the damage should not be added here?
+            // perhaps only add attack type, delay, hit count, can block, damage, when the gear is "used" rather than "equipped"?
+
+            ClearMods(ModifierOrigin.Equipment);
+
+            Dictionary<EquipmentSlot, IList<ModifierData>> modsByEquipmentSlot = new Dictionary<EquipmentSlot, IList<ModifierData>>
+            {
+                { EquipmentSlot.MAINHAND, GetEquipmentModifiers(EquipmentSlot.MAINHAND) },
+                { EquipmentSlot.OFFHAND, GetEquipmentModifiers(EquipmentSlot.OFFHAND) },
+                { EquipmentSlot.THROWINGWEAPON, GetEquipmentModifiers(EquipmentSlot.THROWINGWEAPON) },
+                { EquipmentSlot.PACK, GetEquipmentModifiers(EquipmentSlot.PACK) },
+                { EquipmentSlot.POUCH, GetEquipmentModifiers(EquipmentSlot.POUCH) },
+                { EquipmentSlot.HEAD, GetEquipmentModifiers(EquipmentSlot.HEAD) },
+                { EquipmentSlot.UNDERSHIRT, GetEquipmentModifiers(EquipmentSlot.UNDERSHIRT) },
+                { EquipmentSlot.BODY, GetEquipmentModifiers(EquipmentSlot.BODY) },
+                { EquipmentSlot.UNDERGARMENT, GetEquipmentModifiers(EquipmentSlot.UNDERGARMENT) },
+                { EquipmentSlot.LEGS, GetEquipmentModifiers(EquipmentSlot.LEGS) },
+                { EquipmentSlot.HANDS, GetEquipmentModifiers(EquipmentSlot.HANDS) },
+                { EquipmentSlot.BOOTS, GetEquipmentModifiers(EquipmentSlot.BOOTS) },
+                { EquipmentSlot.WAIST, GetEquipmentModifiers(EquipmentSlot.WAIST) },
+                { EquipmentSlot.NECK, GetEquipmentModifiers(EquipmentSlot.NECK) },
+                { EquipmentSlot.EARS, GetEquipmentModifiers(EquipmentSlot.EARS) },
+                { EquipmentSlot.WRISTS, GetEquipmentModifiers(EquipmentSlot.WRISTS) },
+                { EquipmentSlot.RIGHTFINGER, GetEquipmentModifiers(EquipmentSlot.RIGHTFINGER) },
+                { EquipmentSlot.LEFTFINGER, GetEquipmentModifiers(EquipmentSlot.LEFTFINGER) }
+            };
+
+            foreach (KeyValuePair<EquipmentSlot, IList<ModifierData>> equipmentSlotMods in modsByEquipmentSlot)
+            {
+                foreach (ModifierData mod in equipmentSlotMods.Value)
+                {
+                    if (mod.Modifier == Modifier.AttackType || mod.Modifier == Modifier.Delay || mod.Modifier == Modifier.HitCount)
+                    {
+                        if (equipmentSlotMods.Key == EquipmentSlot.MAINHAND)
+                        {
+                            SetMod(mod.Modifier, mod.EndValue, ModifierOrigin.Equipment);
+                        }
+                    }
+                    else if (mod.Modifier == Modifier.CanBlock)
+                    {
+                        if (equipmentSlotMods.Key == EquipmentSlot.OFFHAND)
+                        {
+                            SetMod(mod.Modifier, mod.EndValue, ModifierOrigin.Equipment);
+                        }
+                    }
+                    else if (mod.Modifier == Modifier.Damage)
+                    {
+                        if (equipmentSlotMods.Key == EquipmentSlot.MAINHAND || equipmentSlotMods.Key == EquipmentSlot.PACK)
+                        {
+                            AddMod(mod.Modifier, mod.EndValue, ModifierOrigin.Equipment);
+                        }
+                    }
+                    else if (mod.PrerequisiteModifier != null)
+                    {
+                        if (mod.PrerequisiteModifier.Modifier == Modifier.StormGearPiecesRequirement ||
+                            mod.PrerequisiteModifier.Modifier == Modifier.SerpentGearPiecesRequirement ||
+                            mod.PrerequisiteModifier.Modifier == Modifier.FlameGearPiecesRequirement)
+                        {
+                            int setPiecesEquippedCount = modsByEquipmentSlot.Values.Count(itemMods => itemMods.Any(m => m.Modifier == mod.PrerequisiteModifier.Modifier));
+                            if (setPiecesEquippedCount >= mod.PrerequisiteModifier.EndValue)
+                            {
+                                AddMod(mod.Modifier, mod.EndValue, ModifierOrigin.Equipment);
+                            }
+                        }
+                        else if (mod.PrerequisiteModifier.Modifier == Modifier.SanctionRequirement)
+                        {
+                            if (statusEffects.HasStatusEffect(StatusEffectId.Sanction))
+                            {
+                                AddMod(mod.Modifier, mod.EndValue, ModifierOrigin.Equipment);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        AddMod(mod.Modifier, mod.EndValue, ModifierOrigin.Equipment);
+                    }
+                }
+            }
+        }
+
+        private void CalculateModsDependentOnMods()
+        {
+            // Calculate and set modifiers that rely on other modifiers being fully calculated already.
+            // e.g. Vitality increases HP modifiers, so Vitality needs to be fully calculated before calculating its effect on HP
+
+            ClearMods(ModifierOrigin.ModifierDownstreamEffects);
+
+            //These stats all correlate in a 3:2 fashion
+            //It seems these stats don't actually increase their respective stats. The magic stats do, however
+            AddMod(Modifier.Attack, (long)(GetMod(Modifier.Strength) * 0.667), ModifierOrigin.ModifierDownstreamEffects);
+            AddMod(Modifier.Accuracy, (long)(GetMod(Modifier.Dexterity) * 0.667), ModifierOrigin.ModifierDownstreamEffects);
+            AddMod(Modifier.Defense, (long)(GetMod(Modifier.Vitality) * 0.667), ModifierOrigin.ModifierDownstreamEffects);
+
+            //These stats correlate in a 4:1 fashion. (Unsure if MND is accurate but it would make sense for it to be)
+            AddMod(Modifier.AttackMagicPotency, (long)((float)GetMod(Modifier.Intelligence) * 0.25), ModifierOrigin.ModifierDownstreamEffects);
+
+            AddMod(Modifier.MagicAccuracy, (long)((float)GetMod(Modifier.Mind) * 0.25), ModifierOrigin.ModifierDownstreamEffects);
+            AddMod(Modifier.HealingMagicPotency, (long)((float)GetMod(Modifier.Mind) * 0.25), ModifierOrigin.ModifierDownstreamEffects);
+
+            AddMod(Modifier.MagicEvasion, (long)((float)GetMod(Modifier.Piety) * 0.25), ModifierOrigin.ModifierDownstreamEffects);
+            AddMod(Modifier.EnfeeblingMagicPotency, (long)((float)GetMod(Modifier.Piety) * 0.25), ModifierOrigin.ModifierDownstreamEffects);
+
+            //VIT correlates to HP in a 1:1 fashion
+            AddMod(Modifier.Hp, (long)(float)GetMod(Modifier.Vitality), ModifierOrigin.ModifierDownstreamEffects);
+        }
+
+        public void SetMaxHpFromMods()
+        {
+            // Calculate and set Max HP from HP modifiers
+            short hp = (short)GetMod(Modifier.Hp);
+            double hpMultiplier = GetMod(Modifier.HpPercent);
+
+            if (hpMultiplier != 0)
+            {
+                    hp = (short)(hpMultiplier / 100.0 * hp);  
+            }
+            MaxHP = hp;
+        }
+    
+        private void SetMaxMpFromMods()
+        {
+            // Calculate and set Max MP from MP modifiers
+            short mp = (short)GetMod(Modifier.Mp);
+            double mpMultiplier = GetMod(Modifier.MpPercent);
+
+            if (mpMultiplier != 0)
+            {
+                mp = (short)(mpMultiplier / 100.0 * mp);
+            }
+
+            MaxMP = mp;
+        }
+
+        private void SetStatsFromMods()
+        {
+            // Calculate and set Stats from modifiers
+            foreach (Modifier modifier in StatModifiers)
+            {
+                SetStat(modifier, (short)GetMod(modifier));
+            }
+        }
+
+        #endregion
+
         #region ai stuff
         public void PathTo(float x, float y, float z, float stepSize = 0.70f, int maxPath = 40, float polyRadius = 0.0f)
         {
@@ -313,76 +1253,6 @@ namespace Meteor.Map.Actors
             if (target != null)
                 PathTo(target.positionX, target.positionY, target.positionZ, stepSize, maxPath, radius);
         }
-
-        public double GetMod(Modifier modifier)
-        {
-            return GetMod((uint)modifier);
-        }
-
-        public double GetMod(uint modifier)
-        {
-            double res;
-            if (modifiers.TryGetValue((Modifier)modifier, out res))
-                return res;
-            return 0;
-        }
-
-        public void SetMod(uint modifier, double val)
-        {
-            if (modifiers.ContainsKey((Modifier)modifier))
-                modifiers[(Modifier)modifier] = val;
-            else
-                modifiers.Add((Modifier)modifier, val);
-
-            if (modifier >= 3 && modifier <= 35)
-                updateFlags |= ActorUpdateFlags.Stats;
-        }
-
-        public void AddMod(Modifier modifier, double val)
-        {
-            AddMod((uint)modifier, val);
-        }
-
-        public void AddMod(uint modifier, double val)
-        {
-
-            double newVal = GetMod(modifier) + val;
-            SetMod(modifier, newVal);
-        }
-
-        public void SubtractMod(Modifier modifier, double val)
-        {
-            AddMod((uint)modifier, val);
-        }
-
-        public void SubtractMod(uint modifier, double val)
-        {
-            double newVal = GetMod(modifier) - val;
-            SetMod(modifier, newVal);
-        }
-
-        public void MultiplyMod(Modifier modifier, double val)
-        {
-            MultiplyMod((uint)modifier, val);
-        }
-
-        public void MultiplyMod(uint modifier, double val)
-        {
-            double newVal = GetMod(modifier) * val;
-            SetMod(modifier, newVal);
-        }
-
-        public void DivideMod(Modifier modifier, double val)
-        {
-            DivideMod((uint)modifier, val);
-        }
-
-        public void DivideMod(uint modifier, double val)
-        {
-            double newVal = GetMod(modifier) / val;
-            SetMod(modifier, newVal);
-        }
-
 
         public virtual void OnPath(Vector3 point)
         {
@@ -553,11 +1423,8 @@ namespace Meteor.Map.Actors
         public virtual void Spawn(DateTime tick)
         {
             aiContainer.Reset();
-            // todo: reset hp/mp/tp etc here
             ChangeState(SetActorStatePacket.MAIN_STATE_PASSIVE);
-            SetHP((uint) GetMaxHP());
-            SetMP((uint) GetMaxMP());
-            RecalculateStats();
+            CalculateStats(true, ModifierOrigin.Equipment, ModifierOrigin.StatusEffect);
         }
 
         //AdditionalActions is the list of actions that EXP/Chain messages are added to
@@ -583,204 +1450,7 @@ namespace Meteor.Map.Actors
             return !aiContainer.IsDead();// && GetHP() > 0;
         }
 
-        public short GetHP()
-        {
-            // todo: 
-            return charaWork.parameterSave.hp[0];
-        }
-
-        public short GetMaxHP()
-        {
-            return charaWork.parameterSave.hpMax[0];
-        }
-
-        public short GetMP()
-        {
-            return charaWork.parameterSave.mp;
-        }
-
-        public ushort GetTP()
-        {
-            return tpBase;
-        }
-
-        public short GetMaxMP()
-        {
-            return charaWork.parameterSave.mpMax;
-        }
-
-        public byte GetMPP()
-        {
-            return (byte)((charaWork.parameterSave.mp / charaWork.parameterSave.mpMax) * 100);
-        }
-
-        public byte GetTPP()
-        {
-            return (byte)((tpBase / 3000) * 100);
-        }
-
-        public byte GetHPP()
-        {
-            return (byte)(charaWork.parameterSave.hp[0] == 0 ? 0 : (charaWork.parameterSave.hp[0] / (float) charaWork.parameterSave.hpMax[0]) * 100);
-        }
-
-        public void SetHP(uint hp)
-        {
-            charaWork.parameterSave.hp[0] = (short)hp;
-            if (hp > charaWork.parameterSave.hpMax[0])
-                SetMaxHP(hp);
-
-            updateFlags |= ActorUpdateFlags.HpTpMp;
-        }
-
-        public void SetMaxHP(uint hp)
-        {
-            charaWork.parameterSave.hpMax[0] = (short)hp;
-            updateFlags |= ActorUpdateFlags.HpTpMp;
-        }
-
-        public void SetMP(uint mp)
-        {
-            charaWork.parameterSave.mp = (short)mp;
-            if (mp > charaWork.parameterSave.mp)
-                SetMaxMP(mp);
-
-            updateFlags |= ActorUpdateFlags.HpTpMp;
-        }
-
-        public void SetMaxMP(uint mp)
-        {
-            charaWork.parameterSave.mpMax = (short)mp;
-            updateFlags |= ActorUpdateFlags.HpTpMp;
-        }
-
-        // todo: the following functions are virtuals since we want to check hidden item bonuses etc on player for certain conditions
-        public virtual void AddHP(int hp, CommandResultContainer resultContainer = null)
-        {
-            // dont wanna die ded, don't want to send update if hp isn't actually changed
-            if (IsAlive() && hp != 0)
-            {
-                // todo: +/- hp and die
-                // todo: battlenpcs probably have way more hp?
-                var addHp = charaWork.parameterSave.hp[0] + hp;
-                addHp = addHp.Clamp((short)GetMod((uint)Modifier.MinimumHpLock), charaWork.parameterSave.hpMax[0]);
-                charaWork.parameterSave.hp[0] = (short)addHp;
-
-                updateFlags |= ActorUpdateFlags.HpTpMp;
-
-                if (charaWork.parameterSave.hp[0] < 1)
-                    Die(Program.Tick, resultContainer);
-            }
-        }
-
-        public short GetClass()
-        {
-            return charaWork.parameterSave.state_mainSkill[0];
-        }
-
-        public short GetLevel()
-        {
-            return charaWork.parameterSave.state_mainSkillLevel;
-        }
-
-        public void AddMP(int mp)
-        {
-            if (IsAlive() && mp != 0)
-            {
-                charaWork.parameterSave.mp = (short)(charaWork.parameterSave.mp + mp).Clamp(ushort.MinValue, charaWork.parameterSave.mpMax);
-
-                // todo: check hidden effects and shit
-
-                updateFlags |= ActorUpdateFlags.HpTpMp;
-            }
-        }
-
-        public void AddTP(int tp)
-        {
-            if (IsAlive() && tp != 0)
-            {
-                var addTp = charaWork.parameterTemp.tp + tp;
-                
-                addTp = addTp.Clamp((int) GetMod(Modifier.MinimumTpLock), 3000);
-                charaWork.parameterTemp.tp = (short) addTp;
-                tpBase = (ushort)charaWork.parameterTemp.tp;
-                updateFlags |= ActorUpdateFlags.HpTpMp;
-
-                if (tpBase >= 1000)
-                    lua.LuaEngine.GetInstance().OnSignal("tpOver1000");
-            }
-        }
-
-        public void DelHP(int hp, CommandResultContainer resultContainer = null)
-        {
-            AddHP((short)-hp, resultContainer);
-        }
-
-        public void DelMP(int mp)
-        {
-            AddMP(-mp);
-        }
-
-        public void DelTP(int tp)
-        {
-            AddTP(-tp);
-        }
-
-        virtual public void CalculateBaseStats()
-        {
-            // todo: apply mods and shit here, get race/level/job and shit
-            uint hpMod = (uint) GetMod((uint)Modifier.Hp);
-            if (hpMod != 0)
-            {
-                SetMaxHP(hpMod);
-                uint hpp = (uint) GetMod((uint) Modifier.HpPercent);
-                uint hp = hpMod;
-                if(hpp != 0)
-                {
-                    hp = (uint) Math.Ceiling(((float)hpp / 100.0f) * hpMod);
-                }
-                SetHP(hp);
-            }
-
-            uint mpMod = (uint)GetMod((uint)Modifier.Mp);
-            if (mpMod != 0)
-            {
-                SetMaxMP(mpMod);
-                uint mpp = (uint)GetMod((uint)Modifier.MpPercent);
-                uint mp = mpMod;
-                if (mpp != 0)
-                {
-                    mp = (uint)Math.Ceiling(((float)mpp / 100.0f) * mpMod);
-                }
-                SetMP(mp);
-            }
-            // todo: recalculate stats and crap
-            updateFlags |= ActorUpdateFlags.HpTpMp;
-
-
-            SetMod((uint)Modifier.HitCount, 1);
-        }
-
-        public void RecalculateStats()
-        {
-            //CalculateBaseStats();
-        }
-
-        public void SetStat(uint statId, int val)
-        {
-            charaWork.battleTemp.generalParameter[statId] = (short)val;
-        }
-
-        public short GetStat(uint statId)
-        {
-            return charaWork.battleTemp.generalParameter[statId];
-        }
-
-        public virtual float GetSpeed()
-        {
-            // todo: for battlenpc/player calculate speed
-            return (float) GetMod((uint)Modifier.MovementSpeed);
-        }
+        #endregion ai stuff
 
         public virtual void OnAttack(State state, CommandResult action, ref CommandResult error)
         {
@@ -980,7 +1650,6 @@ namespace Meteor.Map.Actors
             return GetClass() >= CLASSID_MIN;
         }
         #endregion lua helpers
-        #endregion ai stuff
 
         //Reset procs. Only send packet if any procs were actually reset. 
         //This assumes you can't use weaponskills between getting a proc and using the procced ability
@@ -1180,6 +1849,16 @@ namespace Meteor.Map.Actors
             targetFind.SetAOEType(ValidTarget.Party, TargetFindAOEType.Circle, TargetFindAOETarget.Self, range, 0, 10, 0, 0);
             targetFind.FindWithinArea(this, ValidTarget.Party, TargetFindAOETarget.Self);
             return targetFind.GetTargets();
+        }
+
+        public void DisableAutoAttack()
+        {
+            this.isAutoAttackEnabled = false;
+        }
+
+        public void EnableAutoAttack()
+        {
+            this.isAutoAttackEnabled = true;
         }
 
         #region Inventory

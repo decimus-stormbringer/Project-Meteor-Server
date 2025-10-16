@@ -112,7 +112,13 @@ namespace Meteor.Map.actors.director
         public void OnCommandEvent(Player player, Command command)
         {
             LuaEngine.GetInstance().CallLuaFunction(player, this, "onCommandEvent", false, command);
-        }   
+        }
+
+        // Putting this here to test later mob-kill tracking in Director scripts. 
+        public void OnKillBNpc(Player caller, uint classId)
+        {
+            LuaEngine.GetInstance().CallLuaFunction(caller, this, "onKillBNpc", true, classId);
+        }
 
         public void StartDirector(bool spawnImmediate, params object[] args)
         {

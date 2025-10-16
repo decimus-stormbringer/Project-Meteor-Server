@@ -11,6 +11,7 @@ namespace Meteor.Map.Actors.QuestNS
         private Player owner;
         private Quest parent;
 
+        private ushort sequence;
         private uint flags;
         private ushort counter1;
         private ushort counter2;
@@ -22,10 +23,11 @@ namespace Meteor.Map.Actors.QuestNS
 
         public bool Dirty { get; private set; } = false;
 
-        public QuestData(Player owner, Quest parent, uint flags, ushort counter1, ushort counter2, ushort counter3, ushort counter4, uint npcLsFrom, byte npcLsMessageStep)
+        public QuestData(Player owner, Quest parent, ushort sequence, uint flags, ushort counter1, ushort counter2, ushort counter3, ushort counter4, uint npcLsFrom, byte npcLsMessageStep)
         {
             this.owner = owner;
             this.parent = parent;
+            this.sequence = sequence;
             this.flags = flags;
             this.counter1 = counter1;
             this.counter2 = counter2;

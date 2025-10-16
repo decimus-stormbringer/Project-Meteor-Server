@@ -17,6 +17,7 @@ end;
 
 function onSkillFinish(caster, target, skill, action, actionContainer)
     --calculate ws damage
+	skill.basePotency = 25;
     action.amount = skill.basePotency;
 
     --DoAction handles rates, buffs, dealing damage

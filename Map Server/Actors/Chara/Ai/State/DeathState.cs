@@ -44,7 +44,7 @@ namespace Meteor.Map.actors.chara.ai.state
         public override bool Update(DateTime tick)
         {
             // todo: set a flag on chara for accept raise, play animation and spawn
-            if (owner.GetMod((uint)Modifier.Raise) > 0)
+            if (owner.GetMod(Modifier.Raise) > 0)
             {
                 owner.Spawn(tick);
                 return true;

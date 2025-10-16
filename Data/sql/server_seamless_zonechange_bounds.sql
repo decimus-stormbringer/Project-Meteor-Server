@@ -38,7 +38,7 @@ CREATE TABLE `server_seamless_zonechange_bounds` (
 -- ----------------------------
 INSERT INTO `server_seamless_zonechange_bounds` VALUES ('1', '101', '133', '230',		'-457', '131', '-436', '142',				'-460',	'92', '-439', '100',					'-454', '101', '-439', '128');
 INSERT INTO `server_seamless_zonechange_bounds` VALUES ('2', '101', '133', '230',		'-486', '228', '-501', '218',				'-482',	'255', '-503', '242',					'-490', '238', '-501', '229');
-INSERT INTO `server_seamless_zonechange_bounds` VALUES ('3', '101', '133', '128',		'-85', '165', '-79', '185',					'-51', '149', '-47', '167',						'-71', '160', '-69', '174');
+INSERT INTO `server_seamless_zonechange_bounds` VALUES ('3', '101', '133', '128',		'-163.7', '187.8', '-179.9', '196.7',		'-91.85', '175.46', '-76.97', '180.5',		   '-142.5', '205.1', '-128.6', '184.9');
 INSERT INTO `server_seamless_zonechange_bounds` VALUES ('4', '101', '133', '230',		'-483', '200', '-496', '181',				'-506', '206', '-514', '177',					'-500', '198', '-505', '185');
 INSERT INTO `server_seamless_zonechange_bounds` VALUES ('5', '101', '128', '130',		'877', '-285', '885', '-283',				'922', '-354', '932', '-362',					'901', '-304', '887', '-332');
 INSERT INTO `server_seamless_zonechange_bounds` VALUES ('6', '101', '130', '135',		'990.1', '-1544', '988.4', '-1556.4',		'913', '-1628', '928', '-1630',			 		'950', '-1576', '962', '-1635');
@@ -60,10 +60,10 @@ INSERT INTO `server_seamless_zonechange_bounds` VALUES ('19', '103', '155', '150
 
 INSERT INTO `server_seamless_zonechange_bounds` VALUES ('20', '104', '170', '175',		 '87', '178', '110', '189',					'89', '142', '108', '150',						'94', '158', '108', '167');
 INSERT INTO `server_seamless_zonechange_bounds` VALUES ('21', '104', '175', '209',		 '-134', '84', '-95', '92',					'-120', '139', '-82', '143',					'-120', '125', '-96', '124');
-INSERT INTO `server_seamless_zonechange_bounds` VALUES ('22', '104', '170', '175',		'-70', '-47', '-47', '-17',					'-117', '-43', '-108', '-28',					'-99', '-43', '-86', '-28');
-INSERT INTO `server_seamless_zonechange_bounds` VALUES ('23', '104', '170', '175',		'-39', '-33', '-24', '-9',					'22', '-7', '23', '22',							'-7', '-26', '-1', '-4');
-INSERT INTO `server_seamless_zonechange_bounds` VALUES ('24', '104', '175', '209',		'-243', '82', '-208', '107',				'-264', '138', '-230', '173',					'-254', '109', '-220', '128');
-INSERT INTO `server_seamless_zonechange_bounds` VALUES ('25', '104', '175', '209',		'0', '173', '24', '179',					'-23', '204', '9', '232',						'-6', '185', '13', '201');
+INSERT INTO `server_seamless_zonechange_bounds` VALUES ('22', '104', '170', '175',		 '-70', '-47', '-47', '-17',				'-117', '-43', '-108', '-28',					'-99', '-43', '-86', '-28');
+INSERT INTO `server_seamless_zonechange_bounds` VALUES ('23', '104', '170', '175',		 '-39', '-33', '-24', '-9',					'22', '-7', '23', '22',							'-7', '-26', '-1', '-4');
+INSERT INTO `server_seamless_zonechange_bounds` VALUES ('24', '104', '175', '209',		 '-243', '82', '-208', '107',				'-264', '138', '-230', '173',					'-254', '109', '-220', '128');
+INSERT INTO `server_seamless_zonechange_bounds` VALUES ('25', '104', '175', '209',		 '0', '173', '24', '179',					'-23', '204', '9', '232',						'-6', '185', '13', '201');
 INSERT INTO `server_seamless_zonechange_bounds` VALUES ('26', '104', '175', '209',		 '-20', '99', '5', '119',					'-57', '124', '-31', '145',						'-41', '115', '-15', '127');
 INSERT INTO `server_seamless_zonechange_bounds` VALUES ('27', '104', '170', '172',		 '-596', '-405.5', '-621.3', '-403.6',		'-828.5', '-336.6', '-833.5', '-297.2',			'-689.3', '-419.5', '-659.4', '-402.9');
 INSERT INTO `server_seamless_zonechange_bounds` VALUES ('28', '104', '170', '173',		 '-229', '-733.3', '-222.2', '-739.4',		'-473.9', '-913.4', '-472.5', '-927.5',			'-390.4', '-851.9', '-377.6', '-876.1');

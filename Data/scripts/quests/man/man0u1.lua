@@ -486,7 +486,7 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(FRIGHTENED_LALAFELL);
 		quest:SetENpc(TROUBLED_TRADER);
 		quest:SetENpc(PRIVATEAREA_PAST_EXIT, QFLAG_NONE, false, true);
-	elseif (sequence == SEQ_075) then
+	elseif (sequence == SEQ_080) then
 		quest:SetENpc(MIN_TRIGG, QFLAG_PUSH, false, true);
 	elseif (sequence == SEQ_090) then
 		quest:SetENpc(NOGELOIX, QFLAG_TALK);
@@ -705,8 +705,9 @@ function onTalk(player, quest, npc)
 	elseif (sequence == SEQ_070) then
 		if (classId == ASCILLIA) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent090");
-			GetWorldManager():WarpToPublicArea(player);
-			quest:StartSequence(SEQ_075);
+			--GetWorldManager():WarpToPublicArea(player);
+			GetWorldManager():DoZoneChange(player, 170, nil, 0, 15, -32.6, 182.5, -77, -0.2);
+			quest:StartSequence(SEQ_080);
 		elseif (classId == REGARDING_ROEGADYN) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent080_2");
 		elseif (classId == FRIGHTENED_LALAFELL) then
@@ -783,7 +784,7 @@ function onTalk(player, quest, npc)
 			player:CompleteQuest(quest);
 			player:AddItem(1000001, 6000);
 			player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 6000);
-			player:AddExp(10000, player.GetCurrentClassOrJob(), 0);
+			player:AddExp(10000, player:GetCurrentClassOrJobId(), 0);
 			return;
 		elseif (classId == WORRISOME_ASSISTANT) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent210_3");
@@ -858,7 +859,6 @@ function onPush(player, quest, npc)
 				callClientFunction(player, "delegateEvent", player, quest, "processEvent075");
 				GetWorldManager():DoZoneChange(player, 170, nil, 0, 15, 126.125, 184.657, -362.836, -2.987);
 				player:ChangeMusic(37);
-				player:SendMessage(0x1D,"",">Head to Black Brush!");
 				player:EndEvent();
 				quest:StartSequence(SEQ_065);
 			elseif (result == 2) then
@@ -880,14 +880,13 @@ function onPush(player, quest, npc)
 				callClientFunction(player, "delegateEvent", player, quest, "processEvent075");
 				GetWorldManager():DoZoneChange(player, 170, nil, 0, 15, 126.125, 184.657, -362.836, -2.987);
 				player:ChangeMusic(37);
-				player:SendMessage(0x1D,"",">Head to Black Brush!");
 				player:EndEvent();
 				quest:StartSequence(SEQ_065);
 			elseif (result == 2) then
 				player:EndEvent();
 			end
 		end
-	elseif (sequence == SEQ_075) then
+	elseif (sequence == SEQ_080) then
 		if(classId == MIN_TRIGG) then
 		
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent205");
@@ -1364,7 +1363,7 @@ function getJournalMapMarkerList(player, quest)
 		else
 			table.insert(possibleMarkers, MRKR_NALD_GATE);
 		end
-	elseif (sequence == SEQ_075) then
+	elseif (sequence == SEQ_080) then
 		table.insert(possibleMarkers, MRKR_MINERS)
 	elseif (sequence == SEQ_090) then
 		table.insert(possibleMarkers, MRKR_NOGELOIX)

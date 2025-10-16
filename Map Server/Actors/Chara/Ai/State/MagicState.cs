@@ -151,6 +151,8 @@ namespace Meteor.Map.actors.chara.ai.state
             var targets = spell.targetFind.GetTargets();
 
             owner.DoBattleCommand(spell, "magic");
+
+            lua.LuaEngine.GetInstance().OnSignal("spellUsed");
         }
 
         public override void TryInterrupt()

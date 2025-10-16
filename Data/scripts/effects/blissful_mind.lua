@@ -9,7 +9,7 @@ function onTick(owner, effect, actionContainer)
         percentPerSecond = 0.005;
     end
 
-    local amount = percentPerSecond * owner.GetMaxMP() + 0.25;
+    local amount = percentPerSecond * owner.MaxMP + 0.25;
     effect.SetExtra(effect.GetExtra() + amount);
     if effect.GetExtra() >= effect.GetMagnitude() then
         --223242: Fully Blissful Mind

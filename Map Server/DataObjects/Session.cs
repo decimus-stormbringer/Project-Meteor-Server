@@ -20,12 +20,12 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 */
 
 using Meteor.Common;
-
-using Meteor.Map.Actors;
-using Meteor.Map.packets.send.actor;
-using System.Collections.Generic;
 using Meteor.Map.actors.chara.npc;
+using Meteor.Map.Actors;
 using Meteor.Map.Actors.QuestNS;
+using Meteor.Map.packets.send.actor;
+using System;
+using System.Collections.Generic;
 using static Meteor.Map.Actors.QuestNS.QuestState;
 
 namespace Meteor.Map.DataObjects
@@ -35,8 +35,9 @@ namespace Meteor.Map.DataObjects
         public uint id = 0;
         Player playerActor;
         public List<Actor> actorInstanceList = new List<Actor>();
-        public uint languageCode = 1;        
-        private uint lastPingPacket = Utils.UnixTimeStampUTC();
+        public uint languageCode = 1;
+        private DateTime lastPingPacket = DateTime.UtcNow;
+        public bool IsConnected { get; set; } = true;
 
         public bool isUpdatesLocked = true;
 
@@ -69,18 +70,25 @@ namespace Meteor.Map.DataObjects
 
         public void Ping()
         {
-            lastPingPacket = Utils.UnixTimeStampUTC();
+            lastPingPacket = DateTime.UtcNow;
+
         }
 
         public bool CheckIfDCing()
         {
-            uint currentTime = Utils.UnixTimeStampUTC();
-            if (currentTime - lastPingPacket >= 5000) //Show D/C flag
+            // elapsed time since last client activity
+            var elapsed = DateTime.UtcNow - lastPingPacket;
+
+            // Show DC flag if no activity for 5 seconds
+            if (elapsed >= TimeSpan.FromSeconds(5))
                 playerActor.SetDCFlag(true);
-            else if (currentTime - lastPingPacket >= 30000) //DCed
-                return true;
             else
                 playerActor.SetDCFlag(false);
+
+            // Consider fully DCed after 30 seconds of no activity
+            if (elapsed >= TimeSpan.FromSeconds(10))
+                return true;
+
             return false;
         }
 
@@ -203,6 +211,17 @@ namespace Meteor.Map.DataObjects
         public void ClearInstance()
         {
             actorInstanceList.Clear();
+        }
+
+        // Query connection state
+        public bool IsSessionConnected()
+        {
+            return IsConnected;
+        }
+
+        public void MarkDisconnected()
+        {
+            IsConnected = false;
         }
 
         public void LockUpdates(bool f)

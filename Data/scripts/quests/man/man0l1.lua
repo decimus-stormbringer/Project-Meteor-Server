@@ -176,6 +176,7 @@ function onFinish(player, quest)
 	local subseqCUL = data:GetCounter(CNTR_SEQ7_CUL);
 	local subseqMSK = data:GetCounter(CNTR_SEQ7_MSK);
 
+	-- Reset counters to zero (mostly for testing purposes)
 	data:SetCounter(CNTR_SEQ7_CUL, 0);
 	data:SetCounter(CNTR_SEQ7_MSK, 0);
 end
@@ -432,7 +433,7 @@ function onTalk(player, quest, npc)
 			player:CompleteQuest(quest);
 			player:AddItem(1000001, 6000);
 			player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 6000);
-			player:AddExp(10000, player.GetCurrentClassOrJob(), 0);
+			player:AddExp(10000, player:GetCurrentClassOrJobId(), 0);
 			return;
 		end
 	end

@@ -100,7 +100,6 @@ function onStateChange(player, quest, sequence)
 	elseif (sequence == SEQ_005) then
 		quest:SetENpc(EXIT_TRIGGER, QFLAG_PUSH);
 	elseif (sequence == SEQ_010) then
-		player:SendMessage(0x1D,"",">function onStateChange If S 10");
 		quest:SetENpc(HOB, QFLAG_TALK);
 		quest:SetENpc(GERT);
 		quest:SetENpc(LORHZANT);

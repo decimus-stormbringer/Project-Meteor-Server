@@ -28,7 +28,7 @@ function onTrigger(player, argc, qty, name, lastName)
 		if (qty <= 75000) then
 			location = INVENTORY_CURRENCY;
 			print("ASDASDASDASDASD");
-			actionList = player:AddExp(qty, player.GetCurrentClassOrJob(), 0);
+			actionList = player:AddExp(qty, player.CurrentJobOrClassId, 0);
 			player:DoBattleAction(0, 0, actionList);
 		else
 			player:SendMessage(0x1D,"",">Value too high. Please use a value of 75,000 or lower");

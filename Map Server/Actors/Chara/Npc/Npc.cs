@@ -49,7 +49,7 @@ namespace Meteor.Map.Actors
     class Npc : Character
     {
         private uint actorClassId;
-        private string uniqueIdentifier;
+        public string uniqueIdentifier;
 
         private bool IsMapObjChara = false;
         private uint MapObjLayoutId, MapObjInstanceId;
@@ -57,7 +57,8 @@ namespace Meteor.Map.Actors
         public NpcWork npcWork = new NpcWork();
         public NpcSpawnType npcSpawnType;
 
-        public Npc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, string customDisplayName, uint mapObjLayoutId = 0, uint mapObjInstanceId = 0)
+        // Used for non-mob spawns. 
+        public Npc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, ushort actorState, uint animId, string displayName = null, uint mapObjLayoutId = 0, uint mapObjInstanceId = 0)
             : base((4 << 28 | spawnedArea.Id << 19 | ((uint)actorNumber + 5)))  
         {
             this.positionX = posX;
@@ -65,10 +66,17 @@ namespace Meteor.Map.Actors
             this.positionZ = posZ;
             this.rotation = rot;
             this.currentMainState = actorState;
-            this.animationId = animationId;
+            this.animationId = animId;
 
-            this.LocalizedDisplayName = actorClass.displayNameId;
-            this.DisplayName = customDisplayName;
+            // Use custom display name if one is set. Otherwise default to LocalizedDisplayName ID from Gamedata_Actor_Class
+            if (!string.IsNullOrEmpty(displayName))
+            {
+                this.DisplayName = displayName;
+            }
+            else
+            {
+                this.LocalizedDisplayName = actorClass.displayNameId;
+            }
 
             this.uniqueIdentifier = uniqueId;
 
@@ -76,7 +84,7 @@ namespace Meteor.Map.Actors
 
             this.actorClassId = actorClass.actorClassId;
 
-            this.currentSubState.motionPack = (ushort) animationId;
+            this.currentSubState.motionPack = (ushort) animId;
 
             LoadNpcAppearance(actorClass.actorClassId);
 
@@ -85,15 +93,6 @@ namespace Meteor.Map.Actors
 
             charaWork.battleSave.potencial = 1.0f;
 
-            // todo: these really need to be read from db etc
-            {
-                charaWork.parameterSave.state_mainSkill[0] = 3;
-                charaWork.parameterSave.state_mainSkill[2] = 3;
-                charaWork.parameterSave.state_mainSkillLevel = 1;
-
-                charaWork.parameterSave.hp[0] = 80;
-                charaWork.parameterSave.hpMax[0] = 80;
-            }
             for (int i = 0; i < 32; i++ )
                 charaWork.property[i] = (byte)(((int)actorClass.propertyFlags >> i) & 1);
 
@@ -111,79 +110,6 @@ namespace Meteor.Map.Actors
 
             GenerateActorName((int)actorNumber);
             this.aiContainer = new AIContainer(this, null, new PathFind(this), new TargetFind(this));
-        }
-
-        public Npc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, uint mapObjLayoutId = 0, uint mapObjInstanceId = 0)
-            : base((4 << 28 | spawnedArea.Id << 19 | (uint)actorNumber))
-        {
-            this.positionX = posX;
-            this.positionY = posY;
-            this.positionZ = posZ;
-            this.rotation = rot;
-            this.currentMainState = 0;
-            this.animationId = 0;
-
-            this.LocalizedDisplayName = actorClass.displayNameId;
-
-            this.uniqueIdentifier = uniqueId;
-
-            CurrentArea = spawnedArea;
-
-            this.actorClassId = actorClass.actorClassId;
-
-            LoadNpcAppearance(actorClass.actorClassId);
-
-            this.classPath = actorClass.classPath;
-            className = classPath.Substring(classPath.LastIndexOf("/") + 1);
-
-            for (int i = 0; i < 32; i++)
-                charaWork.property[i] = (byte)(((int)actorClass.propertyFlags >> i) & 1);
-
-            npcWork.pushCommand = actorClass.pushCommand;
-            npcWork.pushCommandSub = actorClass.pushCommandSub;
-            npcWork.pushCommandPriority = actorClass.pushCommandPriority;
-
-            if (mapObjLayoutId != 0 && mapObjInstanceId != 0)
-            {
-                isStatic = true;
-                IsMapObjChara = true;
-                MapObjLayoutId = mapObjLayoutId;
-                MapObjInstanceId = mapObjInstanceId;
-            }
-
-            GenerateActorName((int)actorNumber);
-            this.aiContainer = new AIContainer(this, null, new PathFind(this), new TargetFind(null));
-        }
-
-        //For handling battle NPCs
-        public Npc(int actorNumber, ActorClass actorClass, string uniqueId, string displayName, Area spawnedArea, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, uint mapObjLayoutId = 0, uint mapObjInstanceId = 0)
-            : base((4 << 28 | spawnedArea.Id << 19 | ((uint)actorNumber + 5)))
-        {
-            
-            this.positionX = posX;
-            this.positionY = posY;
-            this.positionZ = posZ;
-            this.rotation = rot;
-            this.currentMainState = actorState;
-            this.animationId = animationId;
-
-            this.DisplayName = displayName;                                    //Fetch name as typed in Database
-            //this.LocalizedDisplayName = actorClass.displayNameId;            //Fetch name from DisplayNameID in GameData_Actor_Class
-
-            this.uniqueIdentifier = uniqueId;
-
-            CurrentArea = spawnedArea;
-
-            this.actorClassId = actorClass.actorClassId;
-
-            this.currentSubState.motionPack = (ushort)animationId;
-
-            LoadNpcAppearance(actorClass.actorClassId);
-
-            className = actorClass.classPath.Substring(actorClass.classPath.LastIndexOf("/") + 1);
-            this.classPath = String.Format("{0}/{1}", actorClass.classPath.Substring(0, actorClass.classPath.LastIndexOf('/')).ToLower(), className);
-
-            charaWork.battleSave.potencial = 1.0f;
 
             // todo: these really need to be read from db etc
             {
@@ -191,26 +117,16 @@ namespace Meteor.Map.Actors
                 //charaWork.parameterSave.state_mainSkill[2] = 3;
                 //charaWork.parameterSave.state_mainSkillLevel = 1;
 
-                
+                if (this.Level == 0)
+                    this.Level = 1;
+
+                if (this.MaxHP == 0)
+                    this.MaxHP = 100;
+
+                if (this.HP == 0)
+                    this.HP = this.MaxHP;
             }
-            for (int i = 0; i < 32; i++)
-                charaWork.property[i] = (byte)(((int)actorClass.propertyFlags >> i) & 1);
-
-            npcWork.pushCommand = actorClass.pushCommand;
-            npcWork.pushCommandSub = actorClass.pushCommandSub;
-            npcWork.pushCommandPriority = actorClass.pushCommandPriority;
-
-            if (mapObjLayoutId != 0 && mapObjInstanceId != 0)
-            {
-                isStatic = true;
-                IsMapObjChara = true;
-                MapObjLayoutId = mapObjLayoutId;
-                MapObjInstanceId = mapObjInstanceId;
-            }
-
-            GenerateActorName((int)actorNumber);
-            this.aiContainer = new AIContainer(this, null, new PathFind(this), new TargetFind(this));
-        }
+        }             
 
         public SubPacket CreateAddActorPacket()
         {
@@ -255,7 +171,6 @@ namespace Meteor.Map.Actors
             //ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams).DebugPrintSubPacket();
             return ActorInstantiatePacket.BuildPacket(Id, Name, className, lParams);
         }
-
         public override List<SubPacket> GetSpawnPackets(Player player, ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
@@ -320,10 +235,9 @@ namespace Meteor.Map.Actors
             }
 
             //General Parameters
-            for (int i = 3; i < charaWork.battleTemp.generalParameter.Length; i++)
+            for (int i = 0; i < charaWork.battleTemp.generalParameter.Length; i++)
             {
-                if (charaWork.battleTemp.generalParameter[i] != 0)
-                    propPacketUtil.AddProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
+                propPacketUtil.AddProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
             }
 
             propPacketUtil.AddProperty("npcWork.hateType");

@@ -19,15 +19,12 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using FFXIVClassic_Lobby_Server.packets;
+using Meteor.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
+namespace Meteor.Map.packets.send.actor.inventory
 {
     class SetInitialEquipmentPacket
     {
@@ -98,7 +95,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
                     binWriter.Write((UInt32)8);
                     binWriter.Dispose();
                     mem.Dispose();
-                    packets.Add(new SubPacket(OPCODE, playerActorID, playerActorID, data));
+                    packets.Add(new SubPacket(false, OPCODE, playerActorID, data));
                     data = new byte[PACKET_SIZE - 0x20];
                     mem = new MemoryStream(data);
                     binWriter = new BinaryWriter(mem);
@@ -110,7 +107,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
             binWriter.Write((UInt32)packetCount);
             binWriter.Dispose();
             mem.Dispose();
-            packets.Add(new SubPacket(OPCODE, playerActorID, playerActorID, data));
+            packets.Add(new SubPacket(false, OPCODE, playerActorID, data));
                    
             return packets;
         }

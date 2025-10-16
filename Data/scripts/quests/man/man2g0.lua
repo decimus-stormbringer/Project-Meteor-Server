@@ -286,7 +286,6 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(PSHAMPHITHEATRE, QFLAG_PUSH, false, true);
 		quest:SetENpc(VKOROLON);
 	elseif (sequence == SEQ_060) then
-		player:SendMessage(0x1D,"",">Talk to Miounne to complete Beckon of the Elementals");
 		quest:SetENpc(MIOUNNE, QFLAG_REWARD);
 	end
 end
@@ -502,7 +501,7 @@ function onTalk(player, quest, npc)
 --			player:AddItem(2001005, 1);
 --			player:SendGameMessage(GetWorldMaster(), 25117, 0x20, 2001005);
 			player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 30000);
-			player:AddExp(50000, player.GetCurrentClassOrJob(), 0);
+			player:AddExp(50000, player:GetCurrentClassOrJobId(), 0);
 		end
 	end	
 	player:EndEvent();

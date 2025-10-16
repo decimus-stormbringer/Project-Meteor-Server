@@ -19,15 +19,17 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Sockets;
-using Meteor.Map.DataObjects;
-
 using Meteor.Common;
 using Meteor.Map.Actors;
+using Meteor.Map.Actors.QuestNS;
+using Meteor.Map.DataObjects;
+using Meteor.Map.utils;
+using NLog;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Meteor.Map
 {
@@ -51,9 +53,15 @@ namespace Meteor.Map
         private static Dictionary<uint, ItemData> GamedataItems;
         private static Dictionary<uint, GuildleveData> GamedataGuildleves;
         private static Dictionary<uint, QuestGameData> GamedataQuests;
+        private static Dictionary<uint, GuardianData> GamedataGuardians;
+        private static Dictionary<uint, TribeData> GamedataTribes;
+        private static Dictionary<int, CompatibilityData> GamedataCompatibilities;
+
         private static StaticActors StaticActors;
 
-        private PacketProcessor mProcessor;        
+        private PacketProcessor mProcessor;
+
+        private SessionCleanupService _sessionCleanupService;
 
         public Server()
         {
@@ -71,6 +79,12 @@ namespace Meteor.Map
             Program.Log.Info("Loaded {0} guildleves.", GamedataGuildleves.Count);
             GamedataQuests = Database.GetQuestGamedata();
             Program.Log.Info("Loaded {0} quests.", GamedataQuests.Count);
+            GamedataGuardians = Database.GetGuardianGamedata();
+            Program.Log.Info($"Loaded {GamedataGuardians.Count} guardian records.");
+            GamedataTribes = Database.GetTribeGamedata();
+            Program.Log.Info($"Loaded {GamedataTribes.Count} tribe records.");
+            GamedataCompatibilities = Database.GetCompatibilityGamedata();
+            Program.Log.Info($"Loaded {GamedataCompatibilities.Count} compatibility records.");
 
             WorldManager = new WorldManager(this);
             WorldManager.LoadZoneList();
@@ -117,6 +131,8 @@ namespace Meteor.Map
             Console.ForegroundColor = ConsoleColor.Gray;
 
             mProcessor = new PacketProcessor(this);
+
+            StartSessionCleanupService();
 
             //mGameThread = new Thread(new ThreadStart(mProcessor.update));
             //mGameThread.Start();
@@ -167,6 +183,14 @@ namespace Meteor.Map
         public Dictionary<uint, Session> GetSessionList()
         {
             return SessionList;
+        }
+
+        public void StartSessionCleanupService()
+        {
+            _sessionCleanupService = new SessionCleanupService(this);
+            _sessionCleanupService.Start();
+
+            Program.Log.Info("Session cleanup service initialized and running.");
         }
 
         #endregion
@@ -366,7 +390,34 @@ namespace Meteor.Map
 
         //public static QuestData[] GetQuestGamedataByGCRank(int gc, int rank, bool all = false)
         //{
-        // return GamedataQuests.Values.Where(quest => all ? quest.MinLevel == lvl : quest.MinLevel <= lvl).ToArray();
+        //    return GamedataQuests.Values.Where(quest => all ? quest.MinLevel == lvl : quest.MinLevel <= lvl).ToArray();
         //}
+
+        public static GuardianData GetGuardianGamedata(uint id)
+        {
+            if (GamedataGuardians.ContainsKey(id))
+            {
+                return GamedataGuardians[id];
+            }
+            return null;
+        }
+
+        public static TribeData GetTribeGamedata(uint id)
+        {
+            if (GamedataTribes.ContainsKey(id))
+            {
+                return GamedataTribes[id];
+            }
+            return null;
+        }
+
+        public static CompatibilityData GetCompatibilityGamedata(int id)
+        {
+            if (GamedataCompatibilities.ContainsKey(id))
+            {
+                return GamedataCompatibilities[id];
+            }
+            return null;
+        }
     }
 }

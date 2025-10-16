@@ -181,13 +181,11 @@ function onTalk(player, quest, npc)
 				callClientFunction(player, "delegateEvent", player, quest, "pE060", player:GetSNpcNickname(), player:GetSNpcSkin(), player:GetSNpcPersonality(), player:GetSNpcCoordinate(), player:GetInitialTown());
 				callClientFunction(player, "delegateEvent", player, quest, "sqrwa", 300, 1, 1, 2);
 				player:EndEvent();
-				player:AddQuest(110014, true);
 				player:CompleteQuest(quest);
 				player:AddItem(1000001, 45000);
 				player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 45000);
-				player:AddExp(70000, player.GetCurrentClassOrJob(), 0);
-				player:SendMessage(0x1D,"",">Thank you for playing.");
-				player:SendMessage(0x1D,"",">Please note, further MSQ Quests are still under development");
+				player:AddExp(70000, player:GetCurrentClassOrJobId(), 0);
+				player:SendMessage(0x1D,"",">MSQ Quests after this point are still under development");
 			end
 		elseif (classId == TATARU) then
 			if (not data:GetFlag(FLAG_DUTY_COMPLETE)) then
@@ -304,20 +302,21 @@ function onPush(player, quest, npc)
 	local sequence = quest:getSequence();
 	local classId = npc:GetActorClassId();
 
-	if (classId == MARKET_ENTRANCE) then
-		if (sequence == SEQ_ACCEPT) then
-			callClientFunction(player, "delegateEvent", player, quest, "pE00", "???", 1, 1, 1, player:GetInitialTown());
-			player:EndEvent();
-			GetWorldManager():DoZoneChange(player, 181, nil, 0, 15, -205.25, 0, -160, 1.55);
-			player:AcceptQuest(quest, true);
+	-- Moved this section to MarketEntrance object script.
+--	if (classId == MARKET_ENTRANCE) then
+--		if (sequence == SEQ_ACCEPT) then
+--			callClientFunction(player, "delegateEvent", player, quest, "pE00", "???", 1, 1, 1, player:GetInitialTown());
+--			player:EndEvent();
+--			GetWorldManager():DoZoneChange(player, 181, nil, 0, 15, -205.25, 0, -160, 1.55);
+--			player:AcceptQuest(quest, true);
 --			data:SetFlag(FLAG_VISITED);
-			return;
-		else
-			player:EndEvent();
-			GetWorldManager():DoZoneChange(player, 181, nil, 0, 15, -205.25, 0, -160, 1.55);
-			return;
-		end
-	end
+--			return;
+--		else
+--			player:EndEvent();
+--			GetWorldManager():DoZoneChange(player, 181, nil, 0, 15, -205.25, 0, -160, 1.55);
+--			return;
+--		end
+--	end
 	
 	if (classId == EVENT_DOOR_EXIT) then
 		player:EndEvent();
@@ -347,7 +346,7 @@ function onNpcLS(player, quest, from, msgStep)
 	
 	if (from == 6) then
 		if (sequence == SEQ_025 or sequence == SEQ_027) then
-			player:SendGameMessageLocalizedDisplayName(quest, 435, MESSAGE_TYPE_NPC_LINKSHELL, 1100449);
+			player:SendGameMessageLocalizedDisplayName(quest, 435, MESSAGE_TYPE_NPC_LINKSHELL, 1500054);
 			quest:EndOfNpcLsMsgs();
 			quest:StartSequence(SEQ_027);		
 		end

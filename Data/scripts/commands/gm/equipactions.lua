@@ -35,7 +35,7 @@ function onTrigger(player, argc)
         
         for commandid = s, e do
             if GetWorldManager():GetBattleCommand(commandid) then
-                player:EquipAbilityInFirstOpenSlot(player:GetCurrentClassOrJob(), commandid);
+                player:EquipAbilityInFirstOpenSlot(player:GetCurrentClassOrJobId(), commandid);
             end
         end
     end

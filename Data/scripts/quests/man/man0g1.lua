@@ -303,6 +303,7 @@ function onFinish(player, quest)
 	local subseqLTW = data:GetCounter(CNTR_SEQ15_LTW);
 	local subseqCNJ = data:GetCounter(CNTR_SEQ15_CNJ);
 
+	-- Reset counters for testing purposes.
 	data:SetCounter(CNTR_SEQ15_LTW, 0);
 	data:SetCounter(CNTR_SEQ15_CNJ, 0);
 end
@@ -592,7 +593,7 @@ function onTalk(player, quest, npc)
 			player:CompleteQuest(quest);
 			player:AddItem(1000001, 6000);
 			player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 6000);
-			player:AddExp(10000, player.GetCurrentClassOrJob(), 0);
+			player:AddExp(10000, player:GetCurrentClassOrJobId(), 0);
 
 			return;
 		elseif (classId == NUALA) then

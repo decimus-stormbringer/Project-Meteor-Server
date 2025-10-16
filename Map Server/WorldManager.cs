@@ -21,26 +21,27 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 
 using Meteor.Common;
 using Meteor.Map.actors.area;
+using Meteor.Map.actors.chara;
+using Meteor.Map.actors.chara.ai;
+using Meteor.Map.actors.chara.ai.controllers;
 using Meteor.Map.actors.chara.npc;
+using Meteor.Map.actors.chara.player;
+using Meteor.Map.actors.director;
+using Meteor.Map.actors.group;
 using Meteor.Map.Actors;
 using Meteor.Map.DataObjects;
 using Meteor.Map.lua;
 using Meteor.Map.packets.send;
 using Meteor.Map.packets.send.actor;
+using Meteor.Map.packets.send.actor.inventory;
+using Meteor.Map.packets.WorldPackets.Receive;
+using Meteor.Map.packets.WorldPackets.Send.Group;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Meteor.Map.actors.group;
-using Meteor.Map.packets.WorldPackets.Receive;
-using Meteor.Map.packets.WorldPackets.Send.Group;
+using System.Reflection.PortableExecutable;
 using System.Threading;
-using Meteor.Map.actors.director;
-using Meteor.Map.actors.chara.ai;
-using Meteor.Map.actors.chara;
-using Meteor.Map.actors.chara.player;
-using Meteor.Map.packets.send.actor.inventory;
-using Meteor.Map.actors.chara.ai.controllers;
 
 namespace Meteor.Map
 {
@@ -398,10 +399,10 @@ namespace Meteor.Map
                     var query = @"
                     SELECT 
                     bsl.id, bsl.bnpcId, bsl.uniqueId, bsl.zoneId, bsl.posX, bsl.posY, bsl.posZ, bsl.rot ,bsl.privateArea, bsl.privateAreaLevel,
-                    bsl.hpp, bsl.mpp, bsl.tpp, bsl.actorState, bsl.animId, bsl.roams, bsl.roamDelay, bsl.modelSize, bsl.immunity,    
+                    bsl.hp, bsl.hpMax, bsl.hpp, bsl.mp, bsl.mpMax, bsl.mpp, bsl.tpp, bsl.actorState, bsl.animId, bsl.roams, bsl.roamDelay, bsl.modelSize, bsl.immunity,    
 
-                    bmt.bnpcId, bmt.actorId, bmt.displayName, bmt.speed, bmt.aggroType, bmt.detection, bmt.respawntime, bmt.combatDelay, bmt.allegiance, bmt.currentJob, bmt.level,
-                    bmt.hp, bmt.hpMax, bmt.mpMax, bmt.str, bmt.vit, bmt.dex, bmt.int, bmt.mnd, bmt.pie, bmt.att, bmt.acc, bmt.def, bmt.eva, 
+                    bmt.bnpcId, bmt.actorId, bmt.displayName, bmt.speed, bmt.isHostile, bmt.detectionType, bmt.detectionRange, bmt.respawnTime, bmt.combatDelay,
+                    bmt.allegiance, bmt.currentJob, bmt.level, bmt.str, bmt.vit, bmt.dex, bmt.int, bmt.mnd, bmt.pie, bmt.att, bmt.acc, bmt.def, bmt.eva, 
                     bmt.slash, bmt.pierce, bmt.h2h, bmt.blunt, bmt.fire, bmt.ice, bmt.wind, bmt.lightning, bmt.earth, bmt.water, bmt.element
                     FROM server_battlenpc_spawn_locations bsl
                     INNER JOIN server_battlenpc_mob_types bmt ON bsl.bnpcId = bmt.bnpcId
@@ -425,42 +426,45 @@ namespace Meteor.Map
                                 // todo: add to private areas, set up immunity, mob linking,
                                 // - load skill/spell/drop lists, set detection icon, load pool/family/group mods                            
 
-                                BattleNpc battleNpc = new BattleNpc(actorId, bnpcId, reader.GetString("uniqueId"), reader.GetString("displayName"),
-                                zone, reader.GetFloat("posX"), reader.GetFloat("posY"), reader.GetFloat("posZ"),
-                                reader.GetFloat("rot"), reader.GetUInt16("actorState"), reader.GetUInt32("animId"));
+                                BattleNpc battleNpc = new BattleNpc(actorId, bnpcId, reader.GetString("uniqueId"), zone, reader.GetFloat("posX"), reader.GetFloat("posY"), reader.GetFloat("posZ"),
+                                reader.GetFloat("rot"), reader.GetUInt16("actorState"), reader.GetUInt32("animId"), reader.GetString("displayName"));
 
                                 battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
-                                battleNpc.neutral = reader.GetByte("aggroType") == 0;
-                                battleNpc.SetDetectionType(reader.GetUInt32("detection"));
+                                battleNpc.isHostile = reader.GetBoolean("isHostile");
+                                battleNpc.SetDetectionType(reader.GetUInt32("detectionType"));
+                                
 
                                 battleNpc.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte("currentJob");
                                 battleNpc.charaWork.parameterSave.state_mainSkillLevel = reader.GetByte("level");
-                                battleNpc.charaWork.parameterSave.hp[0] = (short) reader.GetUInt32("hp");
-                                battleNpc.charaWork.parameterSave.hpMax[0] = (short) reader.GetUInt32("hpMax");
-
+                               
                                 battleNpc.allegiance = (CharacterTargetingAllegiance)reader.GetByte("allegiance");
 
                                 // todo: setup private areas and other crap and
                                 // set up rest of stat resists 
-                                battleNpc.SetMod((uint)Modifier.HpPercent, reader.GetUInt32("hpp"));
-                                battleNpc.SetMod((uint)Modifier.MpPercent, reader.GetUInt32("mpp"));
-                                battleNpc.SetMod((uint)Modifier.TpPercent, reader.GetUInt32("tpp"));
-                                battleNpc.SetMod((uint)Modifier.Strength, reader.GetUInt32("str"));
-                                battleNpc.SetMod((uint)Modifier.Vitality, reader.GetUInt32("vit"));
-                                battleNpc.SetMod((uint)Modifier.Dexterity, reader.GetUInt32("dex"));
-                                battleNpc.SetMod((uint)Modifier.Intelligence, reader.GetUInt32("int"));
-                                battleNpc.SetMod((uint)Modifier.Mind, reader.GetUInt32("mnd"));
-                                battleNpc.SetMod((uint)Modifier.Piety, reader.GetUInt32("pie"));
-                                battleNpc.SetMod((uint)Modifier.Attack, reader.GetUInt32("att"));
-                                battleNpc.SetMod((uint)Modifier.Accuracy, reader.GetUInt32("acc"));
-                                battleNpc.SetMod((uint)Modifier.Defense, reader.GetUInt32("def"));
-                                battleNpc.SetMod((uint)Modifier.Evasion, reader.GetUInt32("eva"));
-                                battleNpc.SetMod((uint)Modifier.MovementSpeed, reader.GetByte("speed"));
+                                battleNpc.SetMod((uint)Modifier.Hp, reader.GetUInt32("hpMax"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.Mp, reader.GetUInt32("mpMax"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.HpPercent, reader.GetUInt32("hpp"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.MpPercent, reader.GetUInt32("mpp"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.TpPercent, reader.GetUInt32("tpp"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.Strength, reader.GetUInt32("str"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.Vitality, reader.GetUInt32("vit"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.Dexterity, reader.GetUInt32("dex"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.Intelligence, reader.GetUInt32("int"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.Mind, reader.GetUInt32("mnd"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.Piety, reader.GetUInt32("pie"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.Attack, reader.GetUInt32("att"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.Accuracy, reader.GetUInt32("acc"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.Defense, reader.GetUInt32("def"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.Evasion, reader.GetUInt32("eva"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.MovementSpeed, reader.GetByte("speed"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.Delay, reader.GetUInt32("combatDelay"), ModifierOrigin.Base);
                                 battleNpc.SetMobMod((uint)MobModifier.Roams, reader.GetByte("roams"));
                                 battleNpc.SetMobMod((uint)MobModifier.RoamDelay, reader.GetUInt32("roamDelay"));
+                                battleNpc.SetMobMod((uint)MobModifier.DetectionRange, reader.GetUInt32("detectionRange"));
                                 battleNpc.SetRespawnTime(reader.GetUInt32("respawnTime"));
                                 //battleNpc.SetMod((uint)Modifier.ResistFire, reader.GetUInt("fire"));
-                        
+                                battleNpc.CalculateStats();
+
                                 // handles spawning conditionsb (ie. Night/Day/Weather/Etc).
                                 if (battleNpc.npcSpawnType == NpcSpawnType.Normal)
                                 {
@@ -502,17 +506,16 @@ namespace Meteor.Map
                 {
                     conn.Open();
                     var query = @"
-                    SELECT
-                    bsl.id, bsl.bnpcId, bsl.uniqueId, bsl.zoneId, bsl.posX, bsl.posY, bsl.posZ, bsl.rot, bsl.privateArea, bsl.privateAreaLevel,
-                    bsl.hpp, bsl.mpp, bsl.tpp, bsl.actorState, bsl.animId, bsl.roams, bsl.roamDelay, bsl.modelSize, bsl.immunity, 
+                    SELECT 
+                    bsl.id, bsl.bnpcId, bsl.uniqueId, bsl.zoneId, bsl.posX, bsl.posY, bsl.posZ, bsl.rot ,bsl.privateArea, bsl.privateAreaLevel,
+                    bsl.hp, bsl.hpMax, bsl.hpp, bsl.mp, bsl.mpMax, bsl.mpp, bsl.tpp, bsl.actorState, bsl.animId, bsl.roams, bsl.roamDelay, bsl.modelSize, bsl.immunity,    
 
-                    bmt.bnpcId, bmt.actorId, bmt.displayName, bmt.speed, bmt.aggroType, bmt.detection, bmt.respawntime, bmt.combatDelay, bmt.allegiance, bmt.currentJob, bmt.level,
-                    bmt.hp, bmt.hpMax, bmt.mpMax, bmt.str, bmt.vit, bmt.dex, bmt.int, bmt.mnd, bmt.pie, bmt.att, bmt.acc, bmt.def, bmt.eva, 
+                    bmt.bnpcId, bmt.actorId, bmt.displayName, bmt.speed, bmt.isHostile, bmt.detectionType, bmt.detectionRange, bmt.respawnTime, bmt.combatDelay,
+                    bmt.allegiance, bmt.currentJob, bmt.level,bmt.str, bmt.vit, bmt.dex, bmt.int, bmt.mnd, bmt.pie, bmt.att, bmt.acc, bmt.def, bmt.eva, 
                     bmt.slash, bmt.pierce, bmt.h2h, bmt.blunt, bmt.fire, bmt.ice, bmt.wind, bmt.lightning, bmt.earth, bmt.water, bmt.element
-
                     FROM server_battlenpc_spawn_locations bsl
                     INNER JOIN server_battlenpc_mob_types bmt ON bsl.bnpcId = bmt.bnpcId
-                    WHERE bsl.id = @id GROUP BY bsl.id;
+                    WHERE bsl.zoneId = @zoneId GROUP BY bsl.id;
                     ";
 
                     var count = 0;
@@ -541,45 +544,46 @@ namespace Meteor.Map
                             BattleNpc battleNpc = null;
 
                             if (allegiance == CharacterTargetingAllegiance.Player)
-                                battleNpc = new Ally(actorId, bnpcId, reader.GetString("uniqueId"), reader.GetString("displayName"),
-                                area, reader.GetFloat("posX"), reader.GetFloat("posY"), reader.GetFloat("posZ"),
-                                reader.GetFloat("rot"), reader.GetUInt16("actorState"), reader.GetUInt32("animId"));
+                                battleNpc = new Ally(actorId, bnpcId, reader.GetString("uniqueId"), area, reader.GetFloat("posX"), reader.GetFloat("posY"), reader.GetFloat("posZ"),
+                                reader.GetFloat("rot"), reader.GetUInt16("actorState"), reader.GetUInt32("animId"), reader.GetString("displayName"));
                             else
-                                battleNpc = new BattleNpc(actorId, bnpcId, reader.GetString("uniqueId"), reader.GetString("displayName"),
-                                area, reader.GetFloat("posX"), reader.GetFloat("posY"), reader.GetFloat("posZ"),
-                                reader.GetFloat("rot"), reader.GetUInt16("actorState"), reader.GetUInt32("animId"));
+                                battleNpc = new BattleNpc(actorId, bnpcId, reader.GetString("uniqueId"), area, reader.GetFloat("posX"), reader.GetFloat("posY"), reader.GetFloat("posZ"),
+                                reader.GetFloat("rot"), reader.GetUInt16("actorState"), reader.GetUInt32("animId"), reader.GetString("displayName"));
 
                             battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
-                            battleNpc.neutral = reader.GetByte("aggroType") == 0;
-                            battleNpc.SetDetectionType(reader.GetUInt32("detection"));
+                            battleNpc.isHostile = reader.GetBoolean("isHostile");
+                            battleNpc.SetDetectionType(reader.GetUInt32("detectionType"));
 
                             battleNpc.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte("currentJob");
                             battleNpc.charaWork.parameterSave.state_mainSkillLevel = reader.GetByte("level");
-                            battleNpc.charaWork.parameterSave.hp[0] = (short) reader.GetUInt32("hp");
-                            battleNpc.charaWork.parameterSave.hpMax[0] = (short) reader.GetUInt32("hpMax");
+                            
                             battleNpc.allegiance = (CharacterTargetingAllegiance)reader.GetByte("allegiance");
 
                             // todo: setup private areas and other crap and
                             // set up rest of stat resists  
-                            battleNpc.SetMod((uint)Modifier.HpPercent, reader.GetUInt32("hpp"));
-                            battleNpc.SetMod((uint)Modifier.MpPercent, reader.GetUInt32("mpp"));
-                            battleNpc.SetMod((uint)Modifier.TpPercent, reader.GetUInt32("tpp"));
-                            battleNpc.SetMod((uint)Modifier.Strength, reader.GetUInt32("str"));
-                            battleNpc.SetMod((uint)Modifier.Vitality, reader.GetUInt32("vit"));
-                            battleNpc.SetMod((uint)Modifier.Dexterity, reader.GetUInt32("dex"));
-                            battleNpc.SetMod((uint)Modifier.Intelligence, reader.GetUInt32("int"));
-                            battleNpc.SetMod((uint)Modifier.Mind, reader.GetUInt32("mnd"));
-                            battleNpc.SetMod((uint)Modifier.Piety, reader.GetUInt32("pie"));
-                            battleNpc.SetMod((uint)Modifier.Attack, reader.GetUInt32("att"));
-                            battleNpc.SetMod((uint)Modifier.Accuracy, reader.GetUInt32("acc"));
-                            battleNpc.SetMod((uint)Modifier.Defense, reader.GetUInt32("def"));
-                            battleNpc.SetMod((uint)Modifier.Evasion, reader.GetUInt32("eva"));
-                            battleNpc.SetMod((uint)Modifier.MovementSpeed, reader.GetByte("speed"));
-                            battleNpc.SetRespawnTime(reader.GetUInt32("respawnTime"));
+                            battleNpc.SetMod((uint)Modifier.Hp, reader.GetUInt32("hpMax"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.Mp, reader.GetUInt32("mpMax"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.HpPercent, reader.GetUInt32("hpp"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.MpPercent, reader.GetUInt32("mpp"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.TpPercent, reader.GetUInt32("tpp"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.Strength, reader.GetUInt32("str"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.Vitality, reader.GetUInt32("vit"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.Dexterity, reader.GetUInt32("dex"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.Intelligence, reader.GetUInt32("int"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.Mind, reader.GetUInt32("mnd"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.Piety, reader.GetUInt32("pie"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.Attack, reader.GetUInt32("att"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.Accuracy, reader.GetUInt32("acc"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.Defense, reader.GetUInt32("def"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.Evasion, reader.GetUInt32("eva"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.MovementSpeed, reader.GetByte("speed"), ModifierOrigin.Base);
+                            battleNpc.SetMod((uint)Modifier.Delay, reader.GetUInt32("combatDelay"), ModifierOrigin.Base);
                             battleNpc.SetMobMod((uint)MobModifier.Roams, reader.GetByte("roams"));
                             battleNpc.SetMobMod((uint)MobModifier.RoamDelay, reader.GetUInt32("roamDelay"));
-                            battleNpc.CalculateBaseStats();
-                            battleNpc.RecalculateStats();
+                            battleNpc.SetMobMod((uint)MobModifier.DetectionRange, reader.GetUInt32("detectionRange"));
+                            battleNpc.SetRespawnTime(reader.GetUInt32("respawnTime"));
+                            battleNpc.CalculateStats();
+
                             //battleNpc.SetMod((uint)Modifier.ResistFire, )
 
                             bnpc = battleNpc;

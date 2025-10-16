@@ -23,7 +23,7 @@ function onTrigger(player, argc, commandid)
     end;
     
     if player then
-        classid = player:GetCurrentClassOrJob();
+        classid = player:GetCurrentClassOrJobId();
         commandid = tonumber(commandid) or 0;
 
         local added = player:EquipAbilityInFirstOpenSlot(classid, commandid);

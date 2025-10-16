@@ -20,15 +20,19 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 */
 
 using Meteor.Map.actors.group.Work;
+using Meteor.Map.Actors;
 using Meteor.Map.packets.send.group;
+using System;
 using System.Collections.Generic;
 
 namespace Meteor.Map.actors.group
 {
     class Party : Group
     {
+        public Player player;
         public PartyWork partyGroupWork = new PartyWork();
         public List<uint> members = new List<uint>();
+        private Dictionary<string, uint> memberLookup = new Dictionary<string, uint>(StringComparer.OrdinalIgnoreCase);
 
         public Party(ulong groupId, uint leaderCharaId) : base(groupId)
         {
@@ -78,7 +82,7 @@ namespace Meteor.Map.actors.group
             List<GroupMember> groupMembers = new List<GroupMember>();
             groupMembers.Add(new GroupMember(id, -1, 0, false, true, Server.GetWorldManager().GetActorInWorld(id).DisplayName));
             foreach (uint charaId in members)
-            {                
+            {
                 var chara = Server.GetWorldManager().GetActorInWorld(charaId);
                 if (charaId != id && chara != null)
                     groupMembers.Add(new GroupMember(charaId, -1, 0, false, true, chara.DisplayName));
@@ -86,10 +90,32 @@ namespace Meteor.Map.actors.group
             return groupMembers;
         }
 
+        // For adding other players into player's party. 
         public void AddMember(uint memberId)
         {
             members.Add(memberId);
             SendGroupPacketsAll(members);
+        }
+
+        // For adding NPCs into player party during scripted combat instances. 
+        public void AddMember(Character character)
+        {
+            if (character == null)
+                return;
+
+            if (!members.Contains(character.Id))
+            {
+                members.Add(character.Id);
+                memberLookup[character.Name] = character.Id;
+            }
+        }
+
+
+        public uint? GetMemberId(string name)
+        {
+            if (memberLookup.TryGetValue(name, out uint id))
+                return id;
+            return null;
         }
 
         public void RemoveMember(uint memberId)

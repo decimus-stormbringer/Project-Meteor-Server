@@ -71,7 +71,6 @@ function onTalk(player, quest, npc, eventName)
 		if (npcClassId == ENPC_BELI) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEventAfter");
 			callClientFunction(player, "delegateEvent", player, quest, "sqrwa", 200, 1, 1, 9);
-            player:CompleteQuest(quest);
 		end
 	end
 	

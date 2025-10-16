@@ -19,20 +19,21 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using System;
-using System.Collections.Generic;
+using Google.Protobuf.WellKnownTypes;
 using Meteor.Common;
-using Meteor.Map.actors.chara.npc;
 using Meteor.Map.actors.chara;
 using Meteor.Map.actors.chara.ai;
 using Meteor.Map.actors.chara.ai.controllers;
 using Meteor.Map.actors.chara.ai.state;
-using Meteor.Map.utils;
-using Meteor.Map.packets.send.actor.battle;
 using Meteor.Map.actors.chara.ai.utils;
+using Meteor.Map.actors.chara.npc;
 using Meteor.Map.actors.group;
 using Meteor.Map.Actors.Chara;
 using Meteor.Map.packets.send.actor;
+using Meteor.Map.packets.send.actor.battle;
+using Meteor.Map.utils;
+using System;
+using System.Collections.Generic;
 
 namespace Meteor.Map.Actors
 {
@@ -68,13 +69,13 @@ namespace Meteor.Map.Actors
         public HateContainer hateContainer;
         public DetectionType detectionType;
         public KindredType kindredType;
-        public bool neutral;
+        public bool isHostile;
         protected uint despawnTime;
         protected uint respawnTime;
         protected uint spawnDistance;
         protected uint bnpcId;
         public Character lastAttacker;
-        public string uniqueIdentifier;
+        //public string uniqueIdentifier;
 
         public uint spellListId, skillListId, dropListId;
         public Dictionary<uint, BattleCommand> skillList = new Dictionary<uint, BattleCommand>();
@@ -83,17 +84,21 @@ namespace Meteor.Map.Actors
 
         protected Dictionary<MobModifier, Int64> mobModifiers = new Dictionary<MobModifier, Int64>();      
 
-        public BattleNpc(int actorNumber, ActorClass bnpcId, string uniqueId, string displayName, Area spawnedArea, float posX, float posY, float posZ, float rot,
-            ushort actorState, uint animId)
-            : base(actorNumber, bnpcId, uniqueId, displayName, spawnedArea, posX, posY, posZ, rot, actorState, animId)  
+        // BattleNpc setup to use custom displayed name as scripted or databased.
+        // Currently used to handle overworld mobs.
+        public BattleNpc(int actorNumber, ActorClass bnpcId, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, ushort actorState, uint animId, string displayName)
+            : base(actorNumber, bnpcId, uniqueId, spawnedArea, posX, posY, posZ, rot, actorState, animId, displayName)  
         {
             this.aiContainer = new AIContainer(this, new BattleNpcController(this), new PathFind(this), new TargetFind(this));
 
             //this.currentSubState = SetActorStatePacket.SUB_STATE_MONSTER;
-            this.currentMainState = SetActorStatePacket.MAIN_STATE_ACTIVE;
+            //this.currentMainState = SetActorStatePacket.MAIN_STATE_ACTIVE;
+
+            //this.currentMainState = actorState;
+            //this.animationId = animId;
 
             charaWork.property[2] = 1;
-            npcWork.hateType = 1;
+            //npcWork.hateType = 1;
             
             this.hateContainer = new HateContainer(this);
             this.allegiance = CharacterTargetingAllegiance.BattleNpcs;
@@ -105,7 +110,8 @@ namespace Meteor.Map.Actors
             spawnZ = posZ;
 
             despawnTime = 10;
-            CalculateBaseStats();
+            this.CalculateStats();
+            this.RecalculateStats();
         }
 
         public override List<SubPacket> GetSpawnPackets(Player player, ushort spawnType)
@@ -157,7 +163,12 @@ namespace Meteor.Map.Actors
                     }
                 }
             }
-            npcWork.hateType = 3;
+            //  Force hate type for testing.
+            //  1 = yellow nameplate. 
+            //  2 = Orange nameplate.
+            //  3 = purple nameplate.
+            //npcWork.hateType = 1; 
+
             var propPacketUtil = new ActorPropertyPacketUtil("npcWork/hate", this);
             propPacketUtil.AddProperty("npcWork.hateType");
             return propPacketUtil.Done()[0];
@@ -267,7 +278,7 @@ namespace Meteor.Map.Actors
             this.hateContainer.ClearHate();
             CurrentArea.BroadcastPacketsAroundActor(this, GetSpawnPackets(null, 0x01));
             CurrentArea.BroadcastPacketsAroundActor(this, GetInitPackets());
-            RecalculateStats();
+            CalculateStats(true, ModifierOrigin.Equipment, ModifierOrigin.StatusEffect);
 
             OnSpawn();
             updateFlags |= ActorUpdateFlags.AllNpc;
@@ -355,9 +366,9 @@ namespace Meteor.Map.Actors
             else
             {
                 // recover hp
-                if (GetHPP() < 100)
+                if (HPP < 100)
                 {
-                    AddHP(GetMaxHP() / 1);
+                    AddHP(MaxHP / 1);
                 }
                 else
                 {
@@ -456,6 +467,14 @@ namespace Meteor.Map.Actors
             else
                 mobModifiers.Add((MobModifier)mobModId, val);
         }
+
+        public void SetMobMod(MobModifier mobMod, long val)
+{
+    if (mobModifiers.ContainsKey(mobMod))
+        mobModifiers[mobMod] = val;
+    else
+        mobModifiers.Add(mobMod, val);
+}
 
         public override void OnDamageTaken(Character attacker, BattleCommand skill, CommandResult action,  CommandResultContainer actionContainer = null)
         {

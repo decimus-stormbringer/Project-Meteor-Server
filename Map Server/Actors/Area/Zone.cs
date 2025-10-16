@@ -20,12 +20,13 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 */
 
 using Meteor.Common;
+using Meteor.Map.actors.director;
 using Meteor.Map.Actors;
 using Meteor.Map.lua;
 using Meteor.Map.packets.send.actor;
+using NLog;
 using System;
 using System.Collections.Generic;
-using Meteor.Map.actors.director;
 
 namespace Meteor.Map.actors.area
 {
@@ -178,9 +179,9 @@ namespace Meteor.Map.actors.area
 
                 if (!contentAreas.ContainsKey(areaName))
                     contentAreas.Add(areaName, new List<PrivateAreaContent>());
-                PrivateAreaContent contentArea = new PrivateAreaContent(this, classPath, areaName, 1, director, starterPlayer);                
+                PrivateAreaContent contentArea = new PrivateAreaContent(this, classPath, areaName, 1, director, starterPlayer);
                 contentAreas[areaName].Add(contentArea);
-                
+
                 return contentArea;
             }
         }

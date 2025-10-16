@@ -19,23 +19,42 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using Meteor.Map.Actors;
 using Meteor.Map.actors.chara.ai;
 using Meteor.Map.actors.chara.ai.controllers;
+using Meteor.Map.Actors;
+using Meteor.Map.packets.send.actor;
 
 namespace Meteor.Map.actors.chara.npc
 {
     class Ally : BattleNpc
     {
         // todo: ally class is probably not necessary
-        public Ally(int actorNumber, ActorClass bnpcId, string uniqueId, string displayName, Area spawnedArea, float posX, float posY, float posZ, float rot,
-            ushort actorState, uint animId)
-            : base(actorNumber, bnpcId, uniqueId, displayName, spawnedArea, posX, posY, posZ, rot, actorState, animId)  
+        public Ally(int actorNumber, ActorClass bnpcId, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, ushort actorState, uint animId, string displayName)
+            : base(actorNumber, bnpcId, uniqueId, spawnedArea, posX, posY, posZ, rot, actorState, animId, displayName)
         {
             aiContainer = new AIContainer(this, new AllyController(this), new PathFind(this), new TargetFind(this));
+
+            //this.currentSubState = SetActorStatePacket.SUB_STATE_MONSTER;
+            //this.currentMainState = SetActorStatePacket.MAIN_STATE_ACTIVE;
+
+            //this.currentMainState = actorState;
+            //this.animationId = animId;
+
+            //charaWork.property[2] = 1;
+            //npcWork.hateType = 1;
+
+            this.hateContainer = new HateContainer(this);
             this.allegiance = CharacterTargetingAllegiance.Player;
+
+            this.DisplayName = displayName;
+            this.uniqueIdentifier = uniqueId;
+
             this.isAutoAttackEnabled = true;
             this.isMovingToSpawn = false;
+
+            spawnX = posX;
+            spawnY = posY;
+            spawnZ = posZ;
         }
     }
 }

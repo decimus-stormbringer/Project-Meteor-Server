@@ -294,7 +294,7 @@ namespace Meteor.World
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand("SELECT characterId, linkshellId, rank FROM characters_linkshells WHERE linkshellId = @lsId", conn);
+                    MySqlCommand cmd = new MySqlCommand("SELECT characterId, linkshellId, `rank` FROM characters_linkshells WHERE linkshellId = @lsId", conn);
                     cmd.Parameters.AddWithValue("@lsId", ls.dbId);
                     using (MySqlDataReader Reader = cmd.ExecuteReader())
                     {
@@ -330,7 +330,7 @@ namespace Meteor.World
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand("SELECT characterId, linkshellId, rank FROM characters_linkshells WHERE characterId = @charaId", conn);
+                    MySqlCommand cmd = new MySqlCommand("SELECT characterId, linkshellId, `rank` FROM characters_linkshells WHERE characterId = @charaId", conn);
                     cmd.Parameters.AddWithValue("@charaId", charaId);
                     using (MySqlDataReader Reader = cmd.ExecuteReader())
                     {
@@ -416,7 +416,7 @@ namespace Meteor.World
 
                     query = @"
                     INSERT INTO characters_linkshells 
-                    (characterId, linkshellId, rank)
+                    (characterId, linkshellId, `rank`)
                     VALUES
                     (@charaId, @lsId, @rank)             
                     ";
@@ -509,7 +509,7 @@ namespace Meteor.World
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand("UPDATE characters_linkshells SET rank = @rank WHERE characterId = @charaId", conn);
+                    MySqlCommand cmd = new MySqlCommand("UPDATE characters_linkshells SET `rank` = @rank WHERE characterId = @charaId", conn);
                     cmd.Parameters.AddWithValue("@charaId", charaId);
                     cmd.Parameters.AddWithValue("@rank", rank);
                     cmd.ExecuteNonQuery();

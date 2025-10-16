@@ -331,7 +331,7 @@ function onTalk(player, quest, npc)
 			player:CompleteQuest(quest);
 			player:AddItem(1000001, 15000);
 			player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 15000);
-			player:AddExp(30000, player.GetCurrentClassOrJob(), 0);
+			player:AddExp(30000, player:GetCurrentClassOrJobId(), 0);
 			return;
 		end
 	end	
@@ -428,7 +428,6 @@ function onPush(player, quest, npc)
 		if (classId == TRIGGER_FSH) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent600");
 			quest:StartSequence(SEQ_070);
-			player:SendMessage(0x1D,"",">Use Journal to find location.");
 		end
 	elseif (sequence == SEQ_070) then
 		if (classId == TRIGGER_SEAFLD) then

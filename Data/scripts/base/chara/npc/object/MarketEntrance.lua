@@ -42,6 +42,7 @@ Ul'dah   - !warp 175 -235 189 50.5              ActorClass Id = 1090265
 --]]
 
 require ("global")
+require ("quests/man/man200");
 
 function init(npc)
 	return false, false, 0, 0;
@@ -107,15 +108,24 @@ function onEventStarted(player, npc, eventType, eventName)
 		if (#quests == 0) then
 			questPlaceName = 0;
 		end
+
+        if (currZone == 175) then
+            if (player:GetLevel() >= 18 and (player:IsQuestCompleted(110004) or player:IsQuestCompleted(110008) or player:IsQuestCompleted(110012))) then
+                questPlaceName = 3095;
+            end
+        end
     end
-	
+
 	-- If in GC Office, hide office menu option
 	if (currZone == 232 or currZone == 234 or currZone == 233) then 
         gcHQPlaceName = 0;  
     end
 
     choice = callClientFunction(player, "eventPushChoiceAreaOrQuest", exitPlaceName, marketPlaceName, gcHQPlaceName, questPlaceName, showItemSearchCounter, itemSearchId);
-        
+    
+        -- This isn't working
+ 
+
     while (true) do
         
         if choice == marketPlaceName then -- Market Wards
@@ -147,9 +157,21 @@ function onEventStarted(player, npc, eventType, eventName)
                 wait(1);
                 GetWorldManager():DoZoneChange(player, warp[1], nil, 0, 0x02, warp[2], warp[3], warp[4], warp[5]);          
                 break;
-		elseif (choice == 2095 or choice == 3095) then -- Quest
+		elseif (choice == 2095) then -- Quest - Will probably need to be rescripted to be more like Merchant Ward.
 			quests[1]:OnPush(player, npc, eventName);
-			return;
+            return;
+        elseif (choice == 3095) then -- Merchant's Ward / Waking Sands'
+            if (not player:HasQuest(110013) and not player:IsQuestCompleted(110013)) then 
+                player:AddQuest(110013);
+                local quest = player:GetQuest(110013);
+                callClientFunction(player, "delegateEvent", player, quest, "pE00", "???", 1, 1, 1, player:GetInitialTown());
+			    player:EndEvent();
+			    GetWorldManager():DoZoneChange(player, 181, nil, 0, 15, -205.25, 0, -160, 1.55);
+                return;
+            else
+                GetWorldManager():DoZoneChange(player, 181, nil, 0, 15, -205.25, 0, -160, 1.55);
+                return;
+			end
         elseif (choice == 0 or choice == -3) then -- Menu Closed
             break;  
         end 

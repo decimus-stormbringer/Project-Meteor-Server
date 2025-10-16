@@ -23,6 +23,7 @@ namespace Meteor.Map.Actors.Chara
 {
     class ParameterTemp
     {
+        /// Current TP of Character
         public short tp = 0;
 
         public int targetInformation = 0;

@@ -19,11 +19,12 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using Meteor.Map.actors.chara.player;
+using Meteor.Map.actors.chara;
 using Meteor.Map.Actors;
 using MySql.Data.MySqlClient;
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Meteor.Map.DataObjects
 {
@@ -87,7 +88,7 @@ namespace Meteor.Map.DataObjects
             {                
             }
 
-            public ItemModifier(MySql.Data.MySqlClient.MySqlDataReader reader)
+            public ItemModifier(MySqlDataReader reader)
             {
                 durability = reader.GetUInt32("durability"); 
                 mainQuality = reader.GetByte("mainQuality");
@@ -142,6 +143,37 @@ namespace Meteor.Map.DataObjects
                 binWriter.Write((Byte)   materiaGrade[2]);
                 binWriter.Write((Byte)   materiaGrade[3]);
                 binWriter.Write((Byte)   materiaGrade[4]);
+            }
+
+            public IList<ModifierData> GetMateriaModifiers(short level, Job job)
+            {
+                List<ModifierData> mods = new List<ModifierData>();
+
+                for (int i = 0; i < materiaType.Length; i++)
+                {
+                    AddModsFromMateriaToList(mods, materiaType[i], materiaGrade[i], level, job);
+                }
+
+                return mods;
+            }
+
+            private void AddModsFromMateriaToList(List<ModifierData> mods, ushort materiaTypeId, ushort materiaGrade, short level, Job job)
+            {
+                if (materiaTypeId <= 0 || materiaGrade < 0 || materiaGrade > 15)
+                {
+                    return;
+                }
+
+                uint materiaCatalogId = MateriaItem.CalculateCatalogID(materiaTypeId, materiaGrade);
+
+                MateriaItem materia = Server.GetItemGamedata(materiaCatalogId) as MateriaItem;
+                if (materia == null)
+                {
+                    return;
+                }
+
+                IList<ModifierData> materiaMods = materia.GetModifiers(materiaGrade, level, job);
+                mods.AddRange(materiaMods);
             }
         }
         
@@ -432,5 +464,58 @@ namespace Meteor.Map.DataObjects
                 return "Invalid Item";
         }
 
+        public bool IsBrokenDurability()
+        {
+            return modifiers != null && modifiers.durability <= 0;
+        }
+
+        public int GetLevel()
+        {
+            return GetItemData()?.GetLevel() ?? -1;
+        }
+
+        public bool IsLevelRestricted()
+        {
+            return GetItemData()?.IsLevelRestricted() ?? false;
+        }
+
+        public double GetCompatibilityMultiplier(Job job)
+        {
+            return GetItemData()?.GetCompatibilityMultiplier(job) ?? 0;
+        }
+
+        public IList<ModifierData> GetEquipmentModifiers(short level, Job job)
+        {
+            List<ModifierData> mods = new List<ModifierData>();
+
+            if (IsBrokenDurability())
+            {
+                return mods;
+            }
+
+            if (level < GetLevel() && IsLevelRestricted())
+            {
+                return mods;
+            }
+
+            double compatibilityMultiplier = GetCompatibilityMultiplier(job);
+            if (compatibilityMultiplier <= 0)
+            {
+                return mods;
+            }
+
+            if (modifiers != null && level >= GetLevel())
+            {
+                mods.AddRange(modifiers.GetMateriaModifiers(level, job));
+            }
+
+            EquipmentItem itemData = GetItemData() as EquipmentItem;
+            if (itemData != null)
+            {
+                mods.AddRange(itemData.GetModifiers(level, job));
+            }
+
+            return mods;
+        }
     }
 }

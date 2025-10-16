@@ -272,7 +272,8 @@ function onTalk(player, quest, npc, eventName)
     local clientFunc = defaultTalkWil[npcId];
     
     if (npcId == 1000864) then -- Otopa Pottopa (Adv. Guild Inn NPC)
-        if (player:IsQuestCompleted(110848)) then -- "Ring of Deceit" completed.
+        -- Check if Inn Quest is completed.
+       if (player:IsQuestCompleted(110828) or player:IsQuestCompleted(110838) or player:IsQuestCompleted(110848)) then
             callClientFunction(player, "delegateEvent", player, quest, "defaultTalkWithInn_Desk");
         else
             callClientFunction(player, "delegateEvent", player, quest, clientFunc);

@@ -31,7 +31,7 @@ local jobToClass = { -- [jobId] = classId
 
 function onEventStarted(player, command, eventType, eventName, jobState)
 
-    local currentClass = player:GetCurrentClassOrJob();
+    local currentClass = player:GetCurrentClassOrJobId();
     local jobCheck = isJob(currentClass);
     local hasKeyItem = false;
     

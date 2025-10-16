@@ -386,8 +386,6 @@ namespace Meteor.Map.Actors
             return currentMainState;
         }
 
-
-
         public List<LuaParam> GetLuaParams()
         {
             return classParams;

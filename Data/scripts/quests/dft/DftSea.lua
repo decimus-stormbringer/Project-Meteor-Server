@@ -262,7 +262,8 @@ function onTalk(player, quest, npc, eventName)
     local clientFunc = defaultTalkSea[npcId];
     
     if (npcId == 1000167) then -- Mytesyn - Inn NPC
-        if (player:IsQuestCompleted(110838)) then -- "The Ink Thief" completed.
+        -- Check if Inn Quest is completed.
+        if (player:IsQuestCompleted(110828) or player:IsQuestCompleted(110838) or player:IsQuestCompleted(110848))  then
             defaultTalkWithInn(player, quest, "defaultTalkWithInn_Desk");
         else
             callClientFunction(player, "delegateEvent", player, quest, clientFunc);

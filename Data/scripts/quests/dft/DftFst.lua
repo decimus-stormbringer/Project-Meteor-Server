@@ -217,7 +217,8 @@ function onTalk(player, quest, npc, eventName)
     if (npcId == 1000430) then -- Nonco Menanco
         callClientFunction(player, "delegateEvent", player, quest, clientFunc, 21);
     elseif (npcId == 1000458) then -- V'korolon (Inn NPC)
-        if (player:IsQuestCompleted(110828)) then -- "Waste Not Want Not" completed.
+        -- Check if Inn Quest is completed.
+       if (player:IsQuestCompleted(110828) or player:IsQuestCompleted(110838) or player:IsQuestCompleted(110848))  then
             defaultTalkWithInn(player, quest, "defaultTalkWithInn_Desk");
         else
             callClientFunction(player, "delegateEvent", player, quest, clientFunc);

@@ -165,8 +165,8 @@ function onEventStarted(player, actor, eventType, eventName, isTeleport)
             player:SendGameMessage(worldMaster, 34104, 0x20);
 
             --bandaid fix for returning while dead, missing things like weakness and the heal number
-            if (player:GetHP() == 0) then
-                player:SetHP(player.GetMaxHP());
+            if (player.HP == 0) then
+                player.HP = player.MaxHP;
                 player:ChangeState(0);
                 player:PlayAnimation(0x01000066);
             end

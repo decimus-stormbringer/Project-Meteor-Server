@@ -72,7 +72,18 @@ namespace Meteor.Map.DataObjects
 
         public bool IsConnected()
         {
-            return (socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
+            if (socket == null) 
+                return false;
+
+            try
+            {
+                bool remoteClosed = socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0;
+                return !remoteClosed && socket.Connected;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public void Disconnect()

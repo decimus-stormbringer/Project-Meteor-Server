@@ -4,7 +4,7 @@ require("battleUtils")
 --Random guess, but increases damage by 10% (12.5% traited)?
 function onPreAction(effect, caster, target, skill, action, actionContainer)
     if skill.GetCommandType() == CommandType.Weaponskill then
-        local hpToRemove = math.floor(caster.GetHP() * 0.10);
+        local hpToRemove = math.floor(caster.HP * 0.10);
         local modifier = 1.10;
 
         if effect.GetTier() == 2 then

@@ -69,7 +69,7 @@ function onEventStarted(player, actor, eventType, eventName, equippedItem, param
 		end
 	end
 	
-	player.CalculateBaseStats(); --player.RecalculateStats();
+	player.RecalculateStatsAfterEquipCommand();
 	
 	player:EndEvent();	
 end

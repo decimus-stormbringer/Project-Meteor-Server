@@ -23,12 +23,19 @@ namespace Meteor.Map.Actors.Chara
 {
     class ParameterSave
     {
+        /// Current HP of Character
         public short[] hp = new short[8];
+        /// Maximum HP of Character
         public short[] hpMax = new short[8];
+        /// Current MP of Character
         public short mp;
+        /// Maximum MP of Character
         public short mpMax;
 
+        /// Current Class/Job of Character
         public byte[] state_mainSkill = new byte[4];
+
+        /// Level of current Class/Job of Character
         public short state_mainSkillLevel;
 
         public byte[] state_boostPointForSkill = new byte[4];

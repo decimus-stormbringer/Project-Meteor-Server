@@ -291,7 +291,7 @@ function onTalk(player, quest, npc)
 --			player:AddItem(2001005, 1);
 --			player:SendGameMessage(GetWorldMaster(), 25117, 0x20, 2001005);
 			player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 30000);
-			player:AddExp(50000, player.GetCurrentClassOrJob(), 0);
+			player:AddExp(50000, player:GetCurrentClassOrJobId(), 0);
 		end
 	end
 	

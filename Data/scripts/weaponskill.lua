@@ -33,7 +33,7 @@ function CalculateDamage(caster, target, skill, action)
         --local dev = 0.96 + (math.random() * 8);
         --damageBase = math.Clamp(damageBase * dev, 1, 9999);
         --return damageBase;
-        return 100;
+        return 25;
 end
 
 function HandleHealingSkill(caster, target, skill, action, statId, modifierId, multiplier, baseAmount)

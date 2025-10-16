@@ -56,24 +56,25 @@ namespace Meteor.Map.actors.chara.ai.controllers
         }
 
         //Iterate over players in the group and if they are fighting, assist them
-        protected override void TryAggro(DateTime tick)
-        {
-            //lua.LuaEngine.CallLuaBattleFunction(owner, "tryAggro", owner, GetContentGroupCharas());
+        // WARNING: CURRENTLY CAUSES MAP SERVER CRASHES ON GETCONTENTGROUPCHARAS()
+        //protected override void TryAggro(DateTime tick)
+        //{
+        //    lua.LuaEngine.CallLuaBattleFunction(owner, "tryAggro", owner, GetContentGroupCharas());
 
-            foreach(Character chara in GetContentGroupCharas())
-            {
-                if(chara.IsPlayer())
-                {
-                    if(owner.aiContainer.GetTargetFind().CanTarget((Character) chara.target) && chara.target is BattleNpc && ((BattleNpc)chara.target).hateContainer.HasHateForTarget(chara))
-                    {
-                        owner.Engage(chara.target.Id);
-                        owner.hateContainer.AddBaseHate((Character) chara.target);
-                        break;
-                    }
-                }
-            }
-            //base.TryAggro(tick);
-        }
+        //    foreach(Character chara in GetContentGroupCharas())
+        //    {
+        //        if(chara.IsPlayer())
+        //        {
+        //            if(owner.aiContainer.GetTargetFind().CanTarget((Character) chara.target) && chara.target is BattleNpc && ((BattleNpc)chara.target).hateContainer.HasHateForTarget(chara))
+        //            {
+        //                owner.Engage(chara.target.Id);
+        //                owner.hateContainer.AddBaseHate((Character) chara.target);
+        //                break;
+        //            }
+        //        }
+        //    }
+        //    base.TryAggro(tick);
+        //}
 
         // server really likes to hang whenever scripts iterate area's actorlist
         protected override void DoCombatTick(DateTime tick, List<Character> contentGroupCharas = null)

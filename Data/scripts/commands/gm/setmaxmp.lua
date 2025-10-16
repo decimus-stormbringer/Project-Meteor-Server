@@ -26,8 +26,8 @@ function onTrigger(player, argc, mp, name, lastName)
         mp = tonumber(mp) or 1;
         location = INVENTORY_CURRENCY;
         
-        player:SetMaxMP(mp);
-		player:AddMP(mp);
+        player.MaxMP = mp;
+		player:MP = mp;
     else
         print(sender.."unable to add mp, ensure player name is valid.");
     end;

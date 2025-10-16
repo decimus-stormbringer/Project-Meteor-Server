@@ -311,6 +311,33 @@ namespace Meteor.Map.actors.chara
             else
                 return null;
         }
+
+        public InventoryItem GetItemAtSlot(EquipmentSlot equipmentSlot)
+        {
+            return GetItemAtSlot((ushort)equipmentSlot);
+        }
         #endregion        
+    }
+
+    public enum EquipmentSlot : ushort
+    {
+        MAINHAND = 0,
+        OFFHAND = 1,
+        THROWINGWEAPON = 4,
+        PACK = 5,
+        POUCH = 6,
+        HEAD = 8,
+        UNDERSHIRT = 9,
+        BODY = 10,
+        UNDERGARMENT = 11,
+        LEGS = 12,
+        HANDS = 13,
+        BOOTS = 14,
+        WAIST = 15,
+        NECK = 16,
+        EARS = 17,
+        WRISTS = 19,
+        RIGHTFINGER = 21,
+        LEFTFINGER = 22
     }
 }

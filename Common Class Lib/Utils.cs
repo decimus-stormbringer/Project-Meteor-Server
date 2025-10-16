@@ -20,6 +20,7 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -236,20 +237,37 @@ namespace Meteor.Common
             return h;
         }
 
+        //public static byte[] ConvertBoolArrayToBinaryStream(bool[] array)
+        //{
+        //    var data = new byte[array.Length / 8 + (array.Length % 8 != 0 ? 1 : 0)];
+
+        //    var dataCounter = 0;
+        //    for (var i = 0; i < array.Length; i += 8)
+        //    {
+        //        for (var bitCount = 0; bitCount < 8; bitCount++)
+        //        {
+        //            if (i + bitCount >= array.Length - 1)
+        //                break;
+        //            data[dataCounter] = (byte)(((array[i + bitCount] ? 1 : 0) << 7 - bitCount) | data[dataCounter]);
+        //        }
+        //        dataCounter++;
+        //    }
+
+        //    return data;
+        //}
+
         public static byte[] ConvertBoolArrayToBinaryStream(bool[] array)
         {
-            var data = new byte[array.Length / 8 + (array.Length % 8 != 0 ? 1 : 0)];
+            if (array == null || array.Length == 0)
+                return Array.Empty<byte>();
 
-            var dataCounter = 0;
-            for (var i = 0; i < array.Length; i += 8)
+            int byteCount = (array.Length + 7) / 8;
+            byte[] data = new byte[byteCount];
+
+            for (int i = 0; i < array.Length; i++)
             {
-                for (var bitCount = 0; bitCount < 8; bitCount++)
-                {
-                    if (i + bitCount >= array.Length - 1)
-                        break;
-                    data[dataCounter] = (byte)(((array[i + bitCount] ? 1 : 0) << 7 - bitCount) | data[dataCounter]);
-                }
-                dataCounter++;
+                if (array[i])
+                    data[i / 8] |= (byte)(1 << (i % 8)); // bit 0 = first quest
             }
 
             return data;
@@ -270,6 +288,72 @@ namespace Meteor.Common
 
                 for (int bitCount = 0; bitCount < 8; bitCount++)
                     data[boolCounter++] = (bytes[i] >> bitCount & 1) == 1;                
+            }
+
+            return data;
+        }
+
+        // For printing list of completed quests from database hex string.
+        public static List<uint> DecodeCompletedQuestsFromHex(string hex, uint baseQuestId = 110001)
+        {
+            List<uint> completedQuests = new List<uint>();
+
+            if (string.IsNullOrEmpty(hex))
+                return completedQuests;
+
+            // Convert hex string into bytes
+            int len = hex.Length;
+            byte[] data = new byte[len / 2];
+            for (int i = 0; i < len; i += 2)
+                data[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+
+            // Decode each bit
+            for (int byteIndex = 0; byteIndex < data.Length; byteIndex++)
+            {
+                byte b = data[byteIndex];
+                for (int bit = 0; bit < 8; bit++)
+                {
+                    if ((b & (1 << bit)) != 0)
+                    {
+                        uint questId = baseQuestId + (uint)(byteIndex * 8 + bit);
+                        completedQuests.Add(questId);
+                    }
+                }
+            }
+
+            return completedQuests;
+        }
+
+        public static string BytesToHex(byte[] bytes)
+        {
+            if (bytes == null || bytes.Length == 0)
+                return string.Empty;
+
+            char[] c = new char[bytes.Length * 2];
+            int b;
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                b = bytes[i] >> 4;
+                c[i * 2] = (char)(b > 9 ? b + 55 : b + 48); // A-F or 0-9
+                b = bytes[i] & 0xF;
+                c[i * 2 + 1] = (char)(b > 9 ? b + 55 : b + 48);
+            }
+            return new string(c);
+        }
+
+        public static byte[] BoolArrayToBitfield(bool[] flags)
+        {
+            int length = flags.Length;
+            byte[] data = new byte[length / 8 + (length % 8 != 0 ? 1 : 0)];
+
+            for (int i = 0; i < length; i++)
+            {
+                if (flags[i])
+                {
+                    int byteIndex = i / 8;
+                    int bitIndex = i % 8; // LSB-first
+                    data[byteIndex] |= (byte)(1 << bitIndex);
+                }
             }
 
             return data;

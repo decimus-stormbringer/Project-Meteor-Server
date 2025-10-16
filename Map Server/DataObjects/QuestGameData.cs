@@ -19,7 +19,7 @@ namespace Meteor.Map.DataObjects
         {
             Id = id;
             ClassName = className;
-            Name = Name;
+            Name = name;
             PrerequisiteQuest = prereq;
             MinLevel = minLv;
             MinGCRank = minGcRank;

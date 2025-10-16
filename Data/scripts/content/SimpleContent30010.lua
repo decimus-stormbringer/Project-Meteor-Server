@@ -1,30 +1,60 @@
 
-function onCreate(starterPlayer, contentArea, director)
+function onCreate(player, contentArea, director)
 
-    papalymo = contentArea:SpawnActor(2290005, "papalymo", 365.89, 4.0943, -706.72, -0.718);
-    yda = contentArea:SpawnActor(2290006, "yda", 365.266, 4.122, -700.73, 1.5659);
+    yda = contentArea:SpawnAlly(2290006, "yda", 365.26, 4.1, -700.73, 1.56);
+    yda.Level = 1;
+	yda:SetMod(Hp, 500);
+	yda:SetMod(Mp, 500);
+	yda:SetMod(MovementSpeed, 5);
+	yda:CalculateStats();
 
-    mob1 = contentArea:SpawnActor(2201407, "mob1", 374.427, 4.4, -698.711, -1.942);
-    mob2 = contentArea:SpawnActor(2201407, "mob2", 375.377, 4.4, -700.247, -1.992);
-    mob3 = contentArea:SpawnActor(2201407, "mob3", 375.125, 4.4, -703.591, -1.54);
-    
-    openingStoper = contentArea:SpawnActor(1090384, "openingstoper", 356.09, 3.74, -701.62, -1.41);
+    papalymo = contentArea:SpawnAlly(2290005, "papalymo", 365.9, 4.1, -706.7, -0.7);
+ 	papalymo.Level = 1;
+	papalymo:SetMod(Hp, 500);
+	papalymo:SetMod(Mp, 500);
+	papalymo:SetMod(MovementSpeed, 5);
+	papalymo:CalculateStats();
 
-    yda:ChangeState(2);
-    mob1:ChangeState(2);
-    mob2:ChangeState(2);
-    mob3:ChangeState(2);    
+    wolf1 = contentArea:SpawnEnemy(2201407, "wolf1", 374.4, 4.4, -698.7, -1.9);
+ 	wolf1.Level = 1;
+	wolf1:SetMod(Hp, 80);
+	wolf1:SetMod(Mp, 100);
+	wolf1:SetMod(Damage, 15);
+	wolf1:SetMod(MovementSpeed, 5);
+	wolf1:CalculateStats();
+       
+    wolf2 = contentArea:SpawnEnemy(2201407, "wolf2", 375.4, 4.4, -700.24, -2);
+	wolf2.Level = 1;
+	wolf2:SetMod(Hp, 80);
+	wolf2:SetMod(Mp, 100);
+	wolf2:SetMod(Damage, 15);
+	wolf2:SetMod(MovementSpeed, 5);
+	wolf2:CalculateStats();
     
-    
-    
-    
-    director:AddMember(starterPlayer);
+    wolf3 = contentArea:SpawnEnemy(2201407, "wolf3", 375.1, 4.4, -703.6, -1.54);
+	wolf3.Level = 1;
+	wolf3:SetMod(Hp, 80);
+	wolf3:SetMod(Mp, 100);
+	wolf3:SetMod(Damage, 15);
+	wolf3:SetMod(MovementSpeed, 5);
+	wolf3:CalculateStats();
+
+    openingStoper = contentArea:SpawnActor(1090384, "openingstoper", 356.1, 3.7, -701.6, -1.4);
+   
+	director:AddMember(player);
 	director:AddMember(director);
-    director:AddMember(yda);
-    director:AddMember(papalymo);
-	director:AddMember(mob1);
-	director:AddMember(mob2);
-	director:AddMember(mob3);
+	director:AddMember(yda);
+	director:AddMember(papalymo);
+	director:AddMember(wolf1);
+	director:AddMember(wolf2);
+	director:AddMember(wolf3);
+	
+	player:IsInParty();
+	player:IsPartyLeader();
+	player.currentParty:AddMember(yda);
+	player.currentParty:AddMember(papalymo);
+
+
 	director:StartContentGroup();
 end
 

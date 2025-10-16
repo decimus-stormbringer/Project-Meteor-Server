@@ -23,13 +23,13 @@ namespace Meteor.Map.Actors.Chara
 {
     class NpcWork
     {
-        public static byte HATE_TYPE_NONE = 0;
+        public static byte HATE_TYPE_NONE = 1;
         public static byte HATE_TYPE_ENGAGED = 2;
         public static byte HATE_TYPE_ENGAGED_PARTY = 3;
 
         public ushort pushCommand;
         public int pushCommandSub;
         public byte pushCommandPriority;
-        public byte hateType = 1;                
+        public byte hateType;                
     }
 }

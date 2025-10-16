@@ -97,6 +97,10 @@ FLAG_SEQ000_MINITUT3    = 3; -- TalkEvent GIL_DIGGING_MISTRESS
 -- SEQ010
 FLAG_SEQ010_TALK0       = 0; -- TalkEvent YAYATOKI
 
+GOOBBUE				= 2203301;
+COUNTER_KILLS		= 0;
+OBJECTIVE_AMOUNT	= 1;
+
 
 function onStart(player, quest)
     quest:StartSequence(SEQ_000);
@@ -313,9 +317,6 @@ function getJournalMapMarkerList(player, quest)
     return unpack(possibleMarkers)
 end
 
-
-
-
 function doExitTrigger(player, quest, npc)	
     quest:GetData():ClearData();
     quest:StartSequence(SEQ_005);
@@ -332,8 +333,6 @@ function doExitTrigger(player, quest, npc)
     player:KickEvent(director, "noticeEvent", true);
     player:SetLoginDirector(director);
 
-    GetWorldManager():DoZoneChangeContent(player, contentArea, -24.34, 192, 34.22, 0.78, 16);
+    GetWorldManager():DoZoneChangeContent(player, contentArea, -17.7, 192, 37.7, 0.93, 16);
     return;
 end
-
-

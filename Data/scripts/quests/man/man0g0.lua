@@ -61,6 +61,7 @@ FLAG_SEQ000_MINITUT1    = 1; -- Talked to Papalymo.
 FLAG_SEQ000_MINITUT2    = 2; -- Talked to Yda again.
 FLAG_SEQ010_TKEBBE      = 0; -- Talked to T'kebbe (optional)
 
+
 --[[
 processEvent000_0
 processEvent000_1
@@ -163,13 +164,10 @@ function onPush(player, quest, npc)
     elseif (sequence == SEQ_010) then
         if (classId == BLOCKER1) then  
             callClientFunction(player, "delegateEvent", player, quest, "processTtrBlkNml001");
-			player:SendMessage(0x1D,"",">Pushed Blocker!");
             GetWorldManager():DoPlayerMoveInZone(player, 109.966, 7.559, -1206.117, -2.7916, 0x11)
             player:EndEvent();        
         elseif (classId == PUSH_ADV_GUILD) then 
-			player:SendMessage(0x1D,"",">Pushed Guild!");
             player:ReplaceQuest(quest, "Man0g1");
-			player:SendMessage(0x1D,"",">Changed quest in man0g0!");
             return;
         end
     end
@@ -224,7 +222,6 @@ function seq010_onTalk(player, quest, npc, classId)
         callClientFunction(player, "delegateEvent", player, quest, "processEvent020_5");   
         data:SetFlag(FLAG_SEQ010_TKEBBE);
     elseif (classId == LONSYGG) then
-		player:SendMessage(0x1D,"",">Hello Longsygg");
         callClientFunction(player, "delegateEvent", player, quest, "processEvent020_6");
     end
 
@@ -256,6 +253,7 @@ end
 function doContentArea(player, quest, npc)
     quest:GetData():ClearData();
     quest:StartSequence(SEQ_005);
+    
     contentArea = player.CurrentArea:CreateContentArea(player, "/Area/PrivateArea/Content/PrivateAreaMasterSimpleContent", "man0g01", "SimpleContent30010", "Quest/QuestDirectorMan0g001");
    
     if (contentArea == nil) then
@@ -272,5 +270,3 @@ function doContentArea(player, quest, npc)
     GetWorldManager():DoZoneChangeContent(player, contentArea, 362.4087, 4, -703.8168, 1.5419, 16);
     return;
 end
-
-

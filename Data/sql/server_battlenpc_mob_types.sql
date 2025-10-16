@@ -29,23 +29,21 @@ CREATE TABLE IF NOT EXISTS `server_battlenpc_mob_types` (
   `actorId` int(10) unsigned NOT NULL,
   `displayName` varchar(255) NOT NULL,
   `speed` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `aggroType` tinyint (3) unsigned NOT NULL DEFAULT '0',
-  `detection` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `isHostile` tinyint (3) unsigned NOT NULL DEFAULT '1',
+  `detectionType` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `detectionRange` smallint(5) unsigned NOT NULL DEFAULT '5',
   `respawnTime` tinyint(3) unsigned NOT NULL DEFAULT '10',
   `combatDelay` smallint(5) unsigned NOT NULL,
   `allegiance` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `currentJob` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `level` tinyint(3) unsigned NOT NULL DEFAULT '1',
-  `hp` int(10) unsigned NOT NULL DEFAULT '300',
-  `hpMax`  int(10) unsigned NOT NULL DEFAULT '300',
-  `mpMax` smallint(5) unsigned NOT NULL DEFAULT '100',
   `str` smallint(4) unsigned NOT NULL DEFAULT '1',
   `vit` smallint(4) unsigned NOT NULL DEFAULT '1',
   `dex` smallint(4) unsigned NOT NULL DEFAULT '1',
   `int` smallint(4) unsigned NOT NULL DEFAULT '1',
   `mnd` smallint(4) unsigned NOT NULL DEFAULT '1',
   `pie` smallint(4) unsigned NOT NULL DEFAULT '1',
-  `att` smallint(4) unsigned NOT NULL DEFAULT '1',
+  `att` smallint(4) unsigned NOT NULL DEFAULT '40',
   `acc` smallint(4) unsigned NOT NULL DEFAULT '1',
   `def` smallint(4) unsigned NOT NULL DEFAULT '1',
   `eva` smallint(4) unsigned NOT NULL DEFAULT '1',
@@ -67,9 +65,9 @@ CREATE TABLE IF NOT EXISTS `server_battlenpc_mob_types` (
 --
 -- Dumping data for table `server_battlenpc_mob_types`
 /*!40000 ALTER TABLE `server_battlenpc_mob_types` DISABLE KEYS */;
-REPLACE INTO `server_battlenpc_mob_types` (`bnpcId`, `actorId`, `displayName`, `speed`, `aggroType`, `detection`, `respawnTime`, `combatDelay`, `allegiance`, `currentjob`, `level`, `hp`, `hpMax`, `mpMax`, `str`, `vit`, `dex`, `int`, `mnd`, `pie`, `att`, `acc`, `def`, `eva`, `slash`, `pierce`, `h2h`, `blunt`, `fire`, `ice`, `wind`, `lightning`, `earth`, `water`, `element`) VALUES
-(1,2104001,'Rat Test',8,0,1,60,4200,0,0,1,		300,300,100,		1,1,1,1,1,1,1,1,1,1,		1,1,1,1,1,1,1,1,1,1,0),
-(2,2106018,'Sheep Test',8,0,1,30,4200,0,0,1,    300,300,100,	    1,1,1,1,1,1,1,1,1,1,        1,1,1,1,1,1,1,1,1,1,0);
+REPLACE INTO `server_battlenpc_mob_types` (`bnpcId`, `actorId`, `displayName`, `speed`, `isHostile`, `detectionType`, `detectionRange`, `respawnTime`, `combatDelay`, `allegiance`, `currentjob`, `level`, `str`, `vit`, `dex`, `int`, `mnd`, `pie`, `att`, `acc`, `def`, `eva`, `slash`, `pierce`, `h2h`, `blunt`, `fire`, `ice`, `wind`, `lightning`, `earth`, `water`, `element`) VALUES
+(1,2104001,'Rat Test',8,1,0,5,60,4200,0,0,1,		1,1,1,1,1,1,40,1,1,1,		1,1,1,1,1,1,1,1,1,1,0),
+(2,2106018,'Sheep Test',8,1,0,5,30,4200,0,0,1,   	1,1,1,1,1,1,40,1,1,1,        1,1,1,1,1,1,1,1,1,1,0);
 /*!40000 ALTER TABLE `server_battlenpc_mob_types` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;

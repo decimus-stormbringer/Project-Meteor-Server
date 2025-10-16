@@ -57,15 +57,17 @@ namespace Meteor.Map.actors.chara.ai.controllers
                 owner.currentMainState = (ushort)owner.newMainState;
             }*/
 
-            //regen health
-            if (!owner.IsDead() && owner.GetHPP() < 100)
+            //regen hp/mp
+            if (!owner.IsDead() && owner.HPP < 100 || owner.MPP < 100)
             {
                 DoRegenTick(tick);
             }
 
-            if (!owner.IsDead() && owner.GetMPP() < 100)
+            if (owner != null)
             {
-                DoRegenTick(tick);
+                DoUpdatePosition(tick);
+                DoUpdateParams(tick);
+                DoUpdateQuests(tick);
             }
         }
 
@@ -130,9 +132,32 @@ namespace Meteor.Map.actors.chara.ai.controllers
                 waitTime = tick.AddSeconds(5);
                 owner.RegenHp(tick);
                 owner.RegenMp(tick);
+            }
+        }
 
+        protected virtual void DoUpdatePosition(DateTime tick)
+        {
+            if (tick >= waitTime)
+            {
+                waitTime = tick.AddSeconds(10);
+                owner.UpdatePosition();
+            }
+        }
+        protected virtual void DoUpdateParams(DateTime tick)
+        {
+            if (tick >= waitTime)
+            {
+                waitTime = tick.AddSeconds(10);
+                owner.UpdatePlayerParams();
+            }
+        }
+        protected virtual void DoUpdateQuests(DateTime tick)
+        {
+            if (tick >= waitTime)
+            {
+                waitTime = tick.AddSeconds(10);
+                owner.UpdateQuests();
             }
         }
     }
-
 }

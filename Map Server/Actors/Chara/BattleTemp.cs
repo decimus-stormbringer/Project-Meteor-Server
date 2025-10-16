@@ -23,48 +23,54 @@ namespace Meteor.Map.Actors.Chara
 {
     class BattleTemp
     {
-        //Are these right?
-        public const uint NAMEPLATE_SHOWN = 0;
-        public const uint TARGETABLE = 1;
-        public const uint NAMEPLATE_SHOWN2 = 2;
-        //public const uint NAMEPLATE_SHOWN2 = 3;
+        public float[] castGauge_speed = { 1.0f, 0.25f };
+        public bool[] timingCommandFlag = new bool[4];
 
-        public const uint STAT_STRENGTH = 3;
-        public const uint STAT_VITALITY = 4;
-        public const uint STAT_DEXTERITY = 5;
-        public const uint STAT_INTELLIGENCE = 6;
-        public const uint STAT_MIND = 7;
-        public const uint STAT_PIETY = 8;
-
-        public const uint STAT_RESISTANCE_FIRE = 9;
-        public const uint STAT_RESISTANCE_ICE = 10;
-        public const uint STAT_RESISTANCE_WIND = 11;
-        public const uint STAT_RESISTANCE_LIGHTNING = 12;
-        public const uint STAT_RESISTANCE_EARTH = 13;
-        public const uint STAT_RESISTANCE_WATER = 14;
-
-        public const uint STAT_ATTACK = 17;
-        public const uint STAT_ACCURACY = 15;
-        public const uint STAT_NORMALDEFENSE = 18;
-        public const uint STAT_EVASION = 16;
-        public const uint STAT_ATTACK_MAGIC = 23;
-        public const uint STAT_HEAL_MAGIC = 24;
-        public const uint STAT_ENCHANCEMENT_MAGIC_POTENCY = 25;
-        public const uint STAT_ENFEEBLING_MAGIC_POTENCY = 26;
-
-        public const uint STAT_MAGIC_ACCURACY = 27;
-        public const uint STAT_MAGIC_EVASION = 28;
-
-        public const uint STAT_CRAFT_PROCESSING = 30;
-        public const uint STAT_CRAFT_MAGIC_PROCESSING = 31;
-        public const uint STAT_CRAFT_PROCESS_CONTROL = 32;
-
-        public const uint STAT_HARVEST_POTENCY = 33;
-        public const uint STAT_HARVEST_LIMIT = 34;
-        public const uint STAT_HARVEST_RATE = 35;
-
-        public float[] castGauge_speed = { 1.0f, 0.25f};
-        public bool[]   timingCommandFlag = new bool[4];
+        // Character's stat "totals" that include all calculations
+        // Stats include character's base stats as well as other modifications, such as equipment, point allocation, etc.
         public short[] generalParameter = new short[35];
+    }
+
+    public enum GeneralParameterIndex : int
+    {
+        NameplateShown = 0,
+        Targetable = 1,
+        NameplateShown2 = 2,
+        Strength = 3,
+        Vitality = 4,
+        Dexterity = 5,
+        Intelligence = 6,
+        Mind = 7,
+        Piety = 8,
+
+        FireResistance = 9,
+        IceResistance = 10,
+        WindResistance = 11,
+        EarthResistance = 12,
+        LightningResistance = 13,
+        WaterResistance = 14,
+
+        Accuracy = 15,
+        Evasion = 16,
+        Attack = 17,
+        Defense = 18,
+
+        // 19-22 are Critical Hit, but they are not mapped here
+
+        AttackMagicPotency = 23,
+        HealingMagicPotency = 24,
+        EnhancementMagicPotency = 25,
+        EnfeeblingMagicPotency = 26,
+
+        MagicAccuracy = 27,
+        MagicEvasion = 28,
+
+        Craftsmanship = 29,
+        MagicCraftsmanship = 30,
+        Control = 31,
+
+        Gathering = 32,
+        Output = 33,
+        Perception = 34,
     }
 }

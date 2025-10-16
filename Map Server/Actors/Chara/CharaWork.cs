@@ -20,6 +20,7 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 */
 
 namespace Meteor.Map.Actors.Chara
+
 {
     class CharaWork
     {
@@ -38,7 +39,9 @@ namespace Meteor.Map.Actors.Chara
 
         public byte[]   property = new byte[32];
 
+        // Character's current status effects
         public ushort[] status = new ushort[20];
+        // Duration of each status effect on character
         public uint[]   statusShownTime = new uint[20];
 
         public uint[]   command = new uint[64]; //ACTORS

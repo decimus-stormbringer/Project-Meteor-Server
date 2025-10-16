@@ -79,7 +79,7 @@ namespace Meteor.Map.actors.chara.ai.state
                     {
                         Player p = (Player)owner;
                         //If skill is part of owner's class/job, it can be used in a combo
-                        if (skill.job == p.GetClass() || skill.job == p.GetCurrentClassOrJob())
+                        if (skill.job == p.GetClass() || skill.job == p.GetCurrentClassOrJobId())
                         {
                             //If owner is a player and the skill being used is part of the current combo
                             if (p.playerWork.comboNextCommandId[0] == skill.id || p.playerWork.comboNextCommandId[1] == skill.id)

@@ -28,7 +28,7 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
         caster.statusEffects.RemoveStatusEffect(buff, actionContainer, 30329);
     else
         --Blissful mind takes 25% of CURRENT HP and begins storing MP up to that point, at which point the buff changes to indicate its full
-        local amount = caster.GetHP() * 0.25;
+        local amount = caster.HP * 0.25;
 
         caster.DelHP(amount, actionContainer);
         skill.statusMagnitude = amount;

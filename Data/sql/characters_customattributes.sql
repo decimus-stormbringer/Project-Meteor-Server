@@ -24,14 +24,14 @@ DROP TABLE IF EXISTS `characters_customattributes`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `characters_customattributes` (
   `characterId` int(10) unsigned NOT NULL,
-  `pointsRemaining` int(11) DEFAULT '0',
-  `strSpent` int(11) DEFAULT '0',
-  `vitSpent` int(11) DEFAULT '0',
-  `dexSpent` int(11) DEFAULT '0',
-  `intSpent` int(11) DEFAULT '0',
-  `minSpent` int(11) DEFAULT '0',
-  `pieSpent` int(11) DEFAULT '0',
-  PRIMARY KEY (`characterId`)
+  `classId` smallint(5) unsigned NOT NULL,
+  `strength` int(11) NOT NULL DEFAULT '0',
+  `vitality` int(11) NOT NULL DEFAULT '0',
+  `dexterity` int(11) NOT NULL DEFAULT '0',
+  `intelligence` int(11) NOT NULL DEFAULT '0',
+  `mind` int(11) NOT NULL DEFAULT '0',
+  `piety` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`characterId`, `classId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

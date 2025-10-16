@@ -20,13 +20,15 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 */
 
 using System;
+using System.Collections.Generic;
+
 
 namespace Meteor.Map.actors.chara
 {
     //These will need to be redone at some point. remember to update tables in db.
     //Consider using text_paramname sheet. that matches up with the stats on armor, but some things will need special handling
     //Also, 0-35 should probably match with up BattleTemp
-    enum Modifier : UInt32
+    public enum Modifier : UInt32
     {
         //These line up with ParamNames starting at 15001 and appear on gear
         //Health
@@ -138,13 +140,14 @@ namespace Meteor.Map.actors.chara
         HeavyResistance = 82,   //Reduces chance to be inflicted with heavy by status magic
         DoomResistance = 83,   //Reduces chance to be inflicted with doom by status magic
 
-        //84-101 didn't have names and seem to be unused
+        //84-100 didn't have names and seem to be unused
         //Miscellaneous
         ConserveMp = 101,  //Chance to reduce mp used by actions
         SpellInterruptResistance = 102,  //Reduces chance to be interrupted by damage while casting
         DoubleDownOdds = 103,  //Increases double down odds
         HqDiscoveryRate = 104,
 
+        #region Miscellaneous artificial modifiers (not aligned with any values in db or client)
 
         //Non-gear mods
         None = 105,
@@ -180,5 +183,219 @@ namespace Meteor.Map.actors.chara
         Stoneskin = 129,  //Nullifies damage
         KnockbackImmune = 130,  //Immune to knockback effects when above 0
         Stealth = 131,  //Not visisble when above 0
+
+        #endregion
+
+        // 16001 and onwards => (16001 - 15001 = 1000), see xtx_text_paramName.csv
+        HpRegen = 1000,
+        MpRegen = 1001,
+        CriticalHitRating_when_Hp_LessThanOrEqual_75Percent = 1002,
+        CriticalHitPower_when_Hp_LessThanOrEqual_75Percent = 1003,
+        MagicCriticalHitRating_when_Hp_LessThanOrEqual_75Percent = 1004,
+        CriticalHitPotency_when_Hp_LessThanOrEqual_75Percent = 1005,
+        StormGearPiecesRequirement = 1006, // n or more pieces for requirement to be met
+        SerpentGearPiecesRequirement = 1007, // n or more pieces for requirement to be met
+        FlameGearPiecesRequirement = 1008, // n or more pieces for requirement to be met
+        SanctionRequirement = 1009,
+        // 20001 and onwards => (20001 - 15001 = 5000)
+        Level10ExpBonus = 5000,
+        Level10HalvesWeaknessDuration = 5001,
+        Level10EnhanceMainArm = 5002,
+        TemporaryMovementSpeedIncrease = 5003,
+
+        ChanceTo_Inflict_Silence_and_Poison = 5004,
+        ChanceTo_Inflict_Paralysis_and_Poison = 5005,
+        ChanceTo_Inflict_Paralysis = 5006,
+        ChanceTo_Inflict_IncreasedEnmity = 5007,
+        ChanceTo_Inflict_Poison = 5008,
+        ChanceTo_Inflict_Blind = 5009,
+        ChanceTo_Inflict_Silence = 5010,
+        ChanceTo_Inflict_Sleep = 5011,
+        ChanceTo_Inflict_FireDamage = 5012,
+        ChanceTo_Inflict_IceDamage = 5013,
+        ChanceTo_Inflict_WindDamage = 5014,
+        ChanceTo_Inflict_EarthDamage = 5015,
+        ChanceTo_Inflict_LightningDamage = 5016,
+        ChanceTo_Inflict_WaterDamage = 5017,
+        ChanceTo_Absorb_Hp = 5018,
+        ChanceTo_Absorb_Mp = 5019,
+        ChanceTo_Absorb_Tp = 5020,
+        Converts_Damage_to_Mp = 5021,
+        Converts_Damage_to_Tp = 5022,
+        ChanceTo_Restore_Hp = 5023,
+        ChanceTo_Restore_Mp = 5024,
+        CannotEquipGear_Head = 5025,
+        CannotEquipGear_Hand_Leg_Feet = 5026,
+        CannotEquipGear_Feet = 5027,
+        RecoverMpDuringCover = 5028,
+        IncreaseHolySuccorHpRecovery = 5029,
+        IncreaseDivineVeilHpRecovery = 5030,
+        ReduceCollusionRecast = 5031,
+        EnhanceAntagonize = 5032,
+        RedirectMagicDamageDuringVengeance = 5033,
+        ConserveMpCostOfFistActions = 5034,
+        EnhanceFistsOfWind = 5035,
+        ReduceShoulderTackleRecast = 5036,
+        EnhanceBallads = 5037,
+        EnhancePaeons = 5038,
+        EnhanceMinuets = 5039,
+        ReduceJumpRecast = 5040,
+        EnhanceElusiveJump = 5041,
+        IncreaseTpDuringInvigorate = 5042,
+        EnhanceRegen = 5043,
+        ReducePresentOfMindRecast = 5044,
+        EnhanceCure = 5045,
+        ReduceConvertRecast = 5046,
+        ReduceResonanceRecast = 5047,
+        EnhanceExcruciate = 5048,
+        IncreaseSpiritsWithinDamage = 5049,
+        IncreaseShoulderTackleDamage = 5050,
+        ReduceVengeanceRecast = 5051,
+        IncreaseJumpDamage = 5052,
+        IncreaseSongDuration = 5053,
+        IncreaseHolyDamage = 5054,
+        IncreaseFlareDamageOverTime = 5055,
+        InhibitMainArmSpiritbond = 5056
+    }
+
+    public class ModifierData
+    {
+        public Modifier Modifier { get; set; }
+        public double StartValue { get; set; }
+        public double EndValue { get; set; }
+        public ModifierData PrerequisiteModifier { get; set; }
+        public double GrowthRate;
+    }
+
+    public enum ModifierOrigin : int
+    {
+        Miscellaneous = 0,
+        Tribe = 1,
+        Guardian = 2,
+        Job = 3,
+        Equipment = 4,
+        StatusEffect = 5,
+        BattleTrait = 6,
+        AttributePointAllotment = 7,
+        ModifierDownstreamEffects = 8,
+        Base = 9,
+        // TODO: allow npc pool, genus, and spawn to be set and used here
+        //NpcPool = 10,
+        //NpcGenus = 11,
+        //NpcSpawn = 12,
+    }
+
+    public class ModifierContainer
+    {
+        private readonly IDictionary<ModifierOrigin, IDictionary<Modifier, double>> AllModifiers;
+        private readonly IDictionary<Modifier, double> ModifierDefaults;
+        private readonly IDictionary<Modifier, double> ModifierMultipliers;
+
+        public ModifierContainer()
+        {
+            AllModifiers = new Dictionary<ModifierOrigin, IDictionary<Modifier, double>>();
+
+            foreach (ModifierOrigin origin in Enum.GetValues(typeof(ModifierOrigin)))
+            {
+                AllModifiers.Add(origin, new Dictionary<Modifier, double>());
+            }
+
+            ModifierDefaults = new Dictionary<Modifier, double>();
+            ModifierMultipliers = new Dictionary<Modifier, double>();
+        }
+
+        public double GetMod(Modifier modifier)
+        {
+            double totalValue = 0;
+            bool modFound = false;
+
+            foreach (ModifierOrigin origin in AllModifiers.Keys)
+            {
+                double value;
+                if (AllModifiers[origin].TryGetValue(modifier, out value))
+                {
+                    totalValue += value;
+                    modFound = true;
+                }
+            }
+
+            if (modFound == false)
+            {
+                ModifierDefaults.TryGetValue(modifier, out totalValue);
+            }
+
+            totalValue *= GetModMultiplier(modifier);
+
+            return totalValue;
+        }
+
+        public double SetMod(Modifier modifier, double value, ModifierOrigin origin)
+        {
+            AllModifiers[origin][modifier] = value;
+            return value;
+        }
+
+        public double SetModDefault(Modifier modifier, double value)
+        {
+            ModifierDefaults[modifier] = value;
+            return value;
+        }
+
+        public double AddMod(Modifier modifier, double value, ModifierOrigin origin)
+        {
+            double currentValue;
+            if (AllModifiers[origin].TryGetValue(modifier, out currentValue))
+            {
+                value += currentValue;
+            }
+
+            return SetMod(modifier, value, origin);
+        }
+
+        public double SubtractMod(Modifier modifier, double value, ModifierOrigin origin)
+        {
+            return AddMod(modifier, -value, origin);
+        }
+
+        private double GetModMultiplier(Modifier modifier)
+        {
+            double multiplier;
+            if (ModifierMultipliers.TryGetValue(modifier, out multiplier) == false)
+            {
+                return 1;
+            }
+
+            return multiplier;
+        }
+
+        private double SetModMultiplier(Modifier modifier, double value)
+        {
+            ModifierMultipliers[modifier] = value;
+            return value;
+        }
+
+        public double MultiplyMod(Modifier modifier, double value)
+        {
+            double currentMultiplier = GetModMultiplier(modifier);
+
+            return SetModMultiplier(modifier, currentMultiplier * value);
+        }
+
+        public double DivideMod(Modifier modifier, double value)
+        {
+            if (value == 0)
+            {
+                return GetModMultiplier(modifier);
+            }
+            return MultiplyMod(modifier, 1 / value);
+        }
+
+        public void ClearMods(params ModifierOrigin[] origins)
+        {
+            foreach (ModifierOrigin origin in origins)
+            {
+                AllModifiers[origin].Clear();
+            }
+        }
     }
 }

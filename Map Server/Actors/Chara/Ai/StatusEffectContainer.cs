@@ -235,7 +235,7 @@ namespace Meteor.Map.actors.chara.ai
                         uint time = (newEffect.GetFlags() & (uint) StatusEffectFlags.Stance) == 0 ? Utils.UnixTimeStampUTC(newEffect.GetEndTime()) : 0xFFFFFFFF;
                         SetTimeAtIndex(index, time);
                     }
-                    owner.RecalculateStats();
+                    owner.RecalculateStats(ModifierOrigin.StatusEffect);
                 }
                 return true;
             }
@@ -268,7 +268,7 @@ namespace Meteor.Map.actors.chara.ai
                 // function onLose(actor, effect)
                 effects.Remove(effect.GetStatusEffectId());
                 effect.CallLuaFunction(owner, "onLose", owner, effect, actionContainer);
-                owner.RecalculateStats();
+                owner.RecalculateStats(ModifierOrigin.StatusEffect);
                 removedEffect = true;
             }
 

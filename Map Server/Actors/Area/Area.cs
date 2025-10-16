@@ -21,14 +21,17 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 
 using Meteor.Common;
 using Meteor.Map.actors.area;
+using Meteor.Map.actors.chara;
 using Meteor.Map.actors.chara.npc;
+using Meteor.Map.actors.director;
 using Meteor.Map.lua;
+using Meteor.Map.packets.send;
 using Meteor.Map.packets.send.actor;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Meteor.Map.packets.send;
-using Meteor.Map.actors.director;
+using System.Reflection.PortableExecutable;
 
 namespace Meteor.Map.Actors
 {
@@ -538,9 +541,9 @@ namespace Meteor.Map.Actors
                     npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
 
                 npc.LoadEventConditions(actorClass.eventConditions);
-                npc.SetMaxHP(100);
-                npc.SetHP(100);
-                npc.ResetMoveSpeeds();
+                //npc.MaxHP = 100;
+                //npc.HP = 100;
+                //npc.ResetMoveSpeeds();
 
                 AddActorToZone(npc);
 
@@ -548,48 +551,28 @@ namespace Meteor.Map.Actors
             }
         }
 
-        //For handling BattleNpcs
-        public Npc SpawnActor(uint classId, string uniqueId, string displayName, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0)
-        {
-            lock (mActorList)
-            {
-                ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
+        // Unsure what this is used for?
+        //public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, uint regionId, uint layoutId)
+        //{
+        //    lock (mActorList)
+        //    {
+        //        ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
 
-                if (actorClass == null)
-                    return null;
+        //        if (actorClass == null)
+        //            return null;
 
-                Npc npc = new BattleNpc(mActorList.Count + 1, actorClass, uniqueId, displayName, this, x, y, z, rot, state, animId);
+        //        Npc npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, 0, regionId, layoutId);
 
-                npc.LoadEventConditions(actorClass.eventConditions);
-                npc.ResetMoveSpeeds();
+        //        npc.LoadEventConditions(actorClass.eventConditions);
 
-                AddActorToZone(npc);
+        //        AddActorToZone(npc);
 
-                return npc;
-            }
-        }
+        //        return npc;
+        //    }
+        //}
 
-        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, uint regionId, uint layoutId)
-        {
-            lock (mActorList)
-            {
-                ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
-
-                if (actorClass == null)
-                    return null;
-
-                Npc npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, 0, regionId, layoutId);
-
-                npc.LoadEventConditions(actorClass.eventConditions);
-
-                AddActorToZone(npc);
-
-                return npc;
-            }
-        }
-        
         //For handling path companions. 
-        public Npc SpawnActor(uint classId, string uniqueId, string displayName, float x, float y, float z, float rot)
+        public Npc SpawnPathCompanion(uint classId, string uniqueId, float x, float y, float z, float rot, ushort actorState, uint animId, string displayName)
         {
             lock (mActorList)
             {
@@ -598,16 +581,62 @@ namespace Meteor.Map.Actors
                 if (actorClass == null)
                     return null;
 
-                Npc npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot);
+                Npc snpc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, actorState, animId, displayName);
 
-                npc.LoadEventConditions(actorClass.eventConditions);
-                npc.DisplayName = displayName;
+                snpc.LoadEventConditions(actorClass.eventConditions);
+                snpc.DisplayName = displayName;
 
-                AddActorToZone(npc);
+                AddActorToZone(snpc);
 
-                return npc;
+                return snpc;
             }
         }
+
+        // For handling enemies spawned via quest scripting or via command.  
+        public BattleNpc SpawnEnemy(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort actorState = 0, uint animId = 0, string displayName = null)
+        {
+            lock (mActorList)
+            {
+                ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
+
+                if (actorClass == null)
+                    return null;
+
+                BattleNpc enemy;
+                enemy = new BattleNpc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, actorState, animId, displayName);
+
+                enemy.LoadEventConditions(actorClass.eventConditions);
+                enemy.ResetMoveSpeeds();
+                
+                AddActorToZone(enemy);
+
+                return enemy;
+            }
+        }
+
+        //For handling allies spawned via quest scripting
+        public Ally SpawnAlly(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort actorState = 0, uint animId = 0)
+        {
+            lock (mActorList)
+            {
+                ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
+
+                if (actorClass == null)
+                    return null;
+
+                Ally ally;
+                ally = new Ally(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, actorState, animId, null);
+
+                ally.LoadEventConditions(actorClass.eventConditions);
+                ally.ResetMoveSpeeds();
+
+                AddActorToZone(ally);
+
+                return ally;
+            }
+        }
+
+
 
         public BattleNpc GetBattleNpcById(uint id)
         {

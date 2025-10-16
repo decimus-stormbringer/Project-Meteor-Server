@@ -1,34 +1,5 @@
-using Meteor.Common;
 using System;
 using MySql.Data.MySqlClient;
-using Meteor.Map;
-using System.Collections.Generic;
-using MoonSharp.Interpreter;
-using Meteor.Map.DataObjects;
-using Meteor.Map.DataObjects.chara;
-using Meteor.Map.lua;
-using Meteor.Map.packets.WorldPackets.Send.Group;
-using Meteor.Map.utils;
-using Meteor.Map.actors.group;
-using Meteor.Map.actors.chara.player;
-using Meteor.Map.actors.director;
-using Meteor.Map.actors.chara.npc;
-using Meteor.Map.actors.chara.ai;
-using Meteor.Map.actors.chara.ai.controllers;
-using Meteor.Map.actors.chara.ai.utils;
-using Meteor.Map.actors.chara.ai.state;
-using Meteor.Map.actors.chara;
-using Meteor.Map.Actors.QuestNS;
-using Meteor.Map.packets.send;
-using Meteor.Map.packets.send.actor;
-using Meteor.Map.packets.send.events;
-using Meteor.Map.packets.send.actor.inventory;
-using Meteor.Map.packets.send.player;
-using Meteor.Map.packets.send.actor.battle;
-using Meteor.Map.packets.receive.events;
-using static Meteor.Map.LuaUtils;
-using Meteor.Map.packets.send.actor.events;
-using System.Text;
 
 namespace Meteor.Map.Actors
 {

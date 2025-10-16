@@ -80,7 +80,6 @@ namespace Meteor.World.DataObjects
                 clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, 0x5FF80001, textId, displayId, log, LuaUtils.CreateLuaParamList(msgParams)));
         }
 
-
         public bool SetActiveLS(string name)
         {
             if (Database.SetActiveLS(this, name))

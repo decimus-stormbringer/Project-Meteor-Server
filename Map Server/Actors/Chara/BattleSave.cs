@@ -24,8 +24,14 @@ namespace Meteor.Map.Actors.Chara
     class BattleSave
     {
         public float potencial = 6.6f;
+
+        /// Level of each Class/Job of the Character
         public short[] skillLevel = new short[52];
+ 
+        /// Level cap of each Class/Job (generally 50)
         public short[] skillLevelCap = new short[52];
+
+        /// Exp of each Class/Job of the Character
         public int[] skillPoint = new int[52];
 
         public short physicalLevel;

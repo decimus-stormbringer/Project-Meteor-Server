@@ -24,7 +24,6 @@ using System;
 using System.Collections.Generic;
 using Meteor.Common;
 using Meteor.Map.utils;
-
 using Meteor.Map.packets.send.player;
 using Meteor.Map.DataObjects;
 using Meteor.Map.Actors;
@@ -34,8 +33,10 @@ using Meteor.Map.packets.receive.supportdesk;
 using Meteor.Map.actors.chara.npc;
 using Meteor.Map.actors.chara.ai;
 using Meteor.Map.packets.send.actor.battle;
-
 using System.Security.Cryptography;
+using Meteor.Map.Actors.Chara.Player;
+using Meteor.Map.actors.chara;
+
 
 namespace Meteor.Map
 {
@@ -142,6 +143,12 @@ namespace Meteor.Map
                                 LEFT JOIN gamedata_items_weapon           ON gamedata_items.catalogID = gamedata_items_weapon.catalogID
                                 LEFT JOIN gamedata_items_graphics         ON gamedata_items.catalogID = gamedata_items_graphics.catalogID                                
                                 LEFT JOIN gamedata_items_graphics_extra   ON gamedata_items.catalogID = gamedata_items_graphics_extra.catalogID
+                                LEFT JOIN gamedata_items_materia          ON (
+                                                                            gamedata_items.catalogID = gamedata_items_materia.tier1CatalogID OR 
+                                                                            gamedata_items.catalogID = gamedata_items_materia.tier2CatalogID OR 
+                                                                            gamedata_items.catalogID = gamedata_items_materia.tier3CatalogID OR 
+                                                                            gamedata_items.catalogID = gamedata_items_materia.tier4CatalogID
+                                                                          )
                                 ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -155,10 +162,12 @@ namespace Meteor.Map
 
                             if (ItemData.IsWeapon(id))
                                 item = new WeaponItem(reader);
-                            else if (ItemData.IsArmor(id))
-                                item = new ArmorItem(reader);
                             else if (ItemData.IsAccessory(id))
                                 item = new AccessoryItem(reader);
+                            else if (ItemData.IsArmor(id))
+                                item = new ArmorItem(reader);
+                            else if (ItemData.IsEnchantMateria(id))
+                                item = new MateriaItem(reader);
                             else
                                 item = new ItemData(reader);
 
@@ -218,6 +227,194 @@ namespace Meteor.Map
 
                 return gamedataGuildleves;
             }
+        }
+
+        public static Dictionary<uint, GuardianData> GetGuardianGamedata()
+        {
+            var guardians = new Dictionary<uint, GuardianData>();
+
+            var sql = @"
+                SELECT
+                    id,
+                    bonus1Type,
+                    bonus1Value,
+                    bonus2Type,
+                    bonus2Value,
+                    bonus3Type,
+                    bonus3Value,
+                    bonus4Type,
+                    bonus4Value,
+                    bonus5Type,
+                    bonus5Value,
+                    bonus6Type,
+                    bonus6Value
+                FROM gamedata_guardians";
+            MySqlConnection conn = null;
+            try
+            {
+                using (conn = new MySqlConnection(GetConnectionString()))
+                {
+                    conn.Open();
+
+                    using (var cmd = new MySqlCommand(sql, conn))
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var guardianData = new GuardianData(reader);
+                                guardians.Add(guardianData.Id, guardianData);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (MySqlException e)
+            {
+                Program.Log.Error(e, "Error getting guardian game data");
+            }
+            finally
+            {
+                conn?.Dispose();
+            }
+            return guardians;
+        }
+
+        public static Dictionary<uint, TribeData> GetTribeGamedata()
+        {
+            var tribes = new Dictionary<uint, TribeData>();
+
+            var sql = @"
+                SELECT
+                    id,
+                    bonus1Type,
+                    bonus1Value,
+                    bonus2Type,
+                    bonus2Value,
+                    bonus3Type,
+                    bonus3Value,
+                    bonus4Type,
+                    bonus4Value,
+                    bonus5Type,
+                    bonus5Value,
+                    bonus6Type,
+                    bonus6Value
+                FROM gamedata_tribes";
+            MySqlConnection conn = null;
+            try
+            {
+                using (conn = new MySqlConnection(GetConnectionString()))
+                {
+                    conn.Open();
+
+                    using (var cmd = new MySqlCommand(sql, conn))
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var tribeData = new TribeData(reader);
+                                tribes.Add(tribeData.Id, tribeData);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (MySqlException e)
+            {
+                Program.Log.Error(e, "Error getting tribe game data");
+            }
+            finally
+            {
+                conn?.Dispose();
+            }
+            return tribes;
+        }
+
+        public static Dictionary<int, CompatibilityData> GetCompatibilityGamedata()
+        {
+            var compatibilities = new Dictionary<int, CompatibilityData>();
+
+            var sql = @"
+                SELECT
+	                id,
+	                job1,
+                    job2,
+                    job3,
+                    job4,
+                    job5,
+                    job6,
+                    job7,
+                    job8,
+                    job9,
+                    job10,
+                    job11,
+                    job12,
+                    job13,
+                    job14,
+                    job15,
+                    job16,
+                    job17,
+                    job18,
+                    job19,
+                    job20,
+                    job21,
+                    job22,
+                    job23,
+                    job24,
+                    job25,
+                    job26,
+                    job27,
+                    job28,
+                    job29,
+                    job30,
+                    job31,
+                    job32,
+                    job33,
+                    job34,
+                    job35,
+                    job36,
+                    job37,
+                    job38,
+                    job39,
+                    job40,
+                    job41,
+                    job42,
+                    job43,
+                    job44
+                FROM gamedata_compatibility";
+
+            MySqlConnection conn = null;
+
+            try
+            {
+                using (conn = new MySqlConnection(GetConnectionString()))
+                {
+                    conn.Open();
+
+                    using (var cmd = new MySqlCommand(sql, conn))
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var compatibilityData = new CompatibilityData(reader);
+                                compatibilities.Add(compatibilityData.Id, compatibilityData);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (MySqlException e)
+            {
+                Program.Log.Error(e, "Error getting compatibility game data");
+            }
+            finally
+            {
+                conn?.Dispose();
+            }
+
+            return compatibilities;
         }
 
         public static bool GetRecipeGamedata(Dictionary<uint, Recipe> recipeList, Dictionary<string, List<Recipe>> matToRecipe)
@@ -371,7 +568,7 @@ namespace Meteor.Map
             }
         }
 
-        public static void SavePlayerCurrentClass(Player player)
+        public static void SavePlayerHpMpClassLevel(Player player)
         {
             string query;
             MySqlCommand cmd;
@@ -383,14 +580,23 @@ namespace Meteor.Map
                     conn.Open();
 
                     query = @"
-                    UPDATE characters_parametersave SET 
-                    mainSkill = @classId,
-                    mainSkillLevel = @classLevel
-                    WHERE characterId = @charaId
+                        UPDATE characters_parametersave 
+                        SET 
+	                        hp = @hp,
+	                        hpMax = @hpMax,
+	                        mp = @mp,
+	                        mpMax = @mpMax,
+	                        mainSkill = @classId,
+	                        mainSkillLevel = @classLevel
+                        WHERE characterId = @charaId
                     ";
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charaId", player.Id);
+                    cmd.Parameters.AddWithValue("@hp", player.HP);
+                    cmd.Parameters.AddWithValue("@hpMax", player.MaxHP);
+                    cmd.Parameters.AddWithValue("@mp", player.MP);
+                    cmd.Parameters.AddWithValue("@mpMax", player.MaxMP);
                     cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
                     cmd.Parameters.AddWithValue("@classLevel", player.charaWork.parameterSave.state_mainSkillLevel);
 
@@ -779,7 +985,7 @@ namespace Meteor.Map
                     (characterId, completedQuests)
                     VALUES
                     (@charId, @completedQuests)
-                    ON DUPLICATE KEY UPDATE completedQuests = completedQuests
+                    ON DUPLICATE KEY UPDATE completedQuests = @completedQuests
                     ";
 
                     cmd = new MySqlCommand(query, conn);
@@ -1017,10 +1223,10 @@ namespace Meteor.Map
                     {
                         if (reader.Read())
                         {
-                            player.charaWork.parameterSave.hp[0] = reader.GetInt16(0);
-                            player.charaWork.parameterSave.hpMax[0] = reader.GetInt16(1);
-                            player.charaWork.parameterSave.mp = reader.GetInt16(2);
-                            player.charaWork.parameterSave.mpMax = reader.GetInt16(3);
+                            player.MaxHP = reader.GetInt16(1);
+                            player.HP = reader.GetInt16(0);
+                            player.MaxMP = reader.GetInt16(3);
+                            player.MP = reader.GetInt16(2);
 
                             player.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte(4);
                             player.charaWork.parameterSave.state_mainSkillLevel = player.charaWork.battleSave.skillLevel[reader.GetByte(4) - 1];
@@ -1325,6 +1531,42 @@ namespace Meteor.Map
                             player.playerWork.npcLinkshellChatExtra[npcLSId] = reader.GetBoolean(2);
                         }
                     }
+                    
+                    //Get player attribute point allotment
+                    query = @"
+                        SELECT
+                            characterId,
+                            classId,
+                            strength,
+                            vitality,
+                            dexterity,
+                            intelligence,
+                            mind,
+                            piety
+                        FROM characters_customattributes
+                        WHERE characterId = @characterId AND classId = @classId";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@characterId", player.Id);
+                    cmd.Parameters.AddWithValue("@classId", player.GetClass());
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var attributePointAllotment = new PlayerAttributePointAllotment(player.GetLevel(), player.Id, player.GetClass())
+                            {
+                                Strength = reader.GetInt32("strength"),
+                                Vitality = reader.GetInt32("vitality"),
+                                Dexterity = reader.GetInt32("dexterity"),
+                                Intelligence = reader.GetInt32("intelligence"),
+                                Mind = reader.GetInt32("mind"),
+                                Piety = reader.GetInt32("piety")
+                            };
+                            player.SetAttributePointAllotment(attributePointAllotment);
+                        }
+                    }
+
+
 
                     //Load Path Companion
                     query = @"
@@ -1467,7 +1709,7 @@ namespace Meteor.Map
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@characterId", player.Id);
-                    cmd.Parameters.AddWithValue("@classId", (equipSlot == Player.SLOT_UNDERSHIRT || equipSlot == Player.SLOT_UNDERGARMENT) ? 0 : player.charaWork.parameterSave.state_mainSkill[0]);
+                    cmd.Parameters.AddWithValue("@classId", (equipSlot == (ushort)EquipmentSlot.UNDERSHIRT || equipSlot == (ushort)EquipmentSlot.UNDERGARMENT) ? 0 : player.charaWork.parameterSave.state_mainSkill[0]);
                     cmd.Parameters.AddWithValue("@equipSlot", equipSlot);
                     cmd.Parameters.AddWithValue("@uniqueItemId", uniqueItemId);
 
@@ -1624,7 +1866,7 @@ namespace Meteor.Map
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.Id);
-                    cmd.Parameters.AddWithValue("@classId", player.GetCurrentClassOrJob());
+                    cmd.Parameters.AddWithValue("@classId", player.GetCurrentClassOrJobId());
 
                     player.charaWork.commandBorder = 32;
 
@@ -2202,12 +2444,51 @@ namespace Meteor.Map
         }
 
 
-        public static void SaveNpcLS(Player player, uint npcLSId, bool isCalling, bool isExtra)
+        //public static void SaveNpcLS(Player player, uint npcLSId, bool isCalling, bool isExtra)
+        //{
+        //    string query;
+        //    MySqlCommand cmd;
+
+        //    using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+        //    {
+        //        try
+        //        {
+        //            conn.Open();
+
+        //            query = @"
+        //            INSERT INTO characters_npclinkshell 
+        //            (characterId, npcLinkshellId, isCalling, isExtra)
+        //            VALUES
+        //            (@charaId, @lsId, @calling, @extra)
+        //            ON DUPLICATE KEY UPDATE
+        //            characterId = @charaId, npcLinkshellId = @lsId, isCalling = @calling, isExtra = @extra
+        //            ";
+
+        //            cmd = new MySqlCommand(query, conn);
+        //            cmd.Parameters.AddWithValue("@charaId", player.Id);
+        //            cmd.Parameters.AddWithValue("@lsId", npcLSId);
+        //            cmd.Parameters.AddWithValue("@calling", isCalling ? 1 : 0);
+        //            cmd.Parameters.AddWithValue("@extra", isExtra ? 1 : 0);
+
+        //            cmd.ExecuteNonQuery();
+        //        }
+        //        catch (MySqlException e)
+        //        {
+        //            Program.Log.Error(e.ToString());
+        //        }
+        //        finally
+        //        {
+        //            conn.Dispose();
+        //        }
+        //    }
+        //}
+
+        public static void SaveNpcLS(Player player)
         {
             string query;
             MySqlCommand cmd;
 
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}",ConfigConstants.DATABASE_HOST,ConfigConstants.DATABASE_PORT,ConfigConstants.DATABASE_NAME,ConfigConstants.DATABASE_USERNAME,ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
                 {
@@ -2219,20 +2500,46 @@ namespace Meteor.Map
                     VALUES
                     (@charaId, @lsId, @calling, @extra)
                     ON DUPLICATE KEY UPDATE
-                    characterId = @charaId, npcLinkshellId = @lsId, isCalling = @calling, isExtra = @extra
+                    characterId = @charaId,
+                    npcLinkshellId = @lsId,
+                    isCalling = @calling,
+                    isExtra = @extra
                     ";
 
                     cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@charaId", player.Id);
-                    cmd.Parameters.AddWithValue("@lsId", npcLSId);
-                    cmd.Parameters.AddWithValue("@calling", isCalling ? 1 : 0);
-                    cmd.Parameters.AddWithValue("@extra", isExtra ? 1 : 0);
+                    cmd.Parameters.Add("@charaId", MySqlDbType.UInt32);
+                    cmd.Parameters.Add("@lsId", MySqlDbType.UInt32);
+                    cmd.Parameters.Add("@calling", MySqlDbType.Byte);
+                    cmd.Parameters.Add("@extra", MySqlDbType.Byte);
 
-                    cmd.ExecuteNonQuery();
+                    cmd.Parameters["@charaId"].Value = player.Id;
+
+                    // Loop over all possible NPC Linkshell slots
+                    for (uint i = 0; i < player.playerWork.npcLinkshellChatCalling.Length; i++)
+                    {
+                        bool isCalling = player.playerWork.npcLinkshellChatCalling[i];
+                        bool isExtra = player.playerWork.npcLinkshellChatExtra[i];
+
+                        // Only save active entries
+                        if (!isCalling && !isExtra)
+                            continue;
+
+                        cmd.Parameters["@lsId"].Value = i;
+                        cmd.Parameters["@calling"].Value = isCalling ? 1 : 0;
+                        cmd.Parameters["@extra"].Value = isExtra ? 1 : 0;
+
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    Program.Log.Info($"[SaveNpcLS] Saved active NPC Linkshells for player {player.Name} ({player.Id})");
                 }
                 catch (MySqlException e)
                 {
-                    Program.Log.Error(e.ToString());
+                    Program.Log.Error($"[SaveNpcLS] MySQL Error saving NPC Linkshells for player {player.Name} ({player.Id}): {e}");
+                }
+                catch (Exception ex)
+                {
+                    Program.Log.Error($"[SaveNpcLS] General Error for player {player.Name} ({player.Id}): {ex}");
                 }
                 finally
                 {
@@ -2716,8 +3023,8 @@ namespace Meteor.Map
                             battleCommand.procRequirement = (BattleCommandProcRequirement)reader.GetByte("procRequirement");
                             battleCommand.range = reader.GetFloat("range");
                             battleCommand.minRange = reader.GetFloat("minRange");
-                            battleCommand.rangeHeight = reader.GetInt32("rangeHeight");
-                            battleCommand.rangeWidth = reader.GetInt32("rangeWidth");
+                            battleCommand.rangeHeight = reader.GetUInt32("rangeHeight");
+                            battleCommand.rangeWidth = reader.GetUInt32("rangeWidth");
                             battleCommand.statusId = reader.GetUInt32("statusId");
                             battleCommand.statusDuration = reader.GetUInt32("statusDuration");
                             battleCommand.statusChance = reader.GetFloat("statusChance");
@@ -2848,6 +3155,102 @@ namespace Meteor.Map
                 {
                     conn.Dispose();
                 }
+            }
+        }
+
+        public static PlayerAttributePointAllotment GetPlayerAttributePointAllotment(Player player)
+        {
+                        var attributePointAllotment = new PlayerAttributePointAllotment(player.GetLevel(), player.Id, player.GetClass());
+
+            var sql = @"
+                SELECT
+                    characterId,
+                    classId,
+                    strength,
+                    vitality,
+                    dexterity,
+                    intelligence,
+                    mind,
+                    piety
+                FROM characters_customattributes
+                WHERE characterId = @characterId AND classId = @classId";
+            MySqlConnection conn = null;
+            try
+            {
+                using (conn = new MySqlConnection(GetConnectionString()))
+                {
+                    conn.Open();
+                    using (var cmd = new MySqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@characterId", player.Id);
+                        cmd.Parameters.AddWithValue("@classId", player.GetClass());
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                attributePointAllotment.Strength = reader.GetInt32("strength");
+                                attributePointAllotment.Vitality = reader.GetInt32("vitality");
+                                attributePointAllotment.Dexterity = reader.GetInt32("dexterity");
+                                attributePointAllotment.Intelligence = reader.GetInt32("intelligence");
+                                attributePointAllotment.Mind = reader.GetInt32("mind");
+                                attributePointAllotment.Piety = reader.GetInt32("piety");
+                                return attributePointAllotment;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (MySqlException e)
+            {
+                Program.Log.Error(e, "Error getting player attribute point allotment");
+            }
+            finally
+            {
+                conn?.Dispose();
+            }
+            return attributePointAllotment;
+        }
+        public static void SetPlayerAttributePointAllotment(PlayerAttributePointAllotment attributePointAllotment)
+        {
+            var sql = @"
+                INSERT INTO characters_customattributes
+                (characterId, classId, strength, vitality, dexterity, intelligence, mind, piety)
+                VALUES
+                (@characterId, @classId, @strength, @vitality, @dexterity, @intelligence, @mind, @piety)
+                ON DUPLICATE KEY UPDATE
+                    strength = @strength,
+                    vitality = @vitality,
+                    dexterity = @dexterity,
+                    intelligence = @intelligence,
+                    mind = @mind,
+                    piety = @piety";
+            MySqlConnection conn = null;
+            try
+            {
+                using (conn = new MySqlConnection(GetConnectionString()))
+                {
+                    conn.Open();
+                    using (var cmd = new MySqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@characterId", attributePointAllotment.CharacterId);
+                        cmd.Parameters.AddWithValue("@classId", attributePointAllotment.ClassId);
+                        cmd.Parameters.AddWithValue("@strength", attributePointAllotment.Strength);
+                        cmd.Parameters.AddWithValue("@vitality", attributePointAllotment.Vitality);
+                        cmd.Parameters.AddWithValue("@dexterity", attributePointAllotment.Dexterity);
+                        cmd.Parameters.AddWithValue("@intelligence", attributePointAllotment.Intelligence);
+                        cmd.Parameters.AddWithValue("@mind", attributePointAllotment.Mind);
+                        cmd.Parameters.AddWithValue("@piety", attributePointAllotment.Piety);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (MySqlException e)
+            {
+                Program.Log.Error(e, "Error setting player attribute point allotment");
+            }
+            finally
+            {
+                conn?.Dispose();
             }
         }
 
@@ -3051,5 +3454,9 @@ namespace Meteor.Map
             }
         }
 
+        private static string GetConnectionString()
+        {
+            return $"Server={ConfigConstants.DATABASE_HOST}; Port={ConfigConstants.DATABASE_PORT}; Database={ConfigConstants.DATABASE_NAME}; UID={ConfigConstants.DATABASE_USERNAME}; Password={ConfigConstants.DATABASE_PASSWORD}";
+        }
     }
 }

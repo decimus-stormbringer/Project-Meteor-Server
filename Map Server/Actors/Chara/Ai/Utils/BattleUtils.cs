@@ -166,7 +166,7 @@ namespace Meteor.Map.actors.chara.ai.utils
             //player attacks cannot do more than 9999 damage.
             //VIT is turned into Defense at a 3:2 ratio in calculatestats, so don't need to do that here
             double damageTakenPercent = 1 - (defender.GetMod(Modifier.DamageTakenDown) / 100.0);
-            action.amount = (ushort)(action.amount - CalculateDlvlModifier(dlvl) * (defender.GetMod((uint)Modifier.Defense))).Clamp(0, 9999);
+            action.amount = (ushort)(action.amount - CalculateDlvlModifier(dlvl) * (defender.GetMod(Modifier.Defense))).Clamp(0, 9999);
             action.amount = (ushort)(action.amount * damageTakenPercent).Clamp(0, 9999);
         }
 
@@ -187,7 +187,7 @@ namespace Meteor.Map.actors.chara.ai.utils
             //dlvl, Defense, and Vitality all effect how much damage is taken after hittype takes effect
             //player attacks cannot do more than 9999 damage.
             double damageTakenPercent = 1 - (defender.GetMod(Modifier.DamageTakenDown) / 100.0);
-            action.amount = (ushort)(action.amount - CalculateDlvlModifier(dlvl) * (defender.GetMod((uint)Modifier.Defense) + 0.67 * defender.GetMod((uint)Modifier.Vitality))).Clamp(0, 9999);
+            action.amount = (ushort)(action.amount - CalculateDlvlModifier(dlvl) * (defender.GetMod(Modifier.Defense) + 0.67 * defender.GetMod(Modifier.Vitality))).Clamp(0, 9999);
             action.amount = (ushort)(action.amount * damageTakenPercent).Clamp(0, 9999);
         }
 
@@ -202,8 +202,8 @@ namespace Meteor.Map.actors.chara.ai.utils
             else
             {
                 //Is this a case where VIT gives Block?
-                percentBlocked = defender.GetMod((uint)Modifier.Block) * 0.002;//Every point of Block adds .2% to how much is blocked
-                percentBlocked += defender.GetMod((uint)Modifier.Vitality) * 0.001;//Every point of vitality adds .1% to how much is blocked
+                percentBlocked = defender.GetMod(Modifier.Block) * 0.002;//Every point of Block adds .2% to how much is blocked
+                percentBlocked += defender.GetMod(Modifier.Vitality) * 0.001;//Every point of vitality adds .1% to how much is blocked
             }
 
             action.amountMitigated = (ushort)(action.amount * percentBlocked);
@@ -254,7 +254,7 @@ namespace Meteor.Map.actors.chara.ai.utils
             var mitigation = Math.Min(action.amount, defender.GetMod(Modifier.Stoneskin));
 
             action.amount = (ushort) (action.amount - mitigation).Clamp(0, 9999);
-            defender.SubtractMod((uint)Modifier.Stoneskin, mitigation);
+            defender.SubtractMod(Modifier.Stoneskin, mitigation, ModifierOrigin.StatusEffect);
         }
 
         public static void DamageTarget(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer= null)
@@ -319,7 +319,7 @@ namespace Meteor.Map.actors.chara.ai.utils
         public static double GetParryRate(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             //Can't parry with shield, can't parry rear attacks
-            if (defender.GetMod((uint)Modifier.CanBlock) != 0 || action.param == (byte) HitDirection.Rear)
+            if (defender.GetMod(Modifier.CanBlock) != 0 || action.param == (byte)HitDirection.Rear)
                 return 0;
 
             double parryRate = 10.0;
@@ -364,17 +364,17 @@ namespace Meteor.Map.actors.chara.ai.utils
         public static double GetBlockRate(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             //Shields are required to block and can't block from rear.
-            if (defender.GetMod((uint)Modifier.CanBlock) == 0 || action.param == (byte)HitDirection.Rear)
+            if (defender.GetMod(Modifier.CanBlock) == 0 || action.param == (byte)HitDirection.Rear)
                 return 0;
 
             short dlvl = (short)(defender.GetLevel() - attacker.GetLevel());
             double blockRate = (2.5 * dlvl) + 5; // Base block rate
 
             //Is this one of those thing where DEX gives block rate and this would be taking DEX into account twice?
-            blockRate += defender.GetMod((uint)Modifier.Dexterity) * 0.1;// .1% for every dex
-            blockRate += defender.GetMod((uint)Modifier.BlockRate) * 0.2;// .2% for every block rate
+            blockRate += defender.GetMod(Modifier.Dexterity) * 0.1;// .1% for every dex
+            blockRate += defender.GetMod(Modifier.BlockRate) * 0.2;// .2% for every block rate
 
-            return Math.Min(blockRate, 25.0) + defender.GetMod((uint)Modifier.RawBlockRate);
+            return Math.Min(blockRate, 25.0) + defender.GetMod(Modifier.RawBlockRate);
         }
 
         #endregion
@@ -595,7 +595,7 @@ namespace Meteor.Map.actors.chara.ai.utils
             else
             {
                 //It's not clear what recoil level is based on for physical attacks
-                double percentDealt = (100.0 * (action.amount / defender.GetMaxHP()));
+                double percentDealt = (100.0 * (action.amount / defender.MaxHP));
                 if (percentDealt > 5.0)
                     hitEffect |= HitEffect.RecoilLv2;
                 else if (percentDealt > 10)

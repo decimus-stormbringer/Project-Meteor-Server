@@ -23,8 +23,8 @@ end
 --Heals for 50% of damage dealt on crits with a maximum of 20% of max hp
 --Also only heals for as much hp as you're missing at most
 function onCrit(effect, attacker, defender, skill, action, actionContainer)
-    local healAmount = math.Clamp(action.amount * 0.50, 0, attacker.GetMaxHP() * 0.20);
-    healAmount = math.Clamp(healAmount, 0, attacker.GetMaxHP() - attacker.GetHP());
+    local healAmount = math.Clamp(action.amount * 0.50, 0, attacker.MaxHP * 0.20);
+    healAmount = math.Clamp(healAmount, 0, attacker.MaxHP - attacker.HP);
     attacker.AddHP(healAmount);
     --33012: You recover [healAmount] HP.
     actionContainer.AddHPAbsorbAction(defender.Id, 33008, healAmount);

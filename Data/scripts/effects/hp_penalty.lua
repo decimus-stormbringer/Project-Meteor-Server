@@ -1,11 +1,9 @@
 require("modifiers")
 
 function onGain(owner, effect, actionContainer)
-    local newMaxHP = owner.GetMaxHP() * 0.75;
-
-    owner.SetMaxHP(newMaxHP);
+    owner.MultiplyMod(modifiersGlobal.Hp, 0.75);
 end;
 
 function onLose(owner, effect, actionContainer)
-    owner.SetMaxHP(owner.GetMaxHP() / 0.75);
+    owner.DivideMod(modifiersGlobal.Hp, 0.75);
 end;

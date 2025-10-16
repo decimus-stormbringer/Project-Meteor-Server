@@ -226,9 +226,10 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(SINETTE);
 		quest:SetENpc(AILING_ROEGADYN);
 	elseif (sequence == SEQ_070) then
+		quest:SetENpc(MOMODI, QFLAG_REWARD);
 		quest:SetENpc(GOGOFU);
 		quest:SetENpc(YAYAKE);
-		quest:SetENpc(MOMODI, QFLAG_REWARD);
+
     end	
 end
 
@@ -409,7 +410,7 @@ function onTalk(player, quest, npc)
 			player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 15000);
 			currency = 1000001;
 			location = INVENTORY_CURRENCY;
-			player:AddExp(30000, player.GetCurrentClassOrJob(), 0);
+			player:AddExp(30000, player:GetCurrentClassOrJobId(), 0);
 			return;	
 		end
 	end

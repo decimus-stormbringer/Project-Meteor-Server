@@ -87,7 +87,9 @@ function onLogin(player)
 		
 		initClassItems(player);
 		initRaceItems(player);	
-
+		--player:GetItemPackage(0):AddItems({4040001, 8011001, 8050621, 8070346, 8090307});
+		--player:GetEquipment():Set({0, 8, 12, 13, 15},{0, 1, 2, 3, 4},0);
+		player.RecalculateStats();
 		player:SavePlayTime();		
 	end	
 	
@@ -99,43 +101,43 @@ function initClassItems(player)
 	local invSlotTable;
 
 	--DoW	
-	if (player.charaWork.parameterSave.state_mainSkill[0] == 2) then 		--PUG
+	if (player.GetClass() == CLASSID_PUG) then 		--PUG
 		player:GetItemPackage(0):AddItems({4020001, 8030701, 8050728, 8080601, 8090307});
 		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 3) then	--GLA
+	elseif (player.GetClass() == CLASSID_GLA) then	--GLA
 		player:GetItemPackage(0):AddItems({4030010, 8031120, 8050245, 8080601, 8090307});
 		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 4) then	--MRD
+	elseif (player.GetClass() == CLASSID_MRD) then	--MRD
 		player:GetItemPackage(0):AddItems({4040001, 8011001, 8050621, 8070346, 8090307});
 		player:GetEquipment():Set({0, 8, 12, 13, 15},{0, 1, 2, 3, 4},0);
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 7) then	--ARC
+	elseif (player.GetClass() == CLASSID_ARC) then	--ARC
 		player:GetItemPackage(0):AddItems({4070001, 8030601, 8050622, 8080601, 8090307});
 		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 8) then	--LNC
+	elseif (player.GetClass() == CLASSID_LNC) then	--LNC
 		player:GetItemPackage(0):AddItems({4080201, 8030801, 8051015, 8080501, 8090307});
 		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 	4},0);
 	--DoM	
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 22) then	--THM
+	elseif (player.GetClass() == CLASSID_THM) then	--THM
 		player:GetItemPackage(0):AddItems({5020001, 8030245, 8050346, 8080346, 8090208});
 		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 23) then	--CNJ
+	elseif (player.GetClass() == CLASSID_CNJ) then	--CNJ
 		player:GetItemPackage(0):AddItems({5030101, 8030445, 8050031, 8080246, 8090208});
 		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
 		
 	--DoH
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 29) then	--
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 30) then	--
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 31) then	--
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 32) then	--
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 33) then	--
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 34) then	--
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 35) then	--
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 36) then	--
+	elseif (player.GetClass() == CLASSID_CRP) then	-- CRP
+	elseif (player.GetClass() == CLASSID_BSM) then	-- BSM
+	elseif (player.GetClass() == CLASSID_ARM) then	-- ARM
+	elseif (player.GetClass() == CLASSID_GSM) then	-- GSM
+	elseif (player.GetClass() == CLASSID_LTW) then	-- LTW
+	elseif (player.GetClass() == CLASSID_WVR) then	-- WVR
+	elseif (player.GetClass() == CLASSID_ALC) then	-- ALC
+	elseif (player.GetClass() == CLASSID_CUL) then	-- CUL
 	
 	--DoL
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 39) then	--MIN
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 40) then	--BTN	
-	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 41) then	--FSH
+	elseif (player.GetClass() == CLASSID_MIN) then	--MIN
+	elseif (player.GetClass() == CLASSID_BTN) then	--BTN	
+	elseif (player.GetClass() == CLASSID_FSH) then	--FSH
 	end
 	
 end

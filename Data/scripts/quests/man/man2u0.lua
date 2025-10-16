@@ -172,7 +172,6 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(ARRZANETH_TRIGGER, QFLAG_PUSH, false, true);
 		quest:SetENpc(ROROJARU);
 	elseif (sequence == SEQ_055) then
-		player:SendMessage(0x1D,"",">Talk to Momodi to complete Calamity Cometh");
 		quest:SetENpc(MOMODI, QFLAG_REWARD);
 		quest:SetENpc(ROROJARU);
     end
@@ -231,12 +230,12 @@ function onTalk(player, quest, npc)
 --			local hasIssuance = player:GetItemPackage(INVENTORY_KEYITEMS):HasItem(gcIssuances[classId]);
 			callClientFunction(player, "delegateEvent", player, quest, "processEventSystemMessage", 1);
 			callClientFunction(player, "delegateEvent", player, quest, "sqrwa", 300, 1, 1, 2);
-			player:CompleteQuest(quest);	
+			player:CompleteQuest(quest);
 			player:AddItem(1000001, 30000);
 --			player:AddItem(2001006, 1);
 --			player:SendGameMessage(GetWorldMaster(), 25117, 0x20, 2001006);
 			player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 30000);
-			player:AddExp(50000, player.GetCurrentClassOrJob(), 0);	
+			player:AddExp(50000, player:GetCurrentClassOrJobId(), 0);	
 		end
 	end
 	player:EndEvent();
