@@ -66,8 +66,8 @@ CREATE TABLE IF NOT EXISTS `server_battlenpc_mob_types` (
 -- Dumping data for table `server_battlenpc_mob_types`
 /*!40000 ALTER TABLE `server_battlenpc_mob_types` DISABLE KEYS */;
 REPLACE INTO `server_battlenpc_mob_types` (`bnpcId`, `actorId`, `displayName`, `speed`, `isHostile`, `detectionType`, `detectionRange`, `respawnTime`, `combatDelay`, `allegiance`, `currentjob`, `level`, `str`, `vit`, `dex`, `int`, `mnd`, `pie`, `att`, `acc`, `def`, `eva`, `slash`, `pierce`, `h2h`, `blunt`, `fire`, `ice`, `wind`, `lightning`, `earth`, `water`, `element`) VALUES
-(1,2104001,'Rat Test',8,1,0,5,60,4200,0,0,1,		1,1,1,1,1,1,40,1,1,1,		1,1,1,1,1,1,1,1,1,1,0),
-(2,2106018,'Sheep Test',8,1,0,5,30,4200,0,0,1,   	1,1,1,1,1,1,40,1,1,1,        1,1,1,1,1,1,1,1,1,1,0);
+(1,2104001,'Rat Test',8,1,0,5,60,4200,0,0,1,		1,1,1,1,1,1,15,1,1,1,		1,1,1,1,1,1,1,1,1,1,0),
+(2,2106018,'Sheep Test',8,1,0,5,30,4200,0,0,1,   	1,1,1,1,1,1,15,1,1,1,        1,1,1,1,1,1,1,1,1,1,0);
 /*!40000 ALTER TABLE `server_battlenpc_mob_types` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;

@@ -430,8 +430,8 @@ namespace Meteor.Map
                                 reader.GetFloat("rot"), reader.GetUInt16("actorState"), reader.GetUInt32("animId"), reader.GetString("displayName"));
 
                                 battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
-                                battleNpc.isHostile = reader.GetBoolean("isHostile");
-                                battleNpc.SetDetectionType(reader.GetUInt32("detectionType"));
+                                //battleNpc.isHostile = reader.GetBoolean("isHostile");
+                                //battleNpc.SetDetectionType(reader.GetUInt32("detectionType"));
                                 
 
                                 battleNpc.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte("currentJob");
@@ -551,8 +551,8 @@ namespace Meteor.Map
                                 reader.GetFloat("rot"), reader.GetUInt16("actorState"), reader.GetUInt32("animId"), reader.GetString("displayName"));
 
                             battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
-                            battleNpc.isHostile = reader.GetBoolean("isHostile");
-                            battleNpc.SetDetectionType(reader.GetUInt32("detectionType"));
+                            //battleNpc.isHostile = reader.GetBoolean("isHostile");
+                            //battleNpc.SetDetectionType(reader.GetUInt32("detectionType"));
 
                             battleNpc.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte("currentJob");
                             battleNpc.charaWork.parameterSave.state_mainSkillLevel = reader.GetByte("level");
