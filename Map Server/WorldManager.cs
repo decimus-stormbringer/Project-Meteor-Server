@@ -690,8 +690,6 @@ namespace Meteor.Map
             }
         }
 
-
-
         //Checks all seamless bounding boxes in region to see if player needs to merge or zonechange
         public void SeamlessCheck(Player player)
         {
@@ -951,6 +949,8 @@ namespace Meteor.Map
             player.playerSession.LockUpdates(false);
         
             LuaEngine.GetInstance().CallLuaFunction(player, contentArea, "onZoneIn", true);
+
+
         }
 
         //Session started, zone into world

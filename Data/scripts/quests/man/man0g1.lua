@@ -30,13 +30,13 @@ processEvent100_8	Whispily-Whiskered Adventurer: "In Gridania, there live a chos
 processEvent100_9	 ???: "The Twelveswood is a sacred place, and runs thicker and deeper than you can imagine."
 processEvent110	Cutscene exiting echo and Miounne telling you to go to Camp Bentbranch.
 processEvent110_2	Miounne reminder message to go to Bentbranch.
-processEvent013	Linkshell chat message from Miounne when you touch the Aetheryte. Gives tutorial leve.
+processEvent013		Linkshell chat message from Miounne when you touch the Aetheryte. Gives tutorial leve.
 processEvent013_2	Linkshell chat message from Miounne when you touch the Aetheryte. Sans tutorial leve.
-processEvent114	Miounne speech when you return.
-processEvent115	Miounne speech when you talk again. Tells you to go to the CNJ and LTW guilds.
+processEvent114		Miounne speech when you return.
+processEvent115		Miounne speech when you talk again. Tells you to go to the CNJ and LTW guilds.
 processEvent115_2	Reminder message to go to the CNJ and LTW guilds.
-processEvent120	Cutscene at the LTW guild.
-processEvent123	Worldmaster Message teaching you about npc linkshells.
+processEvent120		Cutscene at the LTW guild.
+processEvent123		Worldmaster Message teaching you about npc linkshells.
 processEvent120_2	Reminder message after talking to the LTW guild.
 processEvent125	Soileine Telling you to enter the chamber in the CNJ guild.
 processEvent125_2	Soileine Reminder message to enter the chamber.
@@ -50,11 +50,11 @@ processEvent130_7	Ingram: "Brother O-App is a Padjal, of course."
 processEvent130_8	Challinie: "We conjurers hear the whispers of the elementals, and see to it that their will is made known to all Gridanians."
 processEvent130_9	 ???: "Where are those two outsiders from? We've had dealings with those from beyond the wood before, but never have I witnessed such insolence."
 processEvent130_10	 ???: "If Swethyna is involved, it must be a matter of some import. The leader of the Wood Wailers wouldn't waste time dabbling in aught else."
-processEvent135	Exiting the echo and more elemental explanation.
-processEvent136	Same as above, but adds a worldmaster message about linkshells.
+processEvent135		Exiting the echo and more elemental explanation.
+processEvent136		Same as above, but adds a worldmaster message about linkshells.
 processEvent135_2	Miounne recap message to go to the LTW guild if you already went to the CNJ guild.
 processEvent137_2	Miounne recap message to go to the BTN guild.
-processEvent140	Cutscene entering the BTN guild into the emote test instance.
+processEvent140		Cutscene entering the BTN guild into the emote test instance.
 processEvent140_10	Fufucha Reminder message: "Let the younglings teach you the dance."
 processEvent140_1	Aunillie: "Watch how I do it. You have to beckon the elementals near. Like this."
 processEvent141_1	Aunillie "I wonder if the elementals dance as we do..."
@@ -714,7 +714,6 @@ function seq015_onTalk(player, quest, npc, classId)
 		if (subseqLTW == 0) then			
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent135"); -- if you haven't gone to LTW yet
 			data:IncCounter(CNTR_SEQ15_CNJ); --CNJ to 2
-			--adding v
 			player:EndEvent();
 			quest:UpdateENPCs();
 			GetWorldManager():WarpToPublicArea(player);
@@ -726,7 +725,6 @@ function seq015_onTalk(player, quest, npc, classId)
 			player:EndEvent();
 			GetWorldManager():WarpToPublicArea(player);
 			return;
-			--return true; --not in man0l1?
 		end
 	end
 end

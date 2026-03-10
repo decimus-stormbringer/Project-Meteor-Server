@@ -109,7 +109,10 @@ REPLACE INTO `server_eventnpc_mapobj` (`id`, `layoutId`, `instanceId`) VALUES
 	(1126, 321, 2942),
 	(1152, 331, 5290),
 	(1167, 331, 5290),
-	(2722, 421, 2825);
+	(2722, 421, 2825),
+	(2893, 421, 2825),
+	(2894, 421, 2829);
+
 /*!40000 ALTER TABLE `server_eventnpc_mapobj` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

@@ -536,9 +536,9 @@ function onPush(player, quest, npc)
 		end
 	elseif (sequence == SEQ_045) then
 		if (classId == PSHSEQ045) then
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent080");
-			quest:StartSequence(SEQ_060);			
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent080");		
 			GetWorldManager():DoZoneChange(player, 155, "", 0, 15, 59.413, 4, -1219.275, 0.880);
+			quest:StartSequence(SEQ_060);	
 			player:EndEvent();
 		elseif (classId == PSHAMPHITHEATRE) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent060");

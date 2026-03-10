@@ -364,27 +364,128 @@ namespace Meteor.Lobby
             }
         }
 
+        //public static void DeleteCharacter(uint characterId, String name)
+        //{
+        //    using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+        //    {
+        //        try
+        //        {
+        //            conn.Open();
+        //            MySqlCommand cmd = new MySqlCommand();
+        //            cmd.Connection = conn;
+        //            cmd.CommandText = "UPDATE characters SET state=1 WHERE id=@cid AND name=@name";
+        //            //cmd.Prepare();
+        //            cmd.Parameters.AddWithValue("@cid", characterId);
+        //            cmd.Parameters.AddWithValue("@name", name);
+        //            cmd.ExecuteNonQuery();                    
+
+        //        }
+        //        catch (MySqlException e)
+        //        {
+        //            Program.Log.Error(e.ToString());
+
+
+        //        }
+        //        finally
+        //        {
+        //            conn.Dispose();
+        //        }
+        //    }
+
+        //    Program.Log.Debug("[SQL] CID={0} deleted.", characterId);
+        //}
+
         public static void DeleteCharacter(uint characterId, String name)
         {
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            using (MySqlConnection conn = new MySqlConnection(String.Format(
+                "Server={0}; Port={1}; Database={2}; UID={3}; Password={4}",
+                ConfigConstants.DATABASE_HOST,
+                ConfigConstants.DATABASE_PORT,
+                ConfigConstants.DATABASE_NAME,
+                ConfigConstants.DATABASE_USERNAME,
+                ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand();
-                    cmd.Connection = conn;
-                    cmd.CommandText = "UPDATE characters SET state=1 WHERE id=@cid AND name=@name";
-                    //cmd.Prepare();
-                    cmd.Parameters.AddWithValue("@cid", characterId);
-                    cmd.Parameters.AddWithValue("@name", name);
-                    cmd.ExecuteNonQuery();                    
 
+                    using (MySqlTransaction tx = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            // Verify the character exists (and matches the provided name) before deleting.
+                            MySqlCommand existsCmd = new MySqlCommand(
+                                "SELECT id FROM characters WHERE id=@cid AND name=@name", conn);
+                            existsCmd.Transaction = tx;
+                            existsCmd.Parameters.AddWithValue("@cid", characterId);
+                            existsCmd.Parameters.AddWithValue("@name", name);
+
+                            object exists = existsCmd.ExecuteScalar();
+                            if (exists == null)
+                            {
+                                tx.Rollback();
+                                Program.Log.Debug("[SQL] CID={0} not found (or name mismatch). No delete performed.", characterId);
+                                return;
+                            }
+
+                            // Delete character-related data first, then delete the character row.
+                            // NOTE: These tables are expected to use column name `characterId`.
+                            string[] characterTables = new string[]
+                            {
+                        "characters_achievements",
+                        "characters_appearance",
+                        "characters_blacklist",
+                        "characters_chocobo",
+                        "characters_class_exp",
+                        "characters_class_levels",
+                        "characters_customattributes",
+                        "characters_friendlist",
+                        "characters_hotbar",
+                        "characters_inventory",
+                        "characters_inventory_equipment",
+                        "characters_linkshells",
+                        "characters_npclinkshell",
+                        "characters_parametersave",
+                        "characters_quest_completed",
+                        "characters_quest_guildlevehistory",
+                        "characters_quest_guildleve_local",
+                        "characters_quest_guildleve_regional",
+                        "characters_quest_scenario",
+                        "characters_retainers",
+                        "characters_snpc",
+                        "characters_statuseffect",
+                        "characters_timers"
+                            };
+
+                            foreach (string table in characterTables)
+                            {
+                                MySqlCommand delCmd = new MySqlCommand(
+                                    $"DELETE FROM {table} WHERE characterId=@cid", conn);
+                                delCmd.Transaction = tx;
+                                delCmd.Parameters.AddWithValue("@cid", characterId);
+                                delCmd.ExecuteNonQuery();
+                            }
+
+                            // Finally delete the character entry.
+                            MySqlCommand deleteCharacterCmd = new MySqlCommand(
+                                "DELETE FROM characters WHERE id=@cid AND name=@name", conn);
+                            deleteCharacterCmd.Transaction = tx;
+                            deleteCharacterCmd.Parameters.AddWithValue("@cid", characterId);
+                            deleteCharacterCmd.Parameters.AddWithValue("@name", name);
+                            deleteCharacterCmd.ExecuteNonQuery();
+
+                            tx.Commit();
+                        }
+                        catch
+                        {
+                            try { tx.Rollback(); } catch { }
+                            throw;
+                        }
+                    }
                 }
                 catch (MySqlException e)
                 {
                     Program.Log.Error(e.ToString());
-                   
-
                 }
                 finally
                 {

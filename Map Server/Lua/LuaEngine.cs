@@ -539,10 +539,28 @@ namespace Meteor.Map.lua
             mSleepingOnSignal[signal].Add(coroutine);
         }
 
+        //public void AddWaitEventCoroutine(Player player, Coroutine coroutine)
+        //{
+        //    if (!mSleepingOnPlayerEvent.ContainsKey(player.Id))
+        //        mSleepingOnPlayerEvent.Add(player.Id, coroutine);
+        //}
+
         public void AddWaitEventCoroutine(Player player, Coroutine coroutine)
         {
-            if (!mSleepingOnPlayerEvent.ContainsKey(player.Id))
+            if (player == null || coroutine == null)
+                return;
+
+            if (mSleepingOnPlayerEvent.TryGetValue(player.Id, out var existing))
+            {
+                if (existing != null && existing != coroutine)
+                    CancelCoroutine(existing); // remove from wait registries
+
+                mSleepingOnPlayerEvent[player.Id] = coroutine; // overwrite
+            }
+            else
+            {
                 mSleepingOnPlayerEvent.Add(player.Id, coroutine);
+            }
         }
 
         public void PulseSleepingOnTime(object state)
@@ -581,13 +599,33 @@ namespace Meteor.Map.lua
             }
         }
 
+        //public void OnEventUpdate(Player player, List<LuaParam> args)
+        //{
+        //    if (mSleepingOnPlayerEvent.ContainsKey(player.Id))
+        //    {
+        //        try
+        //        {
+        //            Coroutine coroutine = mSleepingOnPlayerEvent[player.Id];
+        //            mSleepingOnPlayerEvent.Remove(player.Id);
+        //            DynValue value = coroutine.Resume(LuaUtils.CreateLuaParamObjectList(args));
+        //            ResolveResume(player, coroutine, value);
+        //        }
+        //        catch (ScriptRuntimeException e)
+        //        {
+        //            LuaEngine.SendError(player, String.Format("OnEventUpdated: {0}", e.DecoratedMessage));
+        //            player.EndEvent();
+        //        }
+        //    }
+        //    else
+        //        player.EndEvent();
+        //}
+
         public void OnEventUpdate(Player player, List<LuaParam> args)
         {
-            if (mSleepingOnPlayerEvent.ContainsKey(player.Id))
+            if (mSleepingOnPlayerEvent.TryGetValue(player.Id, out var coroutine))
             {
                 try
                 {
-                    Coroutine coroutine = mSleepingOnPlayerEvent[player.Id];
                     mSleepingOnPlayerEvent.Remove(player.Id);
                     DynValue value = coroutine.Resume(LuaUtils.CreateLuaParamObjectList(args));
                     ResolveResume(player, coroutine, value);
@@ -595,11 +633,15 @@ namespace Meteor.Map.lua
                 catch (ScriptRuntimeException e)
                 {
                     LuaEngine.SendError(player, String.Format("OnEventUpdated: {0}", e.DecoratedMessage));
+
+                    // ⚠️ Keep this if you want to hard-abort broken scripts
                     player.EndEvent();
                 }
             }
             else
-                player.EndEvent();
+            {
+                return;
+            }
         }
 
         /// <summary> 
@@ -1353,5 +1395,40 @@ namespace Meteor.Map.lua
             player.QueuePacket(EndEventPacket.BuildPacket(player.Id, player.currentEventOwner, player.currentEventName, 0));
         }
 
+        public void CancelCoroutine(Coroutine coroutine)
+        {
+            if (coroutine == null)
+                return;
+
+            // Time waits
+            if (mSleepingOnTime.ContainsKey(coroutine))
+                mSleepingOnTime.Remove(coroutine);
+
+            // Signal waits
+            foreach (var kv in mSleepingOnSignal)
+                kv.Value.Remove(coroutine);
+
+            // Remove empty signal lists
+            var emptyKeys = new List<string>();
+            foreach (var kv in mSleepingOnSignal)
+                if (kv.Value.Count == 0) emptyKeys.Add(kv.Key);
+            foreach (var k in emptyKeys)
+                mSleepingOnSignal.Remove(k);
+
+            // Player event waits
+            uint removeKey = 0;
+            bool hasKey = false;
+            foreach (var kv in mSleepingOnPlayerEvent)
+            {
+                if (kv.Value == coroutine)
+                {
+                    removeKey = kv.Key;
+                    hasKey = true;
+                    break;
+                }
+            }
+            if (hasKey)
+                mSleepingOnPlayerEvent.Remove(removeKey);
+        }
     }
 }

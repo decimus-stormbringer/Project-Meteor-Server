@@ -4,6 +4,17 @@ Aetheryte related info
 
 --]]
 
+-- Leave this function alone. Currently needed to C# can access coords for Return To HomePoint function.
+-- NOTE: Consider moving coords to Database so this is no longer needed. 
+function getAetheryteCoords(aetheryteId)
+    local homepoint = aetheryteTeleportPositions[aetheryteId]
+    if (homepoint == nil) then
+        return nil
+    end
+    -- dest = { zoneId, x, y, z }
+    return homepoint[1], homepoint[2], homepoint[3], homepoint[4]
+end
+
 aetheryteParentLinks = {
 	--La Noscea
 	[1280001] = nil,

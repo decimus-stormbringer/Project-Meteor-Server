@@ -59,7 +59,7 @@ namespace Meteor.Map.Actors
 
         // Used for non-mob spawns. 
         public Npc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, ushort actorState, uint animId, string displayName = null, uint mapObjLayoutId = 0, uint mapObjInstanceId = 0)
-            : base((4 << 28 | spawnedArea.Id << 19 | ((uint)actorNumber + 5)))  
+            : base((4u << 28) | (spawnedArea.ZoneId << 19) | ((uint)actorNumber + 5u))  
         {
             this.positionX = posX;
             this.positionY = posY;

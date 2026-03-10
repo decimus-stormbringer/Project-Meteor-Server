@@ -2,14 +2,12 @@ require ("global")
 require ("quest")
 
 --[[
-
 Quest Script
 
 Name: 	Shapeless Melody
 Code: 	Man0l0
 Id: 	110001
 Prereq: None (Given on chara creation)
-
 ]]
 
 -- Sequence Numbers
@@ -55,6 +53,7 @@ FLAG_SEQ000_MINITUT0	= 0;
 FLAG_SEQ000_MINITUT1	= 1;
 FLAG_SEQ000_MINITUT2	= 2;
 FLAG_SEQ000_MINITUT3	= 3;
+FLAG_SEQ000_TARGET_STARTED = 4; -- Target tutorial has been started (prevents double-click talk hard-lock)
 
 function onStart(player, quest)	
 	quest:StartSequence(SEQ_000);
@@ -64,22 +63,27 @@ function onFinish(player, quest)
 end
 
 function onStateChange(player, quest, sequence)
+	local data = quest:GetData();
+
 	if (sequence == SEQ_000) then	
 		-- Setup states incase we loaded in.
-		local data = quest:GetData();
+		local rostnsthalCanPush = not data:GetFlag(FLAG_SEQ000_MINITUT0);
 		local rostnsthalFlag = (not data:GetFlag(FLAG_SEQ000_MINITUT1) and QFLAG_TALK or QFLAG_NONE);
 		local vixenFlag = (not data:GetFlag(FLAG_SEQ000_MINITUT2) and QFLAG_TALK or QFLAG_NONE);
 		local babyfaceFlag = (not data:GetFlag(FLAG_SEQ000_MINITUT3) and QFLAG_TALK or QFLAG_NONE);
-		local rostnsthalCanPush = not data:GetFlag(FLAG_SEQ000_MINITUT0);
-		local exitCanPush = data:GetFlags() == 0xF;
-		local exitFlag = data:GetFlags() == 0xF and QFLAG_PUSH or QFLAG_NONE;
+
+		local exitFlag =
+		(data:GetFlag(FLAG_SEQ000_MINITUT1) and data:GetFlag(FLAG_SEQ000_MINITUT2) and data:GetFlag(FLAG_SEQ000_MINITUT3)) and QFLAG_PUSH or QFLAG_NONE;
+
+		local exitCanPush = 
+		(data:GetFlag(FLAG_SEQ000_MINITUT1) and data:GetFlag(FLAG_SEQ000_MINITUT2) and data:GetFlag(FLAG_SEQ000_MINITUT3));
 
 		if (rostnsthalCanPush) then
 			vixenFlag = QFLAG_NONE;
 			babyfaceFlag = QFLAG_NONE;
 		end
 		
-		--SetENpc(classId, byte flagType=0,isTalkEnabled, isPushEnabled, isEmoteEnabled, isSpawned)
+		--SetENpc(classId, byte flagType=0, isTalkEnabled, isPushEnabled, isEmoteEnabled, isSpawned)
 		quest:SetENpc(WELLTRAVELED_MERCHANT);
 		quest:SetENpc(TIPSY_ADVENTURER);
 		quest:SetENpc(CULTIVATED_TENDER);
@@ -96,9 +100,6 @@ function onStateChange(player, quest, sequence)
 		quest:SetENpc(GRINNING_ADVENTURER);
 		quest:SetENpc(ROSTNSTHAL, rostnsthalFlag, true, rostnsthalCanPush);
 		quest:SetENpc(EXIT_TRIGGER, exitFlag, false, exitCanPush);
-		print(tostring(exitCanPush));
-	elseif (sequence == SEQ_005) then
-		quest:SetENpc(EXIT_TRIGGER, QFLAG_PUSH);
 	elseif (sequence == SEQ_010) then
 		quest:SetENpc(HOB, QFLAG_TALK);
 		quest:SetENpc(GERT);
@@ -130,32 +131,32 @@ end
 function onPush(player, quest, npc)
 	local sequence = quest:getSequence();
 	local classId = npc:GetActorClassId();	
+	local data = quest:GetData();
 	
 	if (sequence == SEQ_000) then
-		if (classId == EXIT_TRIGGER) then
-			doExitDoor(player, quest, npc);
-			return;
-		elseif (classId == ROSTNSTHAL) then
-			callClientFunction(player, "delegateEvent", player, quest, "processTtrNomal002");
-			player:EndEvent();
-		end
-	elseif (sequence == SEQ_005) then
-		if (classId == EXIT_TRIGGER) then
-			doExitDoor(player, quest, npc);
-			return;
-		end
-	elseif (sequence == SEQ_010) then
-		if (classId == PRIVAREA_PAST_EXIT) then
-			if (eventName == "caution") then
-				worldMaster = GetWorldMaster();
-				player:SendGameMessage(player, worldMaster, 34109, 0x20);
-			elseif (eventName == "exit") then		
+		if (classId == ROSTNSTHAL) then
+			if (not data:GetFlag(FLAG_SEQ000_TARGET_STARTED)) then
+				callClientFunction(player, "delegateEvent", player, quest, "processTtrNomal002");
+				data:SetFlag(FLAG_SEQ000_TARGET_STARTED);
+				player:EndEvent();
+				return;
 			end
 		elseif (classId == EXIT_TRIGGER) then
 			doExitDoor(player, quest, npc);
 			return;
 		end
 	end
+
+	-- Not sure what this was for. Seq10 doesn't have any Push Events needed to progress?
+--[[	if (sequence == SEQ_010) then
+		if (classId == PRIVAREA_PAST_EXIT) then
+			if (eventName == "caution") then
+				worldMaster = GetWorldMaster();
+				player:SendGameMessage(player, worldMaster, 34109, 0x20);
+			elseif (eventName == "exit") then		
+			end
+		end
+	end ]]
 	
 	quest:UpdateENPCs();
 end
@@ -174,7 +175,23 @@ end
 function seq000_onTalk(player, quest, npc, classId)	
 	local data = quest:GetData();
 
-	if (classId == WELLTRAVELED_MERCHANT) then
+	if (classId == ROSTNSTHAL) then
+	    -- Prevent talking before the targeting tutorial has been started
+        if (not data:GetFlag(FLAG_SEQ000_TARGET_STARTED)) then
+            player:EndEvent();
+            return;
+        end
+		-- Handle the talk tutorial after the push one.
+		if (not data:GetFlag(FLAG_SEQ000_MINITUT0)) then
+			callClientFunction(player, "delegateEvent", player, quest, "processTtrNomal003");
+			data:SetFlag(FLAG_SEQ000_MINITUT0);		
+		else
+			callClientFunction(player, "delegateEvent", player, quest, "processTtrMini001");
+			if (not data:GetFlag(FLAG_SEQ000_MINITUT1)) then
+				data:SetFlag(FLAG_SEQ000_MINITUT1);
+			end
+		end
+	elseif (classId == WELLTRAVELED_MERCHANT) then
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent000_4");
 	elseif (classId == TIPSY_ADVENTURER) then
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent000_5");
@@ -212,19 +229,7 @@ function seq000_onTalk(player, quest, npc, classId)
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent000_16");
 	elseif (classId == GRINNING_ADVENTURER) then
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent000_17");
-	elseif (classId == ROSTNSTHAL) then
-		-- Handle the talk tutorial after the push one.
-		if (not data:GetFlag(FLAG_SEQ000_MINITUT0)) then
-			callClientFunction(player, "delegateEvent", player, quest, "processTtrNomal003");
-			data:SetFlag(FLAG_SEQ000_MINITUT0);		
-		else
-			callClientFunction(player, "delegateEvent", player, quest, "processTtrMini001");
-			if (not data:GetFlag(FLAG_SEQ000_MINITUT1)) then
-				data:SetFlag(FLAG_SEQ000_MINITUT1);
-			end
-		end
-	end	
-		
+	end			
 	player:EndEvent();
 end
 
@@ -293,8 +298,8 @@ function doExitDoor(player, quest, npc)
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent000_2", nil);
 		player:EndEvent();
 		
-		quest:StartSequence(SEQ_005);
-		
+		quest:GetData():ClearData();
+		quest:StartSequence(SEQ_005);	
 		contentArea = player.CurrentArea:CreateContentArea(player, "/Area/PrivateArea/Content/PrivateAreaMasterSimpleContent", "man0l01", "SimpleContent30002", "Quest/QuestDirectorMan0l001");
 		
 		if (contentArea == nil) then

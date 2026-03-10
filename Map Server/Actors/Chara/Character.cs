@@ -532,6 +532,23 @@ namespace Meteor.Map.Actors
             {
                 return (byte)(HP <= 0 || MaxHP <= 0 ? 0 : (double)HP / MaxHP * 100);
             }
+            set
+            {
+                if (MaxHP <= 0)
+                {
+                    HP = 0;
+                    return;
+                }
+
+                // Clamp between 0–100
+                int percent = value;
+                if (percent < 0)
+                    percent = 0;
+                if (percent > 100)
+                    percent = 100;
+
+                HP = (short)(MaxHP * (percent / 100.0));
+            }
         }
 
         public byte MPP
@@ -540,6 +557,17 @@ namespace Meteor.Map.Actors
             {
                 return (byte)(MP <= 0 || MaxMP <= 0 ? 0 : (double)MP / MaxMP * 100);
             }
+            set
+            {
+                // Clamp between 0–100
+                int percent = value;
+                if (percent < 0)
+                    percent = 0;
+                if (percent > 100)
+                    percent = 100;
+
+                MP = (short)(MaxMP * (percent / 100.0));
+            }
         }
 
         public byte TPP
@@ -547,6 +575,17 @@ namespace Meteor.Map.Actors
             get
             {
                 return (byte)(TP <= 0 || MaxTP <= 0 ? 0 : (double)TP / MaxTP * 100);
+            }
+            set
+            {
+                // Clamp between 0–100
+                int percent = value;
+                if (percent < 0)
+                    percent = 0;
+                if (percent > 100)
+                    percent = 100;
+
+                TP = (short)(MaxTP * (percent / 100.0));
             }
         }
 

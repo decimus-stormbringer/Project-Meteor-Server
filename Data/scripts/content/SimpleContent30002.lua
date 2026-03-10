@@ -55,8 +55,5 @@ function onCreate(player, contentArea, director)
 	director:StartContentGroup();
 end
 
-function onDestroy()
-
-	
-
+function onDestroy()	
 end

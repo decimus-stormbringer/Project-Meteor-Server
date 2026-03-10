@@ -43,6 +43,9 @@ namespace Meteor.Map.DataObjects
 
         public string errorMessage = "";
 
+        public bool PendingPostZoneInLogin = false;
+        public bool PostZoneInLoginRan = false;
+
         public Session(uint sessionId)
         {
             this.id = sessionId;

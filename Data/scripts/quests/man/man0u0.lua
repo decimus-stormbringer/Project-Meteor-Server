@@ -23,7 +23,7 @@ SEQ_000 = 0;  -- On the Merchant Strip in Ul'dah; contains the basic tutorial.
 SEQ_005 = 5;  -- Combat on the Sapphire Avenue Exchange
 SEQ_010 = 10; -- Back on the Merchant Strip in Ul'dah
 
--- Actor Class Ids
+-- SEQUENCE 0 NPCS
 ASCILIA                 = 1000042;
 WARBURTON               = 1000186;
 RURURAJI                = 1000840;
@@ -38,8 +38,7 @@ STOCKY_STRANGER         = 1001644;
 EXIT_TRIGGER            = 1090372;
 OPENING_STOPER_ULDAH    = 1090373;
 
-
-
+-- SEQUENCE 10 NPCS
 KEEN_EYED_MERCHANT      = 1000401;
 --MUMPISH_MIQOTE          = 1000992; -- Unused on this client version.  Calls processEvent020_6
 HIGH_SPIRITED_FELLOW    = 1001042;
@@ -90,17 +89,12 @@ MRKR_ADV_GUILD              = 11000906;
 
 -- Quest Flags
 -- SEQ000
-FLAG_SEQ000_MINITUT0    = 0; -- PushEvent ASCILIA
-FLAG_SEQ000_MINITUT1    = 1; -- TalkEvent ASCILIA
-FLAG_SEQ000_MINITUT2    = 2; -- TalkEvent FRETFUL_FARMHAND
-FLAG_SEQ000_MINITUT3    = 3; -- TalkEvent GIL_DIGGING_MISTRESS
--- SEQ010
-FLAG_SEQ010_TALK0       = 0; -- TalkEvent YAYATOKI
-
-GOOBBUE				= 2203301;
-COUNTER_KILLS		= 0;
-OBJECTIVE_AMOUNT	= 1;
-
+FLAG_SEQ000_MINITUT0    = 0;    -- PushEvent ASCILIA
+FLAG_SEQ000_MINITUT1    = 1;    -- TalkEvent ASCILIA
+FLAG_SEQ000_MINITUT2    = 2;    -- TalkEvent FRETFUL_FARMHAND
+FLAG_SEQ000_MINITUT3    = 3;    -- TalkEvent GIL_DIGGING_MISTRESS
+FLAG_SEQ010_TALK0       = 0;    -- TalkEvent YAYATOKI
+FLAG_SEQ000_TARGET_STARTED = 4; -- Target tutorial has been started (prevents double-click talk hard-lock)
 
 function onStart(player, quest)
     quest:StartSequence(SEQ_000);
@@ -109,17 +103,25 @@ end
 function onFinish(player, quest)
 end
 
+function onNotice(player, quest, target)
+    callClientFunction(player, "delegateEvent", player, quest, "processTtrNomal001withHQ");
+    player:EndEvent();
+    quest:UpdateENPCs();
+end
+
 function onStateChange(player, quest, sequence)
 	local data = quest:GetData();
 
     if (sequence == SEQ_000) then
         -- Setup states incase we loaded in.
         local asciliaCanPush = not data:GetFlag(FLAG_SEQ000_MINITUT0);
-        local asciliaFlag = (not data:GetFlag(FLAG_SEQ000_MINITUT1) and QFLAG_TALK or QFLAG_NONE);
+        local asciliaFlag = (not data:GetFlag(FLAG_SEQ000_MINITUT1)) and QFLAG_TALK or QFLAG_NONE;
         local fretfulfarmhandFlag = (not data:GetFlag(FLAG_SEQ000_MINITUT2) and QFLAG_TALK or QFLAG_OFF);
         local gildiggingmistressFlag = (not data:GetFlag(FLAG_SEQ000_MINITUT3) and QFLAG_TALK or QFLAG_OFF);
 
-        local exitFlag = data:GetFlags() == 0xF and QFLAG_PUSH or QFLAG_NONE;
+        -- checks if MINITUTs 1, 2, 3 are true to enable EXIT_TRIGGER Push.
+        local exitFlag =
+        (data:GetFlag(FLAG_SEQ000_MINITUT1) and data:GetFlag(FLAG_SEQ000_MINITUT2) and data:GetFlag(FLAG_SEQ000_MINITUT3)) and QFLAG_PUSH or QFLAG_NONE;
 
         if (asciliaCanPush) then
             fretfulfarmhandFlag = QFLAG_NONE;
@@ -176,10 +178,16 @@ function onPush(player, quest, npc)
 
     if (sequence == SEQ_000) then
         if (classId == ASCILIA) then
-           callClientFunction(player, "delegateEvent", player, quest, "processTtrNomal002");
-           player:EndEvent();
+            if (not data:GetFlag(FLAG_SEQ000_TARGET_STARTED)) then
+                callClientFunction(player, "delegateEvent", player, quest, "processTtrNomal002");
+                data:SetFlag(FLAG_SEQ000_TARGET_STARTED);
+                player:EndEvent();
+                return;
+            end
         elseif (classId == EXIT_TRIGGER) then
-            if (data:GetFlags() == 0xF) then
+            if (data:GetFlag(FLAG_SEQ000_MINITUT1) and
+                data:GetFlag(FLAG_SEQ000_MINITUT2) and
+                data:GetFlag(FLAG_SEQ000_MINITUT3)) then
                 doExitTrigger(player, quest, npc);
                 return;
             else
@@ -208,16 +216,15 @@ function onPush(player, quest, npc)
     quest:UpdateENPCs();
 end
 
-function onNotice(player, quest, target)
-    callClientFunction(player, "delegateEvent", player, quest, "processTtrNomal001withHQ");
-    player:EndEvent();
-    quest:UpdateENPCs();
-end
-
 function seq000_onTalk(player, quest, npc, classId)
 	local data = quest:GetData();
 
-    if (classId == ASCILIA) then
+    if (classId == ASCILIA) then        
+        -- Prevent talking before the targeting tutorial has been started (double-click hard-lock fix)
+        if (not data:GetFlag(FLAG_SEQ000_TARGET_STARTED)) then
+            player:EndEvent();
+            return;
+        end
         if (not data:GetFlag(FLAG_SEQ000_MINITUT0)) then -- If Talk tutorial
             callClientFunction(player, "delegateEvent", player, quest, "processTtrNomal003");
             data:SetFlag(FLAG_SEQ000_MINITUT0); -- Used to disable her PushEvent / Allow for her next TalkEvent
@@ -225,7 +232,6 @@ function seq000_onTalk(player, quest, npc, classId)
             callClientFunction(player, "delegateEvent", player, quest, "processTtrMini001");
             data:SetFlag(FLAG_SEQ000_MINITUT1); -- Ascilia has now been talked to.
         end
-
     elseif (classId == FRETFUL_FARMHAND) then
         if (not data:GetFlag(FLAG_SEQ000_MINITUT2)) then
             callClientFunction(player, "delegateEvent", player, quest, "processTtrMini002_first");
@@ -233,7 +239,6 @@ function seq000_onTalk(player, quest, npc, classId)
         else
             callClientFunction(player, "delegateEvent", player, quest, "processTtrMini002");
         end
-
     elseif (classId == GIL_DIGGING_MISTRESS) then
         if (not data:GetFlag(FLAG_SEQ000_MINITUT3)) then
             callClientFunction(player, "delegateEvent", player, quest, "processTtrMini003_first");
@@ -241,7 +246,6 @@ function seq000_onTalk(player, quest, npc, classId)
         else
             callClientFunction(player, "delegateEvent", player, quest, "processTtrMini003");
         end
-
     elseif (classId == WARBURTON) then
         callClientFunction(player, "delegateEvent", player, quest, "processEvent000_3");
     elseif (classId == RURURAJI) then

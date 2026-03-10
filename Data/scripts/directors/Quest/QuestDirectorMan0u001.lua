@@ -2,97 +2,102 @@ require ("global")
 require ("tutorial")
 require ("quests/man/man0u0")
 
---processTtrBtl001: Active Mode Tutorial
---processTtrBtl002: Targetting Tutorial (After active mode done)
---processTtrBtl003: Auto Attack Done
---processTtrBtl004: Tutorial Complete
-
 function init()
 	return "/Director/Quest/QuestDirectorMan0u001";
 end
 
-function onEventStarted(player, director, triggerName)	
-	local man0u0Quest = player:GetQuest("Man0u0");
+GOOBBUE				= 2203301;
+COUNTER_QUESTKILL	= 0;
+
+function onKillBNpc(player, director, bnpc)
+    local quest = player:GetQuest(110009);
 	local worldMaster = GetWorldMaster();
-
-	startTutorialMode(player);	
-	if (man0u0Quest:GetSequence() == SEQ_005) then -- make it only do things before it switches to seq10
-
-		-- Tutorial: Set Active Stance
-		callClientFunction(player, "delegateEvent", player, man0u0Quest, "processTtrBtl001", nil, nil, nil);
-		player:EndEvent();
-		waitForSignal("playerActive");	
-		wait(1); --If this isn't here, the scripts bugs out. TODO: Find a better alternative.
-		kickEventContinue(player, director, "noticeEvent", "noticeEvent");	
-
-		-- Tutorial: Target Monster
-		callClientFunction(player, "delegateEvent", player, man0u0Quest, "processTtrBtl002", nil, nil, nil);
-		player:EndEvent();		
-		
-		if player:IsDiscipleOfWar() then
-			
-			-- Tutorial: Auto-Attack Monster
-			waitForSignal("playerAttack");
+    
+	if (bnpc == GOOBBUE) then
+		local counterAmount = quest:GetData():IncCounter(COUNTER_QUESTKILL)
+		if (counterAmount >= 1) then
 			wait(1);
-			kickEventContinue(player, director, "noticeEvent", "noticeEvent");
 			closeTutorialWidget(player);
-			showTutorialSuccessWidget(player, 9055);
 			wait(2);
-
-			-- Tutorial: Use Weaponskill
-			openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_TP);
-			waitForSignal("tpOver1000");
-			player:SetMod(MinimumTpLock, 1000);
-			closeTutorialWidget(player);
-			openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_WEAPONSKILLS);
+			player:SendDataPacket("attention", worldMaster, "", 51073, 3);
+			wait(7);
+			-- StartSequence AND kickEventContinue are needed here in order for processEvent020 to fire. 
+			-- Putting ChangeState OR ChangeMusic above this line causes this to break. 
+			-- Also, putting kickEventContinue without StartSequence causes tutorial intro to replay. 
+			-- TO-DO: Figure out why the hell this is happening.
+			quest:StartSequence(0, true); -- silent, without journal update message.
+			kickEventContinue(player, director, "noticeEvent", "noticeEvent");
+			player:ChangeState(0); 
+			wait(3);
+			-- End Tutorial and warp player to next sequence
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent020", nil, nil, nil);
 			player:EndEvent();
-			player:DisableAutoAttack(); -- Ensure mobs don't die early so later script can receive 3 mobkills
-			player:SetMod(MinimumTpLock, 0);
-			waitForSignal("weaponskillUsed");			
-			player:EnableAutoAttack();
-			wait(1);
-			kickEventContinue(player, director, "noticeEvent", "noticeEvent");
-			closeTutorialWidget(player);
-			showTutorialSuccessWidget(player, 9065);
-		
-		elseif player:IsDiscipleOfMagic() then
-			
-			-- Tutorial: Cast Spell
-			callClientFunction(player, "delegateEvent", player, man0u0Quest, "processTtrBtlMagic001"); 
-			player:DisableAutoAttack(); -- Ensure mobs don't die early so later script can receive 3 mobkills
-			waitForSignal("spellUsed");
-			player:EnableAutoAttack();
-			wait(1);
-			kickEventContinue(player, director, "noticeEvent", "noticeEvent");
-			closeTutorialWidget(player);
-			showTutorialSuccessWidget(player, 9050);
+			endTutorialMode(player);			
+			quest:StartSequence(10); -- To display Journal update message. 
+			player:ChangeMusic(7);
+			player.CurrentArea:ContentFinished();
+			GetWorldManager():DoZoneChange(player, 175, "PrivateAreaMasterPast", 3, 15, -22.81, 196, 87.82, 2.98);		
+			player:EndEvent();
+			player:PartyDisband();
+			player:ClearMods();
 		end
-
-		-- Tutorial: Kill Monster
-		wait(2);
-		openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_DEFEATENEMY);
-		player:EndEvent();
-		waitForSignal("mobkill");
-		wait(1);
-		kickEventContinue(player, director, "noticeEvent", "noticeEvent");
-		closeTutorialWidget(player);
-		wait(2);
-		player:SendDataPacket("attention", worldMaster, "", 51073, 3);
-		wait(7);
-		player:ChangeMusic(7);
-		player:ChangeState(0); 
-		kickEventContinue(player, director, "noticeEvent", "noticeEvent");
-
-		-- End Tutorial and warp player to next sequence
-		callClientFunction(player, "delegateEvent", player, man0u0Quest, "processEvent020", nil, nil, nil);
-		player:EndEvent();
-		callClientFunction(player, "delegateEvent", player, man0u0Quest, "processTtrBtl004", nil, nil, nil);
-		endTutorialMode(player);
-		man0u0Quest:StartSequence(10);		
-		player.CurrentArea:ContentFinished();
-		GetWorldManager():DoZoneChange(player, 175, "PrivateAreaMasterPast", 3, 15, -22.81, 196, 87.82, 2.98);
-		player:EndEvent();
-		player:PartyDisband();
 	end
 end
 
+function onEventStarted(player, director, triggerName)	
+	local quest = player:GetQuest(110009);
+
+	quest:GetData():SetCounter(COUNTER_QUESTKILL, 0);  -- clears kill counter as a precaution. Mostly to prevent crashes during debugging.
+	player:SetMod(MinimumHpLock, 1);
+	startTutorialMode(player);	
+
+	-- Tutorial: Set Active Stance
+	callClientFunction(player, "delegateEvent", player, quest, "processTtrBtl001", nil, nil, nil);
+	player:EndEvent();
+	waitForSignal("playerActive");	
+	wait(1); --If this isn't here, the scripts bugs out. TODO: Find a better alternative.
+	kickEventContinue(player, director, "noticeEvent", "noticeEvent");	
+
+	-- Tutorial: Target Monster
+	callClientFunction(player, "delegateEvent", player, quest, "processTtrBtl002", nil, nil, nil);
+	player:EndEvent();		
+		
+	if player:IsDiscipleOfWar() then
+			
+		-- Tutorial: Auto-Attack Monster
+		waitForSignal("playerAttack");
+		wait(1);
+		kickEventContinue(player, director, "noticeEvent", "noticeEvent");
+		closeTutorialWidget(player);
+		showTutorialSuccessWidget(player, 9055);
+		wait(2);
+
+		-- Tutorial: Use Weaponskill
+		openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_TP);
+		waitForSignal("tpOver1000");
+		player.TP = 1000;
+		closeTutorialWidget(player);
+		openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_WEAPONSKILLS);
+		player:EndEvent();
+		waitForSignal("weaponskillUsed");			
+		wait(1);
+		kickEventContinue(player, director, "noticeEvent", "noticeEvent");
+		closeTutorialWidget(player);
+		showTutorialSuccessWidget(player, 9065);
+		
+	elseif player:IsDiscipleOfMagic() then
+			
+		-- Tutorial: Cast Spell
+		callClientFunction(player, "delegateEvent", player, quest, "processTtrBtlMagic001"); 
+		waitForSignal("spellUsed");
+		wait(1);
+		kickEventContinue(player, director, "noticeEvent", "noticeEvent");
+		closeTutorialWidget(player);
+		showTutorialSuccessWidget(player, 9050);
+	end
+
+	-- Tutorial: Kill Monster
+	wait(2);
+	openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_DEFEATENEMY);
+	player:EndEvent();
+end

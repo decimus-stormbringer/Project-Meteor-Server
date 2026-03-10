@@ -31,6 +31,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection.PortableExecutable;
 
 namespace Meteor.Map.Actors
@@ -142,8 +143,65 @@ namespace Meteor.Map.Actors
             return subpackets;
         }
 
+        //NEW
+        private void ClampGridPosition(ref int gridX, ref int gridY)
+        {
+            gridX += halfWidth;
+            gridY += halfHeight;
+
+            if (gridX < 0)
+                gridX = 0;
+            if (gridX >= numXBlocks)
+                gridX = numXBlocks - 1;
+            if (gridY < 0)
+                gridY = 0;
+            if (gridY >= numYBlocks)
+                gridY = numYBlocks - 1;
+        }
+
+        private void GetGridPosition(Actor actor, out int gridX, out int gridY)
+        {
+            gridX = (int)actor.positionX / boundingGridSize;
+            gridY = (int)actor.positionZ / boundingGridSize;
+            ClampGridPosition(ref gridX, ref gridY);
+        }
+
+
         // todo: handle instance areas in derived class? (see virtuals)
+        
         #region Actor Management
+
+        //public void AddActorToZone(Actor actor)
+        //{
+        //    lock (mActorList)
+        //    {
+        //        if (actor is Character)
+        //            ((Character)actor).ResetTempVars();
+
+        //        if (!mActorList.ContainsKey(actor.Id))
+        //            mActorList.Add(actor.Id, actor);
+
+
+        //        int gridX = (int)actor.positionX / boundingGridSize;
+        //        int gridY = (int)actor.positionZ / boundingGridSize;
+
+        //        gridX += halfWidth;
+        //        gridY += halfHeight;
+
+        //        //Boundries
+        //        if (gridX < 0)
+        //            gridX = 0;
+        //        if (gridX >= numXBlocks)
+        //            gridX = numXBlocks - 1;
+        //        if (gridY < 0)
+        //            gridY = 0;
+        //        if (gridY >= numYBlocks)
+        //            gridY = numYBlocks - 1;
+
+        //        lock (mActorBlock)
+        //            mActorBlock[gridX, gridY].Add(actor);
+        //    }
+        //}
 
         public void AddActorToZone(Actor actor)
         {
@@ -155,54 +213,66 @@ namespace Meteor.Map.Actors
                 if (!mActorList.ContainsKey(actor.Id))
                     mActorList.Add(actor.Id, actor);
 
-
-                int gridX = (int)actor.positionX / boundingGridSize;
-                int gridY = (int)actor.positionZ / boundingGridSize;
-
-                gridX += halfWidth;
-                gridY += halfHeight;
-
-                //Boundries
-                if (gridX < 0)
-                    gridX = 0;
-                if (gridX >= numXBlocks)
-                    gridX = numXBlocks - 1;
-                if (gridY < 0)
-                    gridY = 0;
-                if (gridY >= numYBlocks)
-                    gridY = numYBlocks - 1;
+                GetGridPosition(actor, out int gridX, out int gridY);
 
                 lock (mActorBlock)
-                    mActorBlock[gridX, gridY].Add(actor);
+                {
+                    // Prevent duplicate entries for the same actor in the same grid block.
+                    if (!mActorBlock[gridX, gridY].Any(a => a.Id == actor.Id))
+                        mActorBlock[gridX, gridY].Add(actor);
+                }
             }
         }
 
+        //public void RemoveActorFromZone(Actor actor)
+        //{
+        //    if (actor != null)
+        //        lock (mActorList)
+        //        {
+        //            mActorList.Remove(actor.Id);
+
+        //            int gridX = (int)actor.positionX / boundingGridSize;
+        //            int gridY = (int)actor.positionZ / boundingGridSize;
+
+        //            gridX += halfWidth;
+        //            gridY += halfHeight;
+
+        //            //Boundries
+        //            if (gridX < 0)
+        //                gridX = 0;
+        //            if (gridX >= numXBlocks)
+        //                gridX = numXBlocks - 1;
+        //            if (gridY < 0)
+        //                gridY = 0;
+        //            if (gridY >= numYBlocks)
+        //                gridY = numYBlocks - 1;
+
+        //            lock (mActorBlock)
+        //                mActorBlock[gridX, gridY].Remove(actor);
+        //        }
+        //}
+
+        // Version for better removing of player actor model.
         public void RemoveActorFromZone(Actor actor)
         {
-            if (actor != null)
-                lock (mActorList)
+            if (actor == null)
+                return;
+
+            lock (mActorList)
+            {
+                mActorList.Remove(actor.Id);
+
+                lock (mActorBlock)
                 {
-                    mActorList.Remove(actor.Id);
-
-                    int gridX = (int)actor.positionX / boundingGridSize;
-                    int gridY = (int)actor.positionZ / boundingGridSize;
-
-                    gridX += halfWidth;
-                    gridY += halfHeight;
-
-                    //Boundries
-                    if (gridX < 0)
-                        gridX = 0;
-                    if (gridX >= numXBlocks)
-                        gridX = numXBlocks - 1;
-                    if (gridY < 0)
-                        gridY = 0;
-                    if (gridY >= numYBlocks)
-                        gridY = numYBlocks - 1;
-
-                    lock (mActorBlock)
-                        mActorBlock[gridX, gridY].Remove(actor);
+                    for (int gx = 0; gx < numXBlocks; gx++)
+                    {
+                        for (int gy = 0; gy < numYBlocks; gy++)
+                        {
+                            mActorBlock[gx, gy].Remove(actor);
+                        }
+                    }
                 }
+            }
         }
 
         public void UpdateActorPosition(Actor actor)
@@ -250,48 +320,86 @@ namespace Meteor.Map.Actors
             }
         }
 
+        //public virtual List<T> GetActorsAroundPoint<T>(float x, float y, int checkDistance) where T : Actor
+        //{
+        //    checkDistance /= boundingGridSize;
+
+        //    int gridX = (int)x / boundingGridSize;
+        //    int gridY = (int)y / boundingGridSize;
+
+        //    gridX += halfWidth;
+        //    gridY += halfHeight;
+
+        //    //Boundries
+        //    if (gridX < 0)
+        //        gridX = 0;
+        //    if (gridX >= numXBlocks)
+        //        gridX = numXBlocks - 1;
+        //    if (gridY < 0)
+        //        gridY = 0;
+        //    if (gridY >= numYBlocks)
+        //        gridY = numYBlocks - 1;
+
+        //    List<T> result = new List<T>();
+
+        //    lock (mActorBlock)
+        //    {
+        //        for (int gx = gridX - checkDistance; gx <= gridX + checkDistance; gx++)
+        //        {
+        //            for (int gy = gridY - checkDistance; gy <= gridY + checkDistance; gy++)
+        //            {
+        //                result.AddRange(mActorBlock[gx, gy].OfType<T>());
+        //            }
+        //        }
+        //    }
+
+        //    //Remove players if isolation zone
+        //    if (isIsolated)
+        //    {
+        //        for (int i = 0; i < result.Count; i++)
+        //        {
+        //            if (result[i] is Player)
+        //                result.RemoveAt(i);
+        //        }
+        //    }
+        //    return result;
+        //}
+
         public virtual List<T> GetActorsAroundPoint<T>(float x, float y, int checkDistance) where T : Actor
         {
             checkDistance /= boundingGridSize;
 
             int gridX = (int)x / boundingGridSize;
             int gridY = (int)y / boundingGridSize;
-
-            gridX += halfWidth;
-            gridY += halfHeight;
-
-            //Boundries
-            if (gridX < 0)
-                gridX = 0;
-            if (gridX >= numXBlocks)
-                gridX = numXBlocks - 1;
-            if (gridY < 0)
-                gridY = 0;
-            if (gridY >= numYBlocks)
-                gridY = numYBlocks - 1;
+            ClampGridPosition(ref gridX, ref gridY);
 
             List<T> result = new List<T>();
+            HashSet<uint> seenIds = new HashSet<uint>();
 
             lock (mActorBlock)
             {
-                for (int gx = gridX - checkDistance; gx <= gridX + checkDistance; gx++)
+                for (int gx = Math.Max(0, gridX - checkDistance); gx <= Math.Min(numXBlocks - 1, gridX + checkDistance); gx++)
                 {
-                    for (int gy = gridY - checkDistance; gy <= gridY + checkDistance; gy++)
+                    for (int gy = Math.Max(0, gridY - checkDistance); gy <= Math.Min(numYBlocks - 1, gridY + checkDistance); gy++)
                     {
-                        result.AddRange(mActorBlock[gx, gy].OfType<T>());
+                        foreach (T foundActor in mActorBlock[gx, gy].OfType<T>())
+                        {
+                            if (seenIds.Add(foundActor.Id))
+                                result.Add(foundActor);
+                        }
                     }
                 }
             }
 
-            //Remove players if isolation zone
             if (isIsolated)
             {
-                for (int i = 0; i < result.Count; i++)
+                for (int i = result.Count - 1; i >= 0; i--)
                 {
                     if (result[i] is Player)
                         result.RemoveAt(i);
                 }
             }
+
             return result;
         }
 
@@ -305,43 +413,84 @@ namespace Meteor.Map.Actors
             return GetActorsAroundActor<Actor>(actor, checkDistance);
         }
 
+        //public virtual List<T> GetActorsAroundActor<T>(Actor actor, int checkDistance) where T : Actor
+        //{
+        //    checkDistance /= boundingGridSize;
+
+        //    int gridX = (int)actor.positionX / boundingGridSize;
+        //    int gridY = (int)actor.positionZ / boundingGridSize;
+
+        //    gridX += halfWidth;
+        //    gridY += halfHeight;
+
+
+        //    ////Boundries
+        //    if (gridX < 0)
+        //        gridX = 0;
+        //    if (gridX >= numXBlocks)
+        //        gridX = numXBlocks - 1;
+        //    if (gridY < 0)
+        //        gridY = 0;
+        //    if (gridY >= numYBlocks)
+        //        gridY = numYBlocks - 1;
+
+        //    var result = new List<T>();
+
+        //    lock (mActorBlock)
+        //    {
+        //        for (int gy = ((gridY - checkDistance) < 0 ? 0 : (gridY - checkDistance)); gy <= ((gridY + checkDistance) >= numYBlocks ? numYBlocks - 1 : (gridY + checkDistance)); gy++)
+        //        {
+        //            for (int gx = ((gridX - checkDistance) < 0 ? 0 : (gridX - checkDistance)); gx <= ((gridX + checkDistance) >= numXBlocks ? numXBlocks - 1 : (gridX + checkDistance)); gx++)
+        //            {
+        //                result.AddRange(mActorBlock[gx, gy].OfType<T>());
+        //            }
+        //        }
+        //    }
+
+        //    //Remove players if isolation zone
+        //    if (isIsolated)
+        //    {
+        //        for (int i = 0; i < result.Count; i++)
+        //        {
+        //            if (result[i] is Player)
+        //                result.RemoveAt(i);
+        //        }
+        //    }
+
+        //    return result;
+        //}
+
         public virtual List<T> GetActorsAroundActor<T>(Actor actor, int checkDistance) where T : Actor
         {
             checkDistance /= boundingGridSize;
 
-            int gridX = (int)actor.positionX / boundingGridSize;
-            int gridY = (int)actor.positionZ / boundingGridSize;
-
-            gridX += halfWidth;
-            gridY += halfHeight;
-
-            //Boundries
-            if (gridX < 0)
-                gridX = 0;
-            if (gridX >= numXBlocks)
-                gridX = numXBlocks - 1;
-            if (gridY < 0)
-                gridY = 0;
-            if (gridY >= numYBlocks)
-                gridY = numYBlocks - 1;
+            GetGridPosition(actor, out int gridX, out int gridY);
 
             var result = new List<T>();
+            var seenIds = new HashSet<uint>();
 
             lock (mActorBlock)
             {
-                for (int gy = ((gridY - checkDistance) < 0 ? 0 : (gridY - checkDistance)); gy <= ((gridY + checkDistance) >= numYBlocks ? numYBlocks - 1 : (gridY + checkDistance)); gy++)
+                for (int gy = ((gridY - checkDistance) < 0 ? 0 : (gridY - checkDistance));
+                     gy <= ((gridY + checkDistance) >= numYBlocks ? numYBlocks - 1 : (gridY + checkDistance));
+                     gy++)
                 {
-                    for (int gx = ((gridX - checkDistance) < 0 ? 0 : (gridX - checkDistance)); gx <= ((gridX + checkDistance) >= numXBlocks ? numXBlocks - 1 : (gridX + checkDistance)); gx++)
+                    for (int gx = ((gridX - checkDistance) < 0 ? 0 : (gridX - checkDistance));
+                         gx <= ((gridX + checkDistance) >= numXBlocks ? numXBlocks - 1 : (gridX + checkDistance));
+                         gx++)
                     {
-                        result.AddRange(mActorBlock[gx, gy].OfType<T>());
+                        foreach (T foundActor in mActorBlock[gx, gy].OfType<T>())
+                        {
+                            if (seenIds.Add(foundActor.Id))
+                                result.Add(foundActor);
+                        }
                     }
                 }
             }
 
-            //Remove players if isolation zone
             if (isIsolated)
             {
-                for (int i = 0; i < result.Count; i++)
+                for (int i = result.Count - 1; i >= 0; i--)
                 {
                     if (result[i] is Player)
                         result.RemoveAt(i);
@@ -624,8 +773,7 @@ namespace Meteor.Map.Actors
                 if (actorClass == null)
                     return null;
 
-                Ally ally;
-                ally = new Ally(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, actorState, animId, null);
+                Ally ally = new Ally(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, actorState, animId, null);
 
                 ally.LoadEventConditions(actorClass.eventConditions);
                 ally.ResetMoveSpeeds();
@@ -635,8 +783,6 @@ namespace Meteor.Map.Actors
                 return ally;
             }
         }
-
-
 
         public BattleNpc GetBattleNpcById(uint id)
         {

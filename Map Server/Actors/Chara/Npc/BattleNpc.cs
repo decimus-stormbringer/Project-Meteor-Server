@@ -32,6 +32,7 @@ using Meteor.Map.Actors.Chara;
 using Meteor.Map.packets.send.actor;
 using Meteor.Map.packets.send.actor.battle;
 using Meteor.Map.utils;
+using NLog.Filters;
 using System;
 using System.Collections.Generic;
 
@@ -294,22 +295,24 @@ namespace Meteor.Map.Actors
                     lastAttacker = lastAttacker.aiContainer.GetController<PetController>().GetPetMaster();
                 }
 
-                if (lastAttacker is Player)
+                var credited = new HashSet<uint>();
+
+                if (lastAttacker is Player killer)
                 {
                     //I think this is, or should be odne in DoBattleAction. Packet capture had the message in the same packet as an attack
                     // <actor> defeat/defeats <target>
-                    if (actionContainer != null)
-                        actionContainer.AddEXPAction(new CommandResult(Id, 30108, 0));
+                    if (credited.Add(killer.Id))
+                        killer.HandleBNpcKill(GetActorClassId());
 
-                    if (lastAttacker.currentParty != null && lastAttacker.currentParty is Party)
+                    if (lastAttacker.currentParty is Party party)
                     {
-                        foreach (var memberId in ((Party)lastAttacker.currentParty).members)
+                        foreach (var memberId in party.members)
                         {
                             var partyMember = CurrentArea.FindActorInArea<Character>(memberId);
-                            // onDeath(monster, player, killer)
-                            lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, partyMember, lastAttacker);
+                            if (partyMember is Player pm && credited.Add(pm.Id))
+                                pm.HandleBNpcKill(GetActorClassId());
 
-                            // todo: add actual experience calculation and exp bonus values.
+                            lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, partyMember, lastAttacker);
                             if (partyMember is Player)
                                 BattleUtils.AddBattleBonusEXP((Player)partyMember, this, actionContainer);
                         }

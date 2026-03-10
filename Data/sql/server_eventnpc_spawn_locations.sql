@@ -109,9 +109,8 @@ REPLACE INTO `server_eventnpc_spawn_locations` (`id`, `actorClassId`, `uniqueId`
 	(74, 1001260, 'ipaghlo', 175, '', 0, -145.89, 185.45, 122.34, -2.18, 0),
 	(75, 1001371, 'totonawa', 175, '', 0, -54.07, 196.47, 52.49, -0.9, 1041),
 	(76, 1001372, 'eustace', 175, '', 0, -52.83, 196.01, 53.44, -0.34, 1016),
-	(77, 1001424, 'gegeissa', 175, '', 0, -56.69, 192, -6.59, 2.89, 0),
-	(78, 1001426, 'hehena', 175, '', 0, 67.72, 192, 209.29, 1.27, 0),
-	(79, 1001427, 'guillaunaux', 175, '', 0, 70.42, 191.98, 199.33, 1.27, 0),
+	(78, 1001426, 'hehena', 170, '', 0, 67.72, 192, 209.29, 1.27, 0),
+	(79, 1001427, 'guillaunaux', 170, '', 0, 70.42, 191.98, 199.33, 1.27, 0),
 	(80, 1001428, 'yuyuhase', 175, '', 0, -218.1, 190, 23.69, 0.65, 1041),
 	(81, 1001429, 'lulumo', 175, '', 0, -211.25, 190, 17.98, 0.65, 1056),
 	(82, 1001438, 'nokksu_shanksu', 175, '', 0, 17.99, 196.4, 164.98, -0.99, 1025),
@@ -956,8 +955,7 @@ REPLACE INTO `server_eventnpc_spawn_locations` (`id`, `actorClassId`, `uniqueId`
 	(933, 1090549, 'inn_uld_exitdoor_push', 244, '', 0, -0.02, 0.02, -8.6, 0, 0),
 	(934, 1090547, 'inn_limsa_exitdoor_push', 244, '', 0, -160.02, 0.02, -168.4, 0, 0),
 	(935, 1060027, 'yoshi_p', 130, '', 0, 1120.269, 52.1, -445.59, 2.426, 0),
-	(936, 5900004, 'door1', 175, 'PrivateAreaMasterPast', 3, 14, 196, 174, 0, 0),
-	(937, 5900004, 'door2', 175, 'PrivateAreaMasterPast', 3, 12, 196, 184, 0, 0),
+	(936, 5900004, 'man0u0_seq10_door', 175, 'PrivateAreaMasterPast', 3, 14, 196, 174, 0, 0),
 	(938, 5900004, 'man0u0_door3_closed', 184, '', 0, -44, 196, 68, 0, 0),
 	(939, 1001042, 'high-spirited_fellow', 175, 'PrivateAreaMasterPast', 3, -36.23, 196, 80, 1.8, 0),
 	(940, 1001044, 'disreputable_midlander', 175, 'PrivateAreaMasterPast', 3, -23.92, 196, 76.73, -0.15, 0),
@@ -970,8 +968,8 @@ REPLACE INTO `server_eventnpc_spawn_locations` (`id`, `actorClassId`, `uniqueId`
 	(947, 1001646, 'tooth-grinding_traveler', 175, 'PrivateAreaMasterPast', 3, -19.553, 196, 79.418, 1.534, 0),
 	(948, 1001645, 'large-lunged_laborer', 175, 'PrivateAreaMasterPast', 3, -17.625, 196.072, 79.49, -1.702, 0),
 	(949, 1001647, 'full-lipped_fille', 175, 'PrivateAreaMasterPast', 3, 3.938, 196, 119.318, -2.744, 0),
-	(950, 1090372, 'blocker1', 175, 'PrivateAreaMasterPast', 3, -13, 194.91, 76.75, 0, 0),
-	(951, 1090372, 'blocker2', 175, 'PrivateAreaMasterPast', 3, 3.2, 196, 125.121, 0, 0),
+	(950, 1090372, 'man0u0_seq10_blocker1', 175, 'PrivateAreaMasterPast', 3, -13, 194.91, 76.75, 0, 0),
+	(951, 1090372, 'man0u0_seq10_blocker2', 175, 'PrivateAreaMasterPast', 3, 3.2, 196, 125.121, 0, 0),
 	(952, 1000841, 'momodi', 175, 'PrivateAreaMasterPast', 4, -73.33, 195, 78.531, -1.404, 1060),
 	(953, 1090265, 'market_entrance111', 180, 'PrivateAreaMasterMarket', 102, 160, 0, 157, 0, 0),
 	(954, 1500397, 'vendor1', 180, 'PrivateAreaMasterMarket', 102, 166.7, 1, 174, -1.57, 0),
@@ -1951,7 +1949,10 @@ REPLACE INTO `server_eventnpc_spawn_locations` (`id`, `actorClassId`, `uniqueId`
 	(2889, 1001609, 'aerghaemr', 129, '', 0, -1822.9, 60.07, -960.9, -3.1, 0),
 	(2890, 1001604, 'qmolosi', 129, '', 0, -1793.6, 62.5, -959.2, -1.5, 0),
 	(2891, 1001608, 'faine', 129, '', 0, -1801, 60.2, -928.3, 2.3, 0),
-	(2892, 1001605, 'bran', 129, '', 0, -1792.4, 62.5, -896.7, -1.76, 0);
+	(2892, 1001605, 'bran', 129, '', 0, -1792.4, 62.5, -896.7, -1.76, 0),
+	(2893, 5900004, 'man0u0_seq10_door1_closed', 175, 'PrivateAreaMasterPast', 3, -14, 196, 112, 0, 0),
+	(2894, 5900004, 'man0u0_seq10_door2_closed', 175, 'PrivateAreaMasterPast', 3, 12, 196, 184, 0, 0);
+
 
 /*!40000 ALTER TABLE `server_eventnpc_spawn_locations` ENABLE KEYS */;
 

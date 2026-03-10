@@ -20,25 +20,26 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 */
 
 using Meteor.Common;
-
-using System;
-using Meteor.Map.DataObjects;
-using Meteor.Map.packets.receive;
-using Meteor.Map.packets.send;
-using Meteor.Map.packets.send.login;
-using Meteor.Map.packets.send.actor;
-using Meteor.Map.packets.send.supportdesk;
-using Meteor.Map.packets.receive.social;
-using Meteor.Map.packets.send.social;
-using Meteor.Map.packets.receive.supportdesk;
-using Meteor.Map.packets.receive.recruitment;
-using Meteor.Map.packets.send.recruitment;
-using Meteor.Map.packets.receive.events;
-using Meteor.Map.lua;
-using Meteor.Map.Actors;
-using Meteor.Map.packets.WorldPackets.Send;
-using Meteor.Map.packets.WorldPackets.Receive;
 using Meteor.Map.actors.director;
+using Meteor.Map.Actors;
+using Meteor.Map.DataObjects;
+using Meteor.Map.lua;
+using Meteor.Map.packets.receive;
+using Meteor.Map.packets.receive.events;
+using Meteor.Map.packets.receive.recruitment;
+using Meteor.Map.packets.receive.social;
+using Meteor.Map.packets.receive.supportdesk;
+using Meteor.Map.packets.send;
+using Meteor.Map.packets.send.actor;
+using Meteor.Map.packets.send.login;
+using Meteor.Map.packets.send.recruitment;
+using Meteor.Map.packets.send.social;
+using Meteor.Map.packets.send.supportdesk;
+using Meteor.Map.packets.WorldPackets.Receive;
+using Meteor.Map.packets.WorldPackets.Send;
+using Meteor.Map.utils;
+using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Meteor.Map
@@ -147,6 +148,7 @@ namespace Meteor.Map
                     LangaugeCodePacket langCode = new LangaugeCodePacket(subpacket.data);
                     LuaEngine.GetInstance().CallLuaFunction(session.GetActor(), session.GetActor(), "onBeginLogin", true);
                     Server.GetWorldManager().DoZoneIn(session.GetActor(), true, 0x1);
+                    //SessionCleanupService.RefreshTutorialENPCs(session.GetActor() as Player);
                     LuaEngine.GetInstance().CallLuaFunction(session.GetActor(), session.GetActor(), "onLogin", true);
                     session.languageCode = langCode.languageCode;
                     break;

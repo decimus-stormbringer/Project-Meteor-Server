@@ -1,12 +1,10 @@
 
 function onCreate(player, contentArea, director)
 
-    yda = contentArea:SpawnAlly(2290006, "yda", 365.26, 4.1, -700.73, 1.56);
-    yda.Level = 1;
-	yda:SetMod(Hp, 500);
-	yda:SetMod(Mp, 500);
-	yda:SetMod(MovementSpeed, 5);
-	yda:CalculateStats();
+	-- NOTES:	
+	-- SendMessage is currently needed here as a packet send in order to get Yda/Papalymo to properly
+	-- appear in player's party.
+	-- TO-DO: This is weird. Find a better alternative. 
 
     papalymo = contentArea:SpawnAlly(2290005, "papalymo", 365.9, 4.1, -706.7, -0.7);
  	papalymo.Level = 1;
@@ -14,6 +12,15 @@ function onCreate(player, contentArea, director)
 	papalymo:SetMod(Mp, 500);
 	papalymo:SetMod(MovementSpeed, 5);
 	papalymo:CalculateStats();
+	player:SendMessage(0, "", "");
+
+    yda = contentArea:SpawnAlly(2290006, "yda", 365.26, 4.1, -700.73, 1.56);
+    yda.Level = 1;
+	yda:SetMod(Hp, 500);
+	yda:SetMod(Mp, 500);
+	yda:SetMod(MovementSpeed, 5);
+	yda:CalculateStats();
+	player:SendMessage(0, "", "");
 
     wolf1 = contentArea:SpawnEnemy(2201407, "wolf1", 374.4, 4.4, -698.7, -1.9);
  	wolf1.Level = 1;
@@ -48,17 +55,15 @@ function onCreate(player, contentArea, director)
 	director:AddMember(wolf1);
 	director:AddMember(wolf2);
 	director:AddMember(wolf3);
-	
+
 	player:IsInParty();
 	player:IsPartyLeader();
 	player.currentParty:AddMember(yda);
 	player.currentParty:AddMember(papalymo);
 
-
 	director:StartContentGroup();
 end
 
 function onDestroy()
-
 end
 

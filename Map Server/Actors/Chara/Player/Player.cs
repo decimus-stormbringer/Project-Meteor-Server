@@ -1,4 +1,4 @@
-/*
+﻿/*
 ===========================================================================
 Copyright (C) 2015-2019 Project Meteor Dev Team
 
@@ -161,6 +161,10 @@ namespace Meteor.Map.Actors
         public byte SNpcPersonality { set; get; }
         public short SNpcCoordinate { set; get; }
 
+        //Zone Streaming Stuff for Seamless Zones
+        public uint StreamedZoneId = 0;
+        public bool IsStreamingZone => StreamedZoneId != 0;
+        public uint PendingZoneId = 0;
 
         List<ushort> hotbarSlotsToUpdate = new List<ushort>();
 
@@ -831,8 +835,6 @@ namespace Meteor.Map.Actors
             playerSession?.MarkDisconnected();
         }
 
-
-
         public void SendMessage(uint logType, string sender, string message)
         {
             QueuePacket(SendMessagePacket.BuildPacket(Id, logType, sender, message));
@@ -1489,6 +1491,7 @@ namespace Meteor.Map.Actors
 
             int freeSlot = GetFreeQuestSlot();
 
+            // Reject if player has too many quests. 
             if (freeSlot == -1)
             {
                 SendGameMessage(Server.GetWorldManager().GetActor(), 25234, 0x20); // "You cannot accept any more quests at this time."
@@ -1978,10 +1981,18 @@ namespace Meteor.Map.Actors
 
         public void HandleBNpcKill(uint bnpcClassId)
         {
+            // Notify quest scripts. 
             foreach (Quest quest in questScenario)
             {
                 if (quest != null)
                     quest.OnKillBNpc(this, bnpcClassId);
+            }
+
+            // Notify active directors (for checking in ContentAreas). 
+            foreach (var director in ownedDirectors)
+            {
+                if (director != null)
+                    director.OnKillBNpc(this, bnpcClassId);
             }
         }
 
@@ -2098,6 +2109,12 @@ namespace Meteor.Map.Actors
         {
             if (ownedDirectors.Contains(director))
                 loginInitDirector = director;
+        }
+
+        public void ClearLoginDirector()
+        {
+            // Used by disconnect cleanup to prevent resuming an in-progress director/event on next login.
+            loginInitDirector = null;
         }
 
         public void AddDirector(Director director, bool spawnImmediatly = false)
@@ -3435,7 +3452,7 @@ namespace Meteor.Map.Actors
             myOfferings = null;
             otherTrader = null;
         }
-        
+
     }
     public enum Job : ushort
     {

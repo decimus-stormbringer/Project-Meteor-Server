@@ -638,15 +638,17 @@ namespace Meteor.Map
                     WHERE id = @charaId
                     ";
 
+                    var area = player.CurrentArea;
+
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charaId", player.Id);
                     cmd.Parameters.AddWithValue("@x", player.positionX);
                     cmd.Parameters.AddWithValue("@y", player.positionY);
                     cmd.Parameters.AddWithValue("@z", player.positionZ);
                     cmd.Parameters.AddWithValue("@rot", player.rotation);
-                    cmd.Parameters.AddWithValue("@zoneId", player.CurrentArea.ZoneId);
-                    cmd.Parameters.AddWithValue("@privateArea", player.CurrentArea.GetPrivateAreaName());
-                    cmd.Parameters.AddWithValue("@privateAreaType", player.CurrentArea.GetPrivateAreaType());
+                    cmd.Parameters.AddWithValue("@zoneId", area.ZoneId);
+                    cmd.Parameters.AddWithValue("@privateArea", area.GetPrivateAreaName());
+                    cmd.Parameters.AddWithValue("@privateAreaType", area.GetPrivateAreaType());
                     cmd.Parameters.AddWithValue("@destZone", player.destinationZone);
                     cmd.Parameters.AddWithValue("@destSpawn", player.destinationSpawnType);
 
@@ -3457,6 +3459,27 @@ namespace Meteor.Map
         private static string GetConnectionString()
         {
             return $"Server={ConfigConstants.DATABASE_HOST}; Port={ConfigConstants.DATABASE_PORT}; Database={ConfigConstants.DATABASE_NAME}; UID={ConfigConstants.DATABASE_USERNAME}; Password={ConfigConstants.DATABASE_PASSWORD}";
+        }
+
+        // For clearing ContentArea state during player disconnect/recovery. 
+        public static void ClearPrivateAreaState(uint charaId)
+        {
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}",ConfigConstants.DATABASE_HOST,ConfigConstants.DATABASE_PORT,ConfigConstants.DATABASE_NAME,ConfigConstants.DATABASE_USERNAME,ConfigConstants.DATABASE_PASSWORD)))
+            {
+                conn.Open();
+
+                const string query = @"
+                UPDATE characters
+                SET currentPrivateArea = '',
+                    currentPrivateAreaType = 0
+                WHERE id = @charaId;";
+
+                using (var cmd = new MySqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@charaId", charaId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
     }
 }

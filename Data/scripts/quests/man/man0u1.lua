@@ -126,7 +126,7 @@ processEvent200_2					???: "Rumors are all over town, they are. Seems you took a
 processEvent205	
 processEvent205_2					???: "Did you hear about the cave-in at the mines? The Phrontistery is full to the rafters with the injured."
 processEvent207	
-processEvent210	
+processEvent210						<<CUTSCENE WITH NOGELOIX IN FRONDALE'S APOSTERY>>
 processEvent210_2					???: "Accidents in the mine shafts are certainly not the rarest of things. Still, this latest collapse left a good deal more injured than we usually see."
 processEvent210_3					Worrisome Assistant: "I've never seen wounds like this before. And Master Faustigeant has ordered that any accounts given by patients be considered delusions and not recorded."
 processEvent210_4					???: "No...no! Do not make me open my eyes! No!!!"
@@ -1232,29 +1232,29 @@ function seq015_onTalk(player, quest, npc, classId)
 	if (classId == MOMODI) then
 		if (subseqGLD == 3) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent017_4");
-	elseif (subseqGSM >= 2) then
+		elseif (subseqGSM >= 2) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent017_3");
 			player:EndEvent();
-	elseif (subseqGLD == 0) then
-		callClientFunction(player, "delegateEvent", player, quest, "processEvent017_2");
-	elseif (subseqGSM == 0) then
-		callClientFunction(player, "delegateEvent", player, quest, "processEvent017_2");
-		player:EndEvent();
-	end
+		elseif (subseqGLD == 0) then
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent017_2");
+		elseif (subseqGSM == 0) then
+			callClientFunction(player, "delegateEvent", player, quest, "processEvent017_2");
+			player:EndEvent();
+		end
+
 		--GSM Guild Event
 	elseif (classId == ELECOTTE) then
 		if (subseqGSM == 0) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent020");
 			player:AddItem(1000001, 2000);
 			player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 2000);
-			data:IncCounter(CNTR_SEQ15_GSM); --GSM +1					
-		elseif (subseqGSM == 1) then
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent020_2");
-			data:IncCounter(CNTR_SEQ15_GSM); --GSM +1
+			data:IncCounter(CNTR_SEQ15_GSM); --GSM +1						
 			if (subseqGLD >= 3) then
-				seq015_endSequence(player, quest);
+				callClientFunction(player, "delegateEvent", player, quest, "processEvent025");
+				quest:NewNpcLsMsg(1);
+				quest:StartSequence(SEQ_045);
 			end
-		else 
+		elseif (subseqGSM == 1) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent020_2");
 			player:EndEvent();
 			return;

@@ -243,16 +243,25 @@ namespace Meteor.Map.Actors.QuestNS
             return returned != null && returned.Count != 0 && returned[0].typeID == 3;
         }
 
-        public void StartSequence(ushort sequence)
+        public void StartSequence(ushort sequence, bool silent = false)
         {
             if (sequence == SEQ_NOT_STARTED)
                 return;
 
-            // Send the message that the journal has been updated
-            owner.SendGameMessage(Server.GetWorldManager().GetActor(), 25116, 0x20, (object)GetQuestId());
 
-            currentSequence = sequence;            
-            questState.UpdateState();
+            if (silent == true)  // change sequence without journal message.
+            {
+                currentSequence = sequence;
+                questState.UpdateState();
+            }
+            else
+            {
+                // Send the message that the journal has been updated
+                owner.SendGameMessage(Server.GetWorldManager().GetActor(), 25116, 0x20, (object)GetQuestId());
+                currentSequence = sequence;
+                questState.UpdateState();
+            }
+
         }
 
         public void StartSequenceForNpcLs(ushort sequence)

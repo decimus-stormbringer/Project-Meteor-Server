@@ -11,6 +11,189 @@ The param "itemDBIds" has the vars: item1 and item2.
 
 --]]
 
+require("global");
+
+-- Gear compatibility codes. Match to item in gamedata_items
+GEAR_COMPAT_REQUIRE = {
+    [2002] = { "PGL", "GLA", "MRD", "ARC", "LNC", "MNK", "PLD", "WAR", "BRD", "DRG", "THM", "CNJ", "BLM", "WHM" },
+    [2003] = { "CRP", "BSM", "ARM", "GSM", "LTW", "WVR", "ALC", "CUL", "MIN", "BTN", "FSH" },
+    [2004] = { "PGL", "GLA", "MRD", "ARC", "LNC", "MNK", "PLD", "WAR", "BRD", "DRG" },
+    [2005] = { "THM", "CNJ", "BLM", "WHM" },
+    [2006] = { "CRP", "BSM", "ARM", "GSM", "LTW", "WVR", "ALC", "CUL" },
+    [2007] = { "MIN", "BTN", "FSH" },
+    [2101] = { "GLA", "MRD", "PLD", "WAR" },
+    [2102] = { "THM", "CNJ", "BLM", "WHM" },
+    [2103] = { "GLA", "MRD", "LNC", "PLD", "WAR", "DRG" },
+    [2104] = { "PGL", "GLA", "MRD", "ARC", "LNC", "MNK", "PLD", "WAR", "BRD", "DRG", "CRP", "BSM", "ARM", "MIN", "BTN", "FSH" },
+    [2105] = { "GLA", "PLD", "THM", "CNJ", "BLM", "WHM" },
+    [2106] = { "GLA", "PLD" },
+    [2107] = { "THM", "BLM" },
+    [2108] = { "CNJ", "WHM" },
+    [2109] = { "CRP", "BSM", "ARM", "MIN", "BTN", "FSH" },
+    [2110] = { "GSM", "LTW", "WVR", "ALC", "CUL" },
+    [2111] = { "PGL", "ARC", "MNK", "BRD", "THM", "CNJ", "BLM", "WHM" },
+    [2112] = { "PGL", "GLA", "MRD", "ARC", "LNC", "MNK", "PLD", "WAR", "BRD", "DRG", "CRP", "LTW", "BTN" },
+    [2113] = { "PGL", "GLA", "MRD", "ARC", "LNC", "MNK", "PLD", "WAR", "BRD", "DRG", "BSM", "ARM", "MIN", "FSH" },
+    [2114] = { "THM", "CNJ", "BLM", "WHM", "WVR" },
+    [2115] = { "THM", "CNJ", "BLM", "WHM", "GSM" },
+    [2116] = { "THM", "CNJ", "BLM", "WHM", "ALC", "CUL" },
+    [2117] = { "GLA", "PLD", "CNJ", "WHM" },
+    [2118] = { "GLA", "PLD", "THM", "BLM" },
+    [2119] = { "MNK" },
+    [2120] = { "PLD" },
+    [2121] = { "WAR" },
+    [2122] = { "BRD" },
+    [2123] = { "DRG" },
+    [2124] = { "BLM" },
+    [2125] = { "WHM" },
+    [2126] = { "PLD", "WAR" },
+    [2127] = { "PLD", "WAR", "DRG" },
+    [2128] = { "MNK", "BRD", "DRG" },
+    [2129] = { "BRD", "BLM", "WHM" },
+    [2130] = { "PGL", "MNK" },
+    [2131] = { "GLA", "PLD" },
+    [2132] = { "MRD", "WAR" },
+    [2133] = { "ARC", "BRD" },
+    [2134] = { "LNC", "DRG" },
+    [2135] = { "THM", "BLM" },
+    [2136] = { "CNJ", "WHM" },
+    [2137] = { "CRP" },
+    [2138] = { "BSM" },
+    [2139] = { "ARM" },
+    [2140] = { "GSM" },
+    [2141] = { "LTW" },
+    [2142] = { "WVR" },
+    [2143] = { "ALC" },
+    [2144] = { "CUL" },
+    [2145] = { "MIN" },
+    [2146] = { "BTN" },
+    [2147] = { "FSH" },
+    [2148] = { "PGL" },
+    [2149] = { "GLA" },
+    [2150] = { "MRD" },
+    [2151] = { "ARC" },
+    [2152] = { "LNC" },
+    [2153] = { "THM" },
+    [2154] = { "CNJ" },
+    [2155] = { "GLA", "MRD" },
+    [2156] = { "PGL", "ARC", "LNC" },
+    [2157] = { "THM", "CNJ" },
+    [2158] = { "PGL", "ARC", "LNC", "MNK", "BRD", "DRG", "MIN", "BTN", "FSH" },
+}
+
+-- Class/job id -> abbreviation (used for compatibility checks)
+local CLASS_ID_TO_ABBR = {
+    [2] = "PGL",
+    [3] = "GLA",
+    [4] = "MRD",
+    [7] = "ARC",
+    [8] = "LNC",
+    [15] = "MNK",
+    [16] = "PLD",
+    [17] = "WAR",
+    [18] = "BRD",
+    [19] = "DRG",
+    [22] = "THM",
+    [23] = "CNJ",
+    [26] = "BLM",
+    [27] = "WHM",
+    [29] = "CRP",
+    [30] = "BSM",
+    [31] = "ARM",
+    [32] = "GSM",
+    [33] = "LTW",
+    [34] = "WVR",
+    [35] = "ALC",
+    [36] = "CUL",
+    [39] = "MIN",
+    [40] = "BTN",
+    [41] = "FSH",
+}
+
+function classIdToAbbr(classOrJobId)
+    return CLASS_ID_TO_ABBR[classOrJobId];
+end
+
+function isAllowedByCompatibilityTable(compatibilityTable, classOrJobId)
+	local abbr = classIdToAbbr(classOrJobId);
+
+    if (compatibilityTable == nil or classOrJobId == nil) then
+        return false;
+    end
+ 
+    if (abbr == nil) then
+        return false;
+    end
+
+    for _, allowed in ipairs(compatibilityTable) do
+        if (allowed == abbr) then
+            return true;
+        end
+    end
+
+    return false;
+end
+
+function checkLevelRequirement(player, gItem, targetClassId)
+	if (gItem == nil) then
+        return true;
+    end
+
+    local levelType = gItem.levelType;		--levelType 0 = Optimal    1 = Required
+	local requiredLevel = gItem.level;
+	local currentLevel = player:GetLevel();
+
+    if (levelType == 0 or requiredLevel == nil) then
+        return true;
+    end
+
+    return (currentLevel >= requiredLevel); -- checks if true or false.
+end
+
+function checkCompatibilityRequirement(player, gItem, targetClassId)
+    local compatibilityTable = GEAR_COMPAT_REQUIRE[gItem.compatibility];
+	local currentId = player:GetCurrentClassOrJobId();
+
+    if (gItem == nil or gItem.compatibility == nil) then
+        return true;
+    end
+
+    if (compatibilityTable == nil) then
+        return true;
+    end
+
+    return isAllowedByCompatibilityTable(compatibilityTable, currentId);
+end
+
+-- When changing jobs, removes equipment that is no longer compatible with player.
+function removeIncompatibleEquipment(player, newClassId)
+
+    for slot = 0, 34 do
+        if (slot ~= EQUIPSLOT_UNDERSHIRT and slot ~= EQUIPSLOT_UNDERGARMENT) then -- ignores these slots so they never auto-unequip. No streaking allowed.
+            local equipped = player:GetEquipment():GetItemAtSlot(slot);
+            if (equipped ~= nil) then
+                local gEquipped = GetItemGamedata(equipped.itemId);
+                local badCompat = (checkCompatibilityRequirement(player, gEquipped, newClassId) == false);
+                local badLevel  = (checkLevelRequirement(player, gEquipped, newClassId) == false);
+
+                if (badCompat or badLevel) then
+                    unequipItem(player, slot, equipped);
+                end
+            end
+        end
+    end
+
+	-- Visual cleanup of stale graphics that might remain after switching class, like Archer quiver.
+	-- May need expanding later depending on future tests. Currently only clears Offhand and Throwing Weapon
+    if (player:GetEquipment():GetItemAtSlot(EQUIPSLOT_OFFHAND) == nil) then
+        player:GraphicChange(GRAPHICSLOT_OFFHAND, nil);
+    end
+    if (player:GetEquipment():GetItemAtSlot(EQUIPSLOT_THROWINGWEAPON) == nil) then
+        player:GraphicChange(GRAPHICSLOT_THROWING, nil);
+    end
+end
+
+
 EQUIPSLOT_MAINHAND 			= 0;
 EQUIPSLOT_OFFHAND 			= 1;
 EQUIPSLOT_THROWINGWEAPON 	= 4;
@@ -59,8 +242,9 @@ function onEventStarted(player, actor, eventType, eventName, equippedItem, param
 	--Equip Item
 	if (equippedItem ~= nil) then		
 		item = player:GetItemPackage(equippedItem.itemPackage):GetItemAtSlot(equippedItem.slot);		
-		equipItem(player, equipSlot, item);			
-		player:SendAppearance();
+		if (equipItem(player, equipSlot, item) == true) then
+			player:SendAppearance();
+		end
 	--Unequip Item
 	else	
 		item = player:GetEquipment():GetItemAtSlot(equipSlot);
@@ -110,6 +294,21 @@ function equipItem(player, equipSlot, item)
 		local worldMaster = GetWorldMaster();
 		local gItem = GetItemGamedata(item.itemId);
 		
+
+        -- Compatibility Check for Non-Mainhand Weapons
+        if (equipSlot ~= EQUIPSLOT_MAINHAND) then
+			-- Checks if player is on correct job.
+        	if (checkCompatibilityRequirement(player, gItem, nil) == false) then
+				player:SendGameMessage(player, worldMaster, 30704, 0x20); 
+				return false;
+			end
+			-- Checks if player has correct level.
+			if (checkLevelRequirement(player, gItem, nil) == false) then
+				player:SendGameMessage(player, worldMaster, 30708, 0x20); 
+				return false;
+			end
+		end
+
 		--If it's the mainhand, begin class change based on weapon
 		if (equipSlot == EQUIPSLOT_MAINHAND) then
 			if 	   (gItem:IsNailWeapon()) then classId = 2;
@@ -134,24 +333,34 @@ function equipItem(player, equipSlot, item)
 			elseif (gItem:IsBotanistWeapon()) then classId = 40;
 			elseif (gItem:IsFishingWeapon()) then classId = 41;
 			end	
-			
+
+            -- Checks if player has appropriate level to equip item.
+            if (checkLevelRequirement(player, gItem, classId) == false) then
+				player:SendGameMessage(player, worldMaster, 30708, 0x20, 0, 0, player, classId); 
+                --player:SendMessage(MESSAGE_TYPE_SYSTEM_ERROR, "", string.format("%s requires level %d.", gItem.name, (gItem.level or gItem.Level or 0))); -- Custom Error Msg
+                return false;
+            end
+
 			if (classId ~= nil) then
 				player:SendGameMessage(player, worldMaster, 30103, 0x20, 0, 0, player, classId); 
 				player:PrepareClassChange(classId);
+			end						
+
+			if (classId ~= nil) then
+				player:DoClassChange(classId);
 			end
-				
-		end		
-		
-		--Item Equipped message
-		player:SendGameMessage(player, worldMaster, 30601, 0x20, equipSlot+1, item.itemId, item.quality, 0, 0, 1); 
-		
-		--Load gearset for new class and begin class change
-		if (classId ~= nil) then			
-			loadGearset(player, classId);
-			player:DoClassChange(classId);
+
+			-- After switching class via weapon, automatically unequip items that player is no longer compatible with.
+			if (classId ~= nil) then
+				removeIncompatibleEquipment(player, classId);
+			end
 		end
 
-		player:GetEquipment():Set(equipSlot, item);		
+		--Item Equipped message
+		player:SendGameMessage(player, worldMaster, 30601, 0x20, equipSlot+1, item.itemId, item.quality, 0, 0, 1);
+		player:GetEquipment():Set(equipSlot, item);
+	
+		
 		
 		--EquipSlot -> GraphicSlot
 		if 	   (equipSlot == EQUIPSLOT_MAINHAND and gItem:IsNailWeapon() == false) then graphicSlot = GRAPHICSLOT_MAINHAND;
@@ -218,7 +427,9 @@ function equipItem(player, equipSlot, item)
 			end
 		end
 		
+		return true;
 	end
+	return false;
 end
 
 function unequipItem(player, equipSlot, item)

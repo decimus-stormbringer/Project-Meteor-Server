@@ -114,7 +114,6 @@ namespace Meteor.Map.actors.director
             LuaEngine.GetInstance().CallLuaFunction(player, this, "onCommandEvent", false, command);
         }
 
-        // Putting this here to test later mob-kill tracking in Director scripts. 
         public void OnKillBNpc(Player caller, uint classId)
         {
             LuaEngine.GetInstance().CallLuaFunction(caller, this, "onKillBNpc", true, classId);
@@ -339,10 +338,19 @@ namespace Meteor.Map.actors.director
             else
                 args2[0] = this;
 
-            
-            Coroutine coroutine = directorScript.CreateCoroutine(directorScript.Globals["onEventStarted"]).Coroutine;
-            DynValue value = coroutine.Resume(args2);
-            LuaEngine.GetInstance().ResolveResume(player, coroutine, value);
+
+            currentCoroutine = directorScript.CreateCoroutine(directorScript.Globals["onEventStarted"]).Coroutine;
+            DynValue value = currentCoroutine.Resume(args2);
+            LuaEngine.GetInstance().ResolveResume(player, currentCoroutine, value);
+        }
+
+        public void CancelEventStarted()
+        {
+            if (currentCoroutine == null)
+                return;
+
+            LuaEngine.GetInstance().CancelCoroutine(currentCoroutine);
+            currentCoroutine = null;
         }
     }    
 }

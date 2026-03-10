@@ -124,6 +124,7 @@ function onStateChange(player, quest, sequence)
 	quest:SetENpc(NONORU);
 	quest:SetENpc(SERANELIEN);
 	quest:SetENpc(TATARU);
+	quest:SetENpc(MINFILIA);
 	
 end
 

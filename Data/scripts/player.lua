@@ -1,4 +1,4 @@
-require("global");
+﻿require("global");
 
 local initClassItems, initRaceItems;
 
@@ -45,39 +45,36 @@ function onBeginLogin(player)
 		director = player.CurrentArea:CreateDirector("OpeningDirector", false);		
 		player:AddDirector(director);
 		director:StartDirector(true);
-		player:SetLoginDirector(director);		
+		player:SetLoginDirector(director);
 		player:KickEvent(director, "noticeEvent", true);
-				
 		player.positionX = 0.016;
 		player.positionY = 10.35;
 		player.positionZ = -36.91;
 		player.rotation = 0.025;
 		player:GetQuest(110001):GetData():ClearData();
 	elseif (player:HasQuest(110005) == true and player.CurrentArea.ZoneId == 166) then 
-		director = player.CurrentArea:CreateDirector("OpeningDirector", false);		
+		director = player.CurrentArea:CreateDirector("OpeningDirector", false);
 		player:AddDirector(director);
-		director:StartDirector(false);		
-		player:SetLoginDirector(director);		
-		player:KickEvent(director, "noticeEvent", true);
-		
+		director:StartDirector(false);
+		player:SetLoginDirector(director);
+		player:KickEvent(director, "noticeEvent", true);	
 		player.positionX = 369.5434;
 		player.positionY = 4.21;
 		player.positionZ = -706.1074;
 		player.rotation = -1.26721;
 		player:GetQuest(110005):GetData():ClearData();
 	elseif (player:HasQuest(110009) == true and player.CurrentArea.ZoneId == 184) then
-		director = player.CurrentArea:CreateDirector("OpeningDirector", false);		
+		director = player.CurrentArea:CreateDirector("OpeningDirector", false);
 		player:AddDirector(director);
 		director:StartDirector(true);
-		player:SetLoginDirector(director);		
+		player:SetLoginDirector(director);
 		player:KickEvent(director, "noticeEvent", true);
-		
 		player.positionX = 5.364327;
 		player.positionY = 196.0;
 		player.positionZ = 133.6561;
 		player.rotation = -2.849384;
 		player:GetQuest(110009):GetData():ClearData();
-	end	
+	end
 end
 
 function onLogin(player)
@@ -89,10 +86,14 @@ function onLogin(player)
 		initRaceItems(player);	
 		--player:GetItemPackage(0):AddItems({4040001, 8011001, 8050621, 8070346, 8090307});
 		--player:GetEquipment():Set({0, 8, 12, 13, 15},{0, 1, 2, 3, 4},0);
-		player.RecalculateStats();
+		player:RecalculateStats();
 		player:SavePlayTime();		
 	end	
 	
+	player.HPP = 100;
+	player.MPP = 100;
+	player.TPP = 0;
+	player:RecalculateStats();
 end
 
 function initClassItems(player)

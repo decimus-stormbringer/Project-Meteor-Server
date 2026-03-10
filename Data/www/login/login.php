@@ -90,3 +90,8 @@ if (isset($_POST["login"])) {
                         if (!empty($loginError)) {
                             echo "<div style='color:red; margin-top:10px;'>" . htmlspecialchars($loginError) . "</div>";
                         }
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

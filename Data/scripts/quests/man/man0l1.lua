@@ -214,6 +214,7 @@ function onStateChange(player, quest, sequence)
 		local subseqCUL = data:GetCounter(CNTR_SEQ7_CUL);
 		local subseqMSK = data:GetCounter(CNTR_SEQ7_MSK);
 
+
 		-- Always active in this seqence
 		quest:SetENpc(BADERON);
 		quest:SetENpc(CHARLYS, subseqCUL == 0 and QFLAG_TALK or QFLAG_NONE);
@@ -498,11 +499,13 @@ function seq007_onTalk(player, quest, npc, classId)
 	elseif (classId == CHARLYS) then
 		if (subseqCUL == 0) then
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent030");
-			data:IncCounter(CNTR_SEQ7_CUL);			
+			data:SetCounter(CNTR_SEQ7_CUL, 1);			
 			if (data:GetCounter(CNTR_SEQ7_MSK) == 4) then
-				seq007_endSequence(player, quest);
+				callClientFunction(player, "delegateEvent", player, quest, "processEvent033");
+				quest:NewNpcLsMsg(1);
 			end
-			--give 1000g
+			player:AddItem(1000001, 1000); -- give 1000 gil
+			player:SendGameMessage(GetWorldMaster(), 25031, 0x20, 1000);
 		else
 			callClientFunction(player, "delegateEvent", player, quest, "processEvent030_2");
 		end
@@ -542,11 +545,6 @@ function seq007_onTalk(player, quest, npc, classId)
 	end
 		
 	player:EndEvent();
-end
-
-function seq007_endSequence(player, quest)
-	callClientFunction(player, "delegateEvent", player, quest, "processEvent033");
-	quest:NewNpcLsMsg(1);
 end
 
 function seq080_085_onTalk(player, quest, npc, classId)
@@ -603,12 +601,16 @@ function onPush(player, quest, npc)
 			player:EndEvent();
 			quest:UpdateENPCs();
 			GetWorldManager():DoZoneChange(player, 230, nil, 0, 15, -620.0, 29.476, -70.050, 0.791);
-		elseif (classId == ECHO_EXIT_TRIGGER) then
-			callClientFunction(player, "delegateEvent", player, quest, "processEvent060");
-			data:IncCounter(CNTR_SEQ7_MSK);
+		elseif (classId == ECHO_EXIT_TRIGGER) then				
+			data:SetCounter(CNTR_SEQ7_MSK, 4);
+
 			if (data:GetCounter(CNTR_SEQ7_CUL) == 1) then
-				seq007_endSequence(player, quest);
+				callClientFunction(player, "delegateEvent", player, quest, "processEvent065");
+				quest:NewNpcLsMsg(1);
+			else
+				callClientFunction(player, "delegateEvent", player, quest, "processEvent060");				
 			end
+
 			player:EndEvent();
 			quest:UpdateENPCs();
 			GetWorldManager():WarpToPublicArea(player);
