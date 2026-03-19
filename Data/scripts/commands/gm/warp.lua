@@ -57,7 +57,7 @@ function onTrigger(player, argc, p1, p2, p3, p4, privateArea, privateAreaType, n
             local y = tonumber(applyPositionOffset(p3, player_y)) or player_y;
             local z = tonumber(applyPositionOffset(p4, player_z)) or player_z;
             if privateArea == nil then privateArea = nil end;
-            if privateAreaType == nila then privateAreaType = 0 end;
+            if privateAreaType == nil then privateAreaType = 0 end;
             player:SendMessage(messageID, sender, string.format("setting coordinates X:%d Y:%d Z:%d to new zone (%d) private area:%s", x, y, z, zone, privateArea or "unspecified"));
             worldManager:DoZoneChange(player, zone, privateArea, tonumber(privateAreaType), 0x02, x, y, z, 0.00);
         end
@@ -118,10 +118,6 @@ function onTrigger(player, argc, p1, p2, p3, p4, privateArea, privateAreaType, n
 				player:SendMessage(messageID, sender, string.format("Island2"));
 				player:SendMessage(messageID, sender, string.format("Island3"));
 				player:SendMessage(messageID, sender, string.format("Jail"));
-
-
-
-
         else 
 			updateTime = tonumber(updateTime) or 0;
 			-- Warps: Inns & Adventurer Guilds

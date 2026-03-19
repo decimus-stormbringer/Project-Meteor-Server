@@ -8,6 +8,7 @@ end
 
 GOOBBUE				= 2203301;
 COUNTER_QUESTKILL	= 0;
+THIS_IS_THANCRED	= 1000010; --uses name id
 
 function onKillBNpc(player, director, bnpc)
     local quest = player:GetQuest(110009);
@@ -36,7 +37,8 @@ function onKillBNpc(player, director, bnpc)
 			quest:StartSequence(10); -- To display Journal update message. 
 			player:ChangeMusic(7);
 			player.CurrentArea:ContentFinished();
-			GetWorldManager():DoZoneChange(player, 175, "PrivateAreaMasterPast", 3, 15, -22.81, 196, 87.82, 2.98);		
+			GetWorldManager():DoZoneChange(player, 175, "PrivateAreaMasterPast", 3, 15, -22.81, 196, 87.82, 2.98);	
+			callClientFunction(player, "delegateEvent", player, quest, "processTtrBtl004", nil, nil, nil);
 			player:EndEvent();
 			player:PartyDisband();
 			player:ClearMods();
@@ -66,6 +68,7 @@ function onEventStarted(player, director, triggerName)
 			
 		-- Tutorial: Auto-Attack Monster
 		waitForSignal("playerAttack");
+		player:SendGameMessageLocalizedDisplayName(quest, 110, MESSAGE_TYPE_SAY, THIS_IS_THANCRED);
 		wait(1);
 		kickEventContinue(player, director, "noticeEvent", "noticeEvent");
 		closeTutorialWidget(player);
@@ -81,6 +84,7 @@ function onEventStarted(player, director, triggerName)
 		player:EndEvent();
 		waitForSignal("weaponskillUsed");			
 		wait(1);
+		player:SendGameMessageLocalizedDisplayName(quest, 110, MESSAGE_TYPE_SAY, THIS_IS_THANCRED);
 		kickEventContinue(player, director, "noticeEvent", "noticeEvent");
 		closeTutorialWidget(player);
 		showTutorialSuccessWidget(player, 9065);

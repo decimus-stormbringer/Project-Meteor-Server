@@ -1369,6 +1369,7 @@ namespace Meteor.Map.lua
             script.Globals["GetGuildleveGamedata"] = (Func<uint, GuildleveData>)Server.GetGuildleveGamedata;
             //script.Globals["GetRecipeResolver"] = (Func<RecipeResolver>)Server.ResolveRecipe;
             script.Globals["GetLuaInstance"] = (Func<LuaEngine>)LuaEngine.GetInstance;
+            script.Globals["MonsterParty"] = UserData.CreateStatic<MonsterParty>();
 
             foreach (Modifier mod in Enum.GetValues(typeof(Modifier)))
             {

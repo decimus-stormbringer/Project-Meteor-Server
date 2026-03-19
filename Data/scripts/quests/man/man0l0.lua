@@ -313,7 +313,7 @@ function doExitDoor(player, quest, npc)
 		player:KickEvent(director, "noticeEvent", true);
 		player:SetLoginDirector(director);		
 		
-		GetWorldManager():DoZoneChangeContent(player, contentArea, -5, 16.35, 6, 0.5, 16);		
+		GetWorldManager():DoZoneChangeContent(player, contentArea, -4.8, 16.35, 8.1, 0.2, 16);		
 		return;
 	else
 		player:EndEvent();

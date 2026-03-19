@@ -37,6 +37,8 @@ namespace Meteor.Map.DataObjects
         public List<Actor> actorInstanceList = new List<Actor>();
         public uint languageCode = 1;
         private DateTime lastPingPacket = DateTime.UtcNow;
+        private DateTime lastClientActivity = DateTime.UtcNow;
+
         public bool IsConnected { get; set; } = true;
 
         public bool isUpdatesLocked = true;
@@ -71,25 +73,47 @@ namespace Meteor.Map.DataObjects
             return playerActor;
         }
 
+        public void MarkActivity()
+        {
+            lastClientActivity = DateTime.UtcNow;
+        }
+
+        public void MarkConnected()
+        {
+            IsConnected = true;
+            playerActor.SetDCFlag(false);
+            MarkActivity();
+        }
+
+        public TimeSpan GetIdleTime()
+        {
+            return DateTime.UtcNow - lastClientActivity;
+        }
+
+        //public void Ping()
+        //{
+        //    lastPingPacket = DateTime.UtcNow;
+        //}
+
         public void Ping()
         {
-            lastPingPacket = DateTime.UtcNow;
-
+            lastClientActivity = DateTime.UtcNow;
         }
 
         public bool CheckIfDCing()
         {
             // elapsed time since last client activity
-            var elapsed = DateTime.UtcNow - lastPingPacket;
+            //var elapsed = DateTime.UtcNow - lastPingPacket;
+            var elapsed = DateTime.UtcNow - lastClientActivity;
 
-            // Show DC flag if no activity for 5 seconds
-            if (elapsed >= TimeSpan.FromSeconds(5))
+            // Show DC flag if no activity for 15 seconds
+            if (elapsed >= TimeSpan.FromSeconds(15))
                 playerActor.SetDCFlag(true);
             else
                 playerActor.SetDCFlag(false);
 
             // Consider fully DCed after 30 seconds of no activity
-            if (elapsed >= TimeSpan.FromSeconds(10))
+            if (elapsed >= TimeSpan.FromSeconds(30))
                 return true;
 
             return false;
@@ -103,21 +127,20 @@ namespace Meteor.Map.DataObjects
             if (playerActor.positionX == x && playerActor.positionY == y && playerActor.positionZ == z && playerActor.rotation == rot)
                 return;
 
-            /*
             playerActor.oldPositionX = playerActor.positionX;
             playerActor.oldPositionY = playerActor.positionY;
             playerActor.oldPositionZ = playerActor.positionZ;
             playerActor.oldRotation = playerActor.rotation;
-            
+
             playerActor.positionX = x;
             playerActor.positionY = y;
             playerActor.positionZ = z;
-            */
             playerActor.rotation = rot;
             playerActor.moveState = moveState;
 
-            //GetActor().GetZone().UpdateActorPosition(GetActor());
-            playerActor.QueuePositionUpdate(new Vector3(x,y,z));
+            playerActor.CurrentArea?.UpdateActorPosition(playerActor);
+
+            playerActor.QueuePositionUpdate(new Vector3(x, y, z));
         }
 
         public void UpdateInstance(List<Actor> list, bool force = false)
@@ -230,6 +253,23 @@ namespace Meteor.Map.DataObjects
         public void LockUpdates(bool f)
         {
             isUpdatesLocked = f;
+        }
+
+        // Added to fix some mapobjs that liked to hang around even after zone changes.
+        public void RemoveAllInstancedActorsForZoneChange()
+        {
+            for (int i = 0; i < actorInstanceList.Count; i++)
+            {
+                Actor actor = actorInstanceList[i];
+
+                if (actor == null)
+                    continue;
+
+                if (actor.Id == playerActor.Id)
+                    continue;
+
+                QueuePacket(RemoveActorPacket.BuildPacket(actor.Id));
+            }
         }
     }
 }

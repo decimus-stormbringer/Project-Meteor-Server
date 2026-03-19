@@ -112,7 +112,7 @@ namespace Meteor.Map.actors.chara.ai
         {
             var dest = owner.FindRandomPoint(x, y, z, minRange, maxRange);
             // todo: this is dumb..
-            distanceFromPoint = owner.GetAttackRange();
+            distanceFromPoint = owner.GetAutoAttackRange();
             PreparePath(dest.X, dest.Y, dest.Z);
         }
 
@@ -148,7 +148,7 @@ namespace Meteor.Map.actors.chara.ai
                 }
 
                 if (path.Count == 0 && owner.target != null)
-                    owner.LookAt(owner.target);
+                    owner.SmoothLookAt(owner.target, 0.03f);
             }
         }
 
@@ -167,39 +167,14 @@ namespace Meteor.Map.actors.chara.ai
             if (distanceFromPoint == 0)
                 return owner.positionX == point.X && owner.positionZ == point.Z;
             else
-                return Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, point.X, point.Y, point.Z) <= (distanceFromPoint + 4.5f);
+                return Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, point.X, point.Y, point.Z) <= (distanceFromPoint + 0.25f);
         }
 
+        // Roaming Fix Test
         public void StepTo(Vector3 point, bool run = false)
         {
-            float speed = GetSpeed();
-
-            float stepDistance = speed / 3;
-            float distanceTo = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, point.X, point.Y, point.Z);
-
-            owner.LookAt(point);
-
-            if (distanceTo <= distanceFromPoint + stepDistance)
-            {
-                if (distanceFromPoint <= owner.GetAttackRange())
-                {
-                    owner.QueuePositionUpdate(point);
-                }
-                else
-                {
-                    float x = owner.positionX - (float)Math.Cos(owner.rotation + (float)(Math.PI / 2)) * (distanceTo - distanceFromPoint);
-                    float z = owner.positionZ + (float)Math.Sin(owner.rotation + (float)(Math.PI / 2)) * (distanceTo - distanceFromPoint);
-
-                    owner.QueuePositionUpdate(x, owner.positionY, z);
-                }
-            }
-            else
-            {
-                float x = owner.positionX - (float)Math.Cos(owner.rotation + (float)(Math.PI / 2)) * (distanceTo - distanceFromPoint);
-                float z = owner.positionZ + (float)Math.Sin(owner.rotation + (float)(Math.PI / 2)) * (distanceTo - distanceFromPoint);
-
-                owner.QueuePositionUpdate(x, owner.positionY, z);
-            }
+            owner.SmoothLookAt(point, 0.08f);
+            owner.QueuePositionUpdate(point.X, owner.positionY, point.Z);
         }
 
         public void Clear()

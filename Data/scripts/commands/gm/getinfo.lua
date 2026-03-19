@@ -26,4 +26,5 @@ function onTrigger(player)
 	player:SendMessage(messageID, sender, string.format("Actor ID: 0x%X", targetActor.Id));
 	player:SendMessage(messageID, sender, string.format("Class Name: %s", targetActor.className));
 	player:SendMessage(messageID, sender, string.format("Class ID: %d", targetActor:GetActorClassId()));
+    player:SendMessage(messageID, sender, string.format("AttachedAI: %s", targetActor:GetAIPreset()));
 end

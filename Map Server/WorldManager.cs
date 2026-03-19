@@ -61,7 +61,7 @@ namespace Meteor.Map
 
         private Server mServer;
 
-        private const int MILIS_LOOPTIME = 333;
+        private const int MILIS_LOOPTIME = 50;
         private Timer mZoneTimer;
 
         //Zone Server Groups
@@ -70,7 +70,7 @@ namespace Meteor.Map
         public Dictionary<ulong, TradeGroup> mTradeGroups = new Dictionary<ulong, TradeGroup>();
         private Object groupLock = new Object();
         private Object tradeLock = new Object();
-        public ulong groupIndexId = 1;
+        public static ulong groupIndexId = 1;
 
         public WorldManager(Server server)
         {
@@ -430,9 +430,10 @@ namespace Meteor.Map
                                 reader.GetFloat("rot"), reader.GetUInt16("actorState"), reader.GetUInt32("animId"), reader.GetString("displayName"));
 
                                 battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
+                                battleNpc.AttachAI("DPS");
                                 //battleNpc.isHostile = reader.GetBoolean("isHostile");
                                 //battleNpc.SetDetectionType(reader.GetUInt32("detectionType"));
-                                
+
 
                                 battleNpc.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte("currentJob");
                                 battleNpc.charaWork.parameterSave.state_mainSkillLevel = reader.GetByte("level");
@@ -440,7 +441,6 @@ namespace Meteor.Map
                                 battleNpc.allegiance = (CharacterTargetingAllegiance)reader.GetByte("allegiance");
 
                                 // todo: setup private areas and other crap and
-                                // set up rest of stat resists 
                                 battleNpc.SetMod((uint)Modifier.Hp, reader.GetUInt32("hpMax"), ModifierOrigin.Base);
                                 battleNpc.SetMod((uint)Modifier.Mp, reader.GetUInt32("mpMax"), ModifierOrigin.Base);
                                 battleNpc.SetMod((uint)Modifier.HpPercent, reader.GetUInt32("hpp"), ModifierOrigin.Base);
@@ -456,13 +456,16 @@ namespace Meteor.Map
                                 battleNpc.SetMod((uint)Modifier.Accuracy, reader.GetUInt32("acc"), ModifierOrigin.Base);
                                 battleNpc.SetMod((uint)Modifier.Defense, reader.GetUInt32("def"), ModifierOrigin.Base);
                                 battleNpc.SetMod((uint)Modifier.Evasion, reader.GetUInt32("eva"), ModifierOrigin.Base);
-                                battleNpc.SetMod((uint)Modifier.MovementSpeed, reader.GetByte("speed"), ModifierOrigin.Base);
+                                battleNpc.SetMod((uint)Modifier.MovementSpeed, reader.GetByte("speed"), ModifierOrigin.Miscellaneous);
                                 battleNpc.SetMod((uint)Modifier.Delay, reader.GetUInt32("combatDelay"), ModifierOrigin.Base);
                                 battleNpc.SetMobMod((uint)MobModifier.Roams, reader.GetByte("roams"));
                                 battleNpc.SetMobMod((uint)MobModifier.RoamDelay, reader.GetUInt32("roamDelay"));
                                 battleNpc.SetMobMod((uint)MobModifier.DetectionRange, reader.GetUInt32("detectionRange"));
                                 battleNpc.SetRespawnTime(reader.GetUInt32("respawnTime"));
+
+                                // Stat Resistances to be places here
                                 //battleNpc.SetMod((uint)Modifier.ResistFire, reader.GetUInt("fire"));
+                                
                                 battleNpc.CalculateStats();
 
                                 // handles spawning conditionsb (ie. Night/Day/Weather/Etc).
@@ -470,7 +473,6 @@ namespace Meteor.Map
                                 {
                                     zone.AddActorToZone(battleNpc);
                                     battleNpc.LoadEventConditions(bnpcId.eventConditions);
-                                    battleNpc.ResetMoveSpeeds();
                                     count++;
                                 }
                             }
@@ -494,117 +496,6 @@ namespace Meteor.Map
             Program.Log.Info("Spawning actors...");
             foreach (Zone z in zoneList.Values)
                 z.SpawnAllActors(true);
-        }
-
-        public BattleNpc SpawnBattleNpcById(uint id, Area area = null)
-        {
-            BattleNpc bnpc = null;
-            // todo: this is stupid duplicate code and really needs to die, think of a better way later
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                try
-                {
-                    conn.Open();
-                    var query = @"
-                    SELECT 
-                    bsl.id, bsl.bnpcId, bsl.uniqueId, bsl.zoneId, bsl.posX, bsl.posY, bsl.posZ, bsl.rot ,bsl.privateArea, bsl.privateAreaLevel,
-                    bsl.hp, bsl.hpMax, bsl.hpp, bsl.mp, bsl.mpMax, bsl.mpp, bsl.tpp, bsl.actorState, bsl.animId, bsl.roams, bsl.roamDelay, bsl.modelSize, bsl.immunity,    
-
-                    bmt.bnpcId, bmt.actorId, bmt.displayName, bmt.speed, bmt.isHostile, bmt.detectionType, bmt.detectionRange, bmt.respawnTime, bmt.combatDelay,
-                    bmt.allegiance, bmt.currentJob, bmt.level,bmt.str, bmt.vit, bmt.dex, bmt.int, bmt.mnd, bmt.pie, bmt.att, bmt.acc, bmt.def, bmt.eva, 
-                    bmt.slash, bmt.pierce, bmt.h2h, bmt.blunt, bmt.fire, bmt.ice, bmt.wind, bmt.lightning, bmt.earth, bmt.water, bmt.element
-                    FROM server_battlenpc_spawn_locations bsl
-                    INNER JOIN server_battlenpc_mob_types bmt ON bsl.bnpcId = bmt.bnpcId
-                    WHERE bsl.zoneId = @zoneId GROUP BY bsl.id;
-                    ";
-
-                    var count = 0;
-
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@id", id);
-
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            area = area ?? Server.GetWorldManager().GetArea(reader.GetUInt16("zoneId"));
-                            int actorId = area.GetActorCount() + 1;
-
-                            bnpc = area.GetBattleNpcById(id);
-
-                            if (bnpc != null)
-                            {
-                                bnpc.ForceRespawn();
-                                break;
-                            }
-                            ActorClass bnpcId = Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorId")); 
-                            // todo: add to private areas, set up immunity, mob linking,
-                            // - load skill/spell/drop lists, set detection icon, load pool/family/group mods
-                            var allegiance = (CharacterTargetingAllegiance)reader.GetByte("allegiance");
-                            BattleNpc battleNpc = null;
-
-                            if (allegiance == CharacterTargetingAllegiance.Player)
-                                battleNpc = new Ally(actorId, bnpcId, reader.GetString("uniqueId"), area, reader.GetFloat("posX"), reader.GetFloat("posY"), reader.GetFloat("posZ"),
-                                reader.GetFloat("rot"), reader.GetUInt16("actorState"), reader.GetUInt32("animId"), reader.GetString("displayName"));
-                            else
-                                battleNpc = new BattleNpc(actorId, bnpcId, reader.GetString("uniqueId"), area, reader.GetFloat("posX"), reader.GetFloat("posY"), reader.GetFloat("posZ"),
-                                reader.GetFloat("rot"), reader.GetUInt16("actorState"), reader.GetUInt32("animId"), reader.GetString("displayName"));
-
-                            battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
-                            //battleNpc.isHostile = reader.GetBoolean("isHostile");
-                            //battleNpc.SetDetectionType(reader.GetUInt32("detectionType"));
-
-                            battleNpc.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte("currentJob");
-                            battleNpc.charaWork.parameterSave.state_mainSkillLevel = reader.GetByte("level");
-                            
-                            battleNpc.allegiance = (CharacterTargetingAllegiance)reader.GetByte("allegiance");
-
-                            // todo: setup private areas and other crap and
-                            // set up rest of stat resists  
-                            battleNpc.SetMod((uint)Modifier.Hp, reader.GetUInt32("hpMax"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.Mp, reader.GetUInt32("mpMax"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.HpPercent, reader.GetUInt32("hpp"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.MpPercent, reader.GetUInt32("mpp"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.TpPercent, reader.GetUInt32("tpp"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.Strength, reader.GetUInt32("str"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.Vitality, reader.GetUInt32("vit"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.Dexterity, reader.GetUInt32("dex"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.Intelligence, reader.GetUInt32("int"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.Mind, reader.GetUInt32("mnd"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.Piety, reader.GetUInt32("pie"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.Attack, reader.GetUInt32("att"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.Accuracy, reader.GetUInt32("acc"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.Defense, reader.GetUInt32("def"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.Evasion, reader.GetUInt32("eva"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.MovementSpeed, reader.GetByte("speed"), ModifierOrigin.Base);
-                            battleNpc.SetMod((uint)Modifier.Delay, reader.GetUInt32("combatDelay"), ModifierOrigin.Base);
-                            battleNpc.SetMobMod((uint)MobModifier.Roams, reader.GetByte("roams"));
-                            battleNpc.SetMobMod((uint)MobModifier.RoamDelay, reader.GetUInt32("roamDelay"));
-                            battleNpc.SetMobMod((uint)MobModifier.DetectionRange, reader.GetUInt32("detectionRange"));
-                            battleNpc.SetRespawnTime(reader.GetUInt32("respawnTime"));
-                            battleNpc.CalculateStats();
-
-                            //battleNpc.SetMod((uint)Modifier.ResistFire, )
-
-                            bnpc = battleNpc;
-                            area.AddActorToZone(battleNpc);
-                            battleNpc.LoadEventConditions(bnpcId.eventConditions);
-                            battleNpc.ResetMoveSpeeds();
-                            count++;
-                        }
-                    }
-                    Program.Log.Info("WorldManager.SpawnBattleNpcById spawned BattleNpc {0}.", id);
-                }
-                catch (MySqlException e)
-                {
-                    Program.Log.Error(e.ToString());
-                }
-                finally
-                {
-                    conn.Dispose();
-                }
-            }
-            return bnpc;
         }
 
         private bool hasMerged = false;
@@ -707,6 +598,14 @@ namespace Meteor.Map
             if (player.CurrentArea == null)
                 return;
 
+            // Prevent seamless zones from activating in PrivateAreas.
+            if (player.CurrentArea.IsPrivate())
+            {
+                player.zone2 = null;
+                player.zoneId2 = 0;
+                return;
+            }
+
             uint regionId = player.CurrentArea.RegionId;
 
             if (!seamlessBoundryList.ContainsKey(regionId))
@@ -785,9 +684,8 @@ namespace Meteor.Map
             Area oldArea = player.CurrentArea;
             //Remove player from currentZone if transfer else it's login
             if (player.CurrentArea != null)
-            {
                 oldArea.RemoveActorFromZone(player);
-            }
+            
             newArea.AddActorToZone(player);
 
             //Update player actor's properties
@@ -812,12 +710,15 @@ namespace Meteor.Map
                     ((PrivateAreaContent)oldArea).CheckDestroy();
             }
 
+            player.zone2 = null;
+            player.zoneId2 = 0;
+
             //Send packets
+            player.playerSession.RemoveAllInstancedActorsForZoneChange();
             player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.Id));
             player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.Id, 0x2));
-            player.SendZoneInPackets(this, spawnType);
             player.playerSession.ClearInstance();
-            player.SendInstanceUpdate();
+            player.SendZoneInPackets(this, spawnType);
             Database.SavePlayerPosition(player);
 
             player.playerSession.LockUpdates(false);
@@ -1720,7 +1621,7 @@ namespace Meteor.Map
             SubPacket groupInviteResultPacket = GroupInviteResultPacket.BuildPacket(player.playerSession, groupType, result);
             player.QueuePacket(groupInviteResultPacket);
         }
-                
+
         public void StartZoneThread()
         {
             mZoneTimer = new Timer(ZoneThreadLoop, null, 0, MILIS_LOOPTIME);

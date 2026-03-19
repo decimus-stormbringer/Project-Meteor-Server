@@ -274,7 +274,7 @@ namespace Meteor.Map.actors.chara.ai.utils
                 attacker.OnDamageDealt(defender, skill, action, actionContainer);
                 defender.OnDamageTaken(attacker, skill, action, actionContainer);
 
-                // todo: other stuff too
+                // Handle hate buildup on attack.
                 if (defender is BattleNpc)
                 {
                     var bnpc = defender as BattleNpc;
@@ -282,7 +282,13 @@ namespace Meteor.Map.actors.chara.ai.utils
                     {
                         bnpc.hateContainer.AddBaseHate(attacker);
                     }
-                    bnpc.hateContainer.UpdateHate(attacker, action.enmity);
+
+                    int hateAmount = Math.Max(1, (int)action.amount);
+
+                    if (attacker is BattleNpc attackerNpc)
+                        hateAmount = (int)Math.Max(1, Math.Round(action.amount * attackerNpc.aiContainer.GetDamageHateModifier()));
+
+                    bnpc.hateContainer.UpdateHate(attacker, hateAmount);
                     bnpc.lastAttacker = attacker;
                 }
             }

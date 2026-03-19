@@ -39,7 +39,7 @@ namespace Meteor.Map.actors.chara.ai.state
 
             owner.ChangeState(SetActorStatePacket.MAIN_STATE_ACTIVE);
             ChangeTarget(target);
-            attackTime = startTime;
+            attackTime = startTime.AddMilliseconds(owner.GetAttackDelayMs() * 0.5); // First auto-attack uses 1/2 normal delay, for quicker initial engagement. 
             owner.aiContainer.pathFind?.Clear();
         }
 
@@ -127,14 +127,14 @@ namespace Meteor.Map.actors.chara.ai.state
             //Some mobs have multiple unique auto attacks that they switch between as well as ranged auto attacks, so we'll need a way to handle that
             //For now, just use a temporary hardcoded BattleCommand that's the same for everyone.
             BattleCommand attackCommand = new BattleCommand(22104, "Attack");
-            attackCommand.range = 6;
+            attackCommand.range = owner.GetAutoAttackRange();
             attackCommand.rangeHeight = 10;
+            attackCommand.isRanged = false;
             attackCommand.worldMasterTextId = 0x765D;
             attackCommand.mainTarget = (ValidTarget)768;
             attackCommand.validTarget = (ValidTarget)17152;
             attackCommand.commandType = CommandType.AutoAttack;
             attackCommand.numHits = (byte)owner.GetMod(Modifier.HitCount);
-            //attackCommand.basePotency = 8;
             ActionProperty property = (owner.GetMod(Modifier.AttackType) != 0) ? (ActionProperty)owner.GetMod(Modifier.AttackType) : ActionProperty.Slashing;
             attackCommand.actionProperty = property;
             attackCommand.actionType = ActionType.Physical;
@@ -224,20 +224,23 @@ namespace Meteor.Map.actors.chara.ai.state
 
         private bool CanAttack()
         {
-            if (!owner.isAutoAttackEnabled || target.allegiance == owner.allegiance)
-            {
-                return false;
-            }
 
             if (target == null)
             {
                 return false;
             }
 
-            if (!owner.IsFacing(target))
+            if (!owner.isAutoAttackEnabled || target.allegiance == owner.allegiance)
             {
                 return false;
             }
+
+            if (!owner.IsFacing(target, 120.0f))
+            {
+                owner.LookAt(target);
+                return false;
+            }
+
             // todo: shouldnt need to check if owner is dead since all states would be cleared
             if (owner.IsDead() || target.IsDead())
             {
@@ -252,15 +255,25 @@ namespace Meteor.Map.actors.chara.ai.state
                 return false;
             }
             // todo: use a mod for melee range
-            else if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) > owner.GetAttackRange())
+            float attackRange = owner.GetAutoAttackRange();
+
+            if (Utils.XZDistance(owner.positionX, owner.positionZ, target.positionX, target.positionZ) > attackRange)
             {
                 if (owner is Player)
-                {
-                    //The target is too far away
                     ((Player)owner).SendGameMessage(Server.GetWorldManager().GetActor(), 32537, 0x20);
-                }
+
                 return false;
             }
+
+            float maxHeight = 5.0f;
+            if (Math.Abs(target.positionY - owner.positionY) > maxHeight)
+            {
+                if (owner is Player)
+                    ((Player)owner).SendGameMessage(Server.GetWorldManager().GetActor(), 32537, 0x20);
+
+                return false;
+            }
+
             return true;
         }
 

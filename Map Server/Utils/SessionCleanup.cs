@@ -75,18 +75,29 @@ namespace Meteor.Map.utils
                     if (!shouldClean)
                         shouldClean = session.CheckIfDCing();
 
-                    if (!shouldClean)
-                    {
-                        var worldConn = Server.GetWorldConnection();
-                        if (worldConn == null || !worldConn.IsConnected())
-                            shouldClean = true;
-                    }
+                    //if (!shouldClean)
+                    //{
+                    //    var worldConn = Server.GetWorldConnection();
+                    //    if (worldConn == null || !worldConn.IsConnected())
+                    //        shouldClean = true;
+                    //}
 
                     if (!shouldClean)
                         continue;
 
                     var player = session.GetActor();
-                    Program.Log.Info($"[SessionCleanup] Cleaning disconnected session {sessionId} ({player?.DisplayName ?? "unknown player"})...");
+
+                    if (player != null)
+                    {
+                        if (session.isUpdatesLocked || player.IsInZoneChange())
+                            continue;
+                    }
+
+                    //Program.Log.Info($"[SessionCleanup] Cleaning disconnected session {sessionId} ({player?.DisplayName ?? "unknown player"})...");
+                    Program.Log.Warn(
+                    $"[SessionCleanup] Candidate session={sessionId} player={player.DisplayName} " + 
+                    $"connected={session.IsSessionConnected()}" +
+                    $"locked={session.isUpdatesLocked} zoneChanging={player?.IsInZoneChange() ?? false}");
 
 
                     // mark session disconnected

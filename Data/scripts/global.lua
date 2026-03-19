@@ -155,6 +155,11 @@ MUSIC_FADEIN = 4;
 MUSIC_NORMAL_CHANNEL = 5;
 MUSIC_BATTLE_CHANNEL = 6;
 
+-- MOB AI PRESETS
+DPS = "DPS"
+Tank = "Tank"
+Healer = "Healer"
+
 -- Common Helper Functions
 function attentionMessage(player, textId, ...)
 	player:SendGameMessage(GetWorldMaster(), textId, 0x20, ...);

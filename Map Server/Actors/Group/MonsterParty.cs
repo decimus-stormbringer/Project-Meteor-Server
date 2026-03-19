@@ -20,6 +20,7 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 */
 
 using Meteor.Common;
+using Meteor.Map.Actors;
 using Meteor.Map.DataObjects;
 using Meteor.Map.packets.send.group;
 using Meteor.Map.packets.send.groups;
@@ -39,10 +40,26 @@ namespace Meteor.Map.actors.group
                     monsterMembers.Add(initialMonsterMembers[i]);
         }
 
+        public static MonsterParty CreateMonsterParty()
+        {
+            ulong id = WorldManager.groupIndexId++;
+            return new MonsterParty(id, null);
+        }
+
         public void AddMember(uint memberId)
         {
             monsterMembers.Add(memberId);
             SendGroupPacketsAll(monsterMembers);
+        }
+
+        public void AddMember(Character member)
+        {
+            if (member == null)
+                return;
+
+            member.currentParty = this;
+            AddMember(member.Id);
+            Program.Log.Warn($"[MonsterParty.AddMember] memberId={member.Id} name={member.Name} currentPartySet={(member.currentParty == this)} memberCount={monsterMembers.Count}");
         }
 
         public void RemoveMember(uint memberId)

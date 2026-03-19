@@ -38,6 +38,7 @@ using Meteor.Map.actors.chara.ai.utils;
 using Meteor.Map.actors.chara.npc;
 using System.Linq;
 using System.Collections.Immutable;
+using System.Buffers;
 
 
 namespace Meteor.Map.Actors
@@ -656,14 +657,20 @@ namespace Meteor.Map.Actors
             return GetMod((Modifier)modifier);
         }
 
-        public void SetMod(Modifier modifier, double val, ModifierOrigin origin)
+        public void SetMod(Modifier modifier, double value, ModifierOrigin origin)
         {
-            modifiers.SetMod(modifier, val, origin);
+            modifiers.SetMod(modifier, value, origin);
+
+            if (modifier == Modifier.MovementSpeed)
+                CalculateMovementSpeedModifier();
         }
 
-        public void SetMod(uint modifier, double val, ModifierOrigin origin = ModifierOrigin.Miscellaneous)
+        public void SetMod(uint modifier, double value, ModifierOrigin origin = ModifierOrigin.Miscellaneous)
         {
-            SetMod((Modifier)modifier, val, origin);
+            SetMod((Modifier)modifier, value, origin);
+
+            if ((Modifier)modifier == Modifier.MovementSpeed)
+                CalculateMovementSpeedModifier();
         }
 
         public void SetMod(string modName, int value)
@@ -679,24 +686,36 @@ namespace Meteor.Map.Actors
             modifiers.SetModDefault(modifier, val);
         }
 
-        public void AddMod(Modifier modifier, double val, ModifierOrigin origin)
+        public void AddMod(Modifier modifier, double value, ModifierOrigin origin)
         {
-            modifiers.AddMod(modifier, val, origin);
+            modifiers.AddMod(modifier, value, origin);
+
+            if (modifier == Modifier.MovementSpeed)
+                CalculateMovementSpeedModifier();
         }
 
-        public void AddMod(uint modifier, double val, ModifierOrigin origin = ModifierOrigin.Miscellaneous)
+        public void AddMod(uint modifier, double value, ModifierOrigin origin = ModifierOrigin.Miscellaneous)
         {
-            AddMod((Modifier)modifier, val, origin);
+            AddMod((Modifier)modifier, value, origin);
+
+            if ((Modifier)modifier == Modifier.MovementSpeed)
+                CalculateMovementSpeedModifier();
         }
 
-        public void SubtractMod(Modifier modifier, double val, ModifierOrigin origin)
+        public void SubtractMod(Modifier modifier, double value, ModifierOrigin origin)
         {
-            modifiers.SubtractMod(modifier, val, origin);
+            modifiers.SubtractMod(modifier, value, origin);
+            
+            if (modifier == Modifier.MovementSpeed)
+                CalculateMovementSpeedModifier();
         }
 
-        public void SubtractMod(uint modifier, double val, ModifierOrigin origin = ModifierOrigin.Miscellaneous)
+        public void SubtractMod(uint modifier, double value, ModifierOrigin origin = ModifierOrigin.Miscellaneous)
         {
-            SubtractMod((Modifier)modifier, val, origin);
+            SubtractMod((Modifier)modifier, value, origin);
+
+            if ((Modifier)modifier == Modifier.MovementSpeed)
+                CalculateMovementSpeedModifier();
         }
 
         public void MultiplyMod(Modifier modifier, double val)
@@ -728,6 +747,20 @@ namespace Meteor.Map.Actors
         {
             // todo: for battlenpc/player calculate speed
             return (float)GetMod(Modifier.MovementSpeed);
+        }
+
+        protected void CalculateMovementSpeedModifier()
+        {
+            double speed = GetMod(Modifier.MovementSpeed);
+
+            if (speed < 0.0)
+                speed = 0.0;
+
+            float walk = (float)Math.Round(speed / 2.0, MidpointRounding.AwayFromZero);
+            float run = (float)Math.Round(speed, MidpointRounding.AwayFromZero);
+            float active = (float)Math.Round(speed, MidpointRounding.AwayFromZero);
+
+            ChangeSpeed(0f, walk, run, active);
         }
 
         private static readonly IEnumerable<Modifier> StatModifiers = new List<Modifier>
@@ -1197,20 +1230,20 @@ namespace Meteor.Map.Actors
                             int setPiecesEquippedCount = modsByEquipmentSlot.Values.Count(itemMods => itemMods.Any(m => m.Modifier == mod.PrerequisiteModifier.Modifier));
                             if (setPiecesEquippedCount >= mod.PrerequisiteModifier.EndValue)
                             {
-                                AddMod(mod.Modifier, mod.EndValue, ModifierOrigin.Equipment);
+                                AddMod(mod.Modifier, (float)mod.EndValue, ModifierOrigin.Equipment);
                             }
                         }
                         else if (mod.PrerequisiteModifier.Modifier == Modifier.SanctionRequirement)
                         {
                             if (statusEffects.HasStatusEffect(StatusEffectId.Sanction))
                             {
-                                AddMod(mod.Modifier, mod.EndValue, ModifierOrigin.Equipment);
+                                AddMod(mod.Modifier, (float)mod.EndValue, ModifierOrigin.Equipment);
                             }
                         }
                     }
                     else
                     {
-                        AddMod(mod.Modifier, mod.EndValue, ModifierOrigin.Equipment);
+                        AddMod(mod.Modifier, (float)mod.EndValue, ModifierOrigin.Equipment);
                     }
                 }
             }
@@ -1396,13 +1429,7 @@ namespace Meteor.Map.Actors
 
         public virtual bool Engage(uint targid = 0, ushort newMainState = 0xFFFF)
         {
-            // todo: attack the things
-            /*if (newMainState != 0xFFFF)
-            {
-                currentMainState = newMainState;// this.newMainState = newMainState;
-                updateFlags |= ActorUpdateFlags.State;
-            }
-            else*/ if (aiContainer.CanChangeState())
+            if (aiContainer.CanChangeState())
             {
                 if (targid == 0)
                 {
@@ -1440,7 +1467,17 @@ namespace Meteor.Map.Actors
             }
             return false;
         }
-        
+
+        public virtual float GetAutoAttackRange()
+        {
+            return 3.0f;
+        }
+
+        public virtual bool IsRangedAutoAttack()
+        {
+            return false;
+        }
+
         public virtual void Cast(uint spellId, uint targetId = 0)
         {
             if (aiContainer.CanChangeState())
@@ -1829,13 +1866,19 @@ namespace Meteor.Map.Actors
                 statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnCommandStart, "onCommandStart", this, command, actions);
 
                 foreach (var chara in targets)
-                {
+                { 
+                    if (!CanUse(chara, command))
+                    {
+                        continue;
+                    }
+
                     ushort hitCount = 0;
                     ushort totalDamage = 0;
                     for (int hitNum = 1; hitNum <= command.numHits; hitNum++)
                     {
                         var action = new CommandResult(chara.Id, command, (byte)GetHitDirection(chara), (byte) hitNum);
                         
+
                         //uncached script
                         lua.LuaEngine.CallLuaBattleCommandFunction(this, command, folder, "onSkillFinish", this, chara, command, action, actions);
                         //cached script
@@ -1897,7 +1940,19 @@ namespace Meteor.Map.Actors
 
         public void EnableAutoAttack()
         {
-            this.isAutoAttackEnabled = true;
+            this.isAutoAttackEnabled = CanAutoAttack();
+        }
+
+        public bool CanAutoAttack()
+        {
+            switch (GetCurrentClassOrJob())
+            {
+                case Job.Archer:
+                case Job.Bard:
+                    return false;
+                default:
+                    return true;
+            }
         }
 
         #region Inventory

@@ -254,10 +254,8 @@ local defaultTalkWil = {
     [1500129] = "defaultTalkWithYayatoki_001",          -- Yayatoki
     [1500230] = "defaultTalkCaravanChocoboUld_001",     -- Pack Chocobo (needs verifying)
     [1700039] = "defaultTalkWithBATERICH_100",          -- Baterich
-	[1001230] = "defaultTalkWithUnaTayuun",				-- Waking Sands
-	-- [1000042] = "defaultTalkWithAscilia_001",
-    -- [1090549] = "defaultTalkWithInn_ExitDoor"         -- Ul'dah Inn Exit Door pushEvent - "Leave your room?"
-	[1200336] = "defaultTalkWithInn_ExitDoor",            -- Ul'dah Inn Exit Door talkEvent - "Leave your room?"
+    [1090549] = "defaultTalkWithInn_ExitDoor"           -- Ul'dah Inn Exit Door pushEvent - "Leave your room?"
+	[1200336] = "defaultTalkWithInn_ExitDoor",          -- Ul'dah Inn Exit Door talkEvent - "Leave your room?"
     
 	-- Need sourcing
 	--    [???] = "defaultTalkCaravanChocoboUld_001"           -- Presumably used on the Caravan Chocobo escorts? Does a little animation.
@@ -297,40 +295,6 @@ end
 function IsQuestENPC(player, quest, npc)
     return defaultTalkWil[npc:GetActorClassId()] ~= nil;
 end
-
---[[
-function defaultTalkWakingSands(player, quest, npc)
-	local npcId = npc:GetActorClassId();
-	local quest = player:GetQuest("Man200");
-	require ("quests/man/man200");
-
-	if (npcId == 1001281) then			-- Loam-Scented Lady
-		callClientFunction(player, "delegateEvent", player, GetStaticActor("Man200"), "processEvent020_8");
-	elseif (npcId == 1001279) then		-- Softhearted Septuagen
-		callClientFunction(player, "delegateEvent", player, GetStaticActor("Man200"), "processEvent020_9");
-	elseif (npcId == 1001280) then		-- Indigo Eyed Archer
-		callClientFunction(player, "delegateEvent", player, GetStaticActor("Man200"), "processEvent020_10");
-	elseif (npcId == 1001278) then		-- Barratrous Buccaneer
-		callClientFunction(player, "delegateEvent", player, GetStaticActor("Man200"), "processEvent020_11");
-	elseif (npcId == 1001282) then		-- Uncomfortable Brute
-		callClientFunction(player, "delegateEvent", player, GetStaticActor("Man200"), "processEvent020_12");
-	elseif (npcId == 1001275) then		-- Red Shoe'd Rascal'
-		callClientFunction(player, "delegateEvent", player, GetStaticActor("Man200"), "processEvent020_13");
-	elseif (npcId == 1001276) then		-- Abstracted Gladiator
-		callClientFunction(player, "delegateEvent", player, GetStaticActor("Man200"), "processEvent020_14");	
-	elseif (npcId == 1001374) then		-- Nenekani
-		callClientFunction(player, "delegateEvent", player, GetStaticActor("Man200"), "processEvent020_5");
-	elseif (npcId == 1001277) then		-- Chapeaued Chap
-		callClientFunction(player, "delegateEvent", player, GetStaticActor("Man200"), "processEvent000_9");
-	elseif (npcId == 1001274) then		-- Rough Spoken Fellow
-		callClientFunction(player, "delegateEvent", player, GetStaticActor("Man200"), "processEvent000_10");
-	elseif (npcId == 1001228) then		-- Satzfloh
-		callClientFunction(player, "delegateEvent", player, GetStaticActor("Man200"), "processEvent000_18");
-	elseif (npcId == 1001229) then		-- Perceivains
-		callClientFunction(player, "delegateEvent", player, GetStaticActor("Man200"), "processEvent000_19");
-	elseif (npcId == 1001230) then		-- Una Tayuun
-		callClientFunction(player, "delegateEvent", player, GetStaticActor("Man200"), "processEvent000_20");
-]]--
 
 function defaultTalkWithInn(player, quest, clientFunc)
     local choice = callClientFunction(player, "delegateEvent", player, quest, clientFunc);

@@ -146,11 +146,13 @@ namespace Meteor.Map
             if (SessionList.ContainsKey(id))
             {
                 SessionList[id].ClearInstance();
+                SessionList[id].MarkConnected();
                 return SessionList[id];
             }
 
             Session session = new Session(id);
             SessionList.Add(id, session);
+            session.MarkConnected();
             return session;
         }
 

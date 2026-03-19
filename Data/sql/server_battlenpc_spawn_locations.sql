@@ -54,11 +54,11 @@ CREATE TABLE IF NOT EXISTS `server_battlenpc_spawn_locations` (
 -- Dumping data for table `server_battlenpc_spawn_locations`
 /*!40000 ALTER TABLE `server_battlenpc_spawn_locations` DISABLE KEYS */;
 REPLACE INTO `server_battlenpc_spawn_locations` (`id`, `bnpcId`, `uniqueId`, `zoneId`, `posX`, `posY`, `posZ`, `rot`, `privateArea`, `privateAreaLevel`, `hp`, `hpMax`, `hpp`, `mp`, `mpp`, `mpMax`, `tpp`, `actorState`, `animId`, `roams`, `roamDelay`, `modelSize`, `immunity`) VALUES
-(1,1,'wharf_rat_1',			170,-17,184.4,-66,-2.51,'',0,		100,100,100,100,100,100,100,		0,0,1,10,1,0),
-(2,1,'wharf_rat_2',			170,-10,183.6,-70,-3.14,'',0,		100,100,100,100,100,100,100,		0,0,1,10,1,0),
-(3,1,'wharf_rat_3',			170,-15,184.5,-75,-3.15,'',0,		100,100,100,100,100,100,100,		0,0,1,10,1,0),
-(4,2,'sheep_1',				170,-12.5,183.6,-72.1,0,'',0,		100,100,100,100,100,100,100,		0,0,1,10,1,0),
-(5,2,'sheep_2',				170,-10.4,183.6,-66,0,'',0,			100,100,100,100,100,100,100,		0,0,1,10,1,0);
+(1,1,'wharf_rat_1',			170,-17,184.4,-66,-2.51,'',0,		100,100,100,100,100,100,100,		0,0,1,8,1,0),
+(2,1,'wharf_rat_2',			170,-10,183.6,-70,-3.14,'',0,		100,100,100,100,100,100,100,		0,0,1,8,1,0),
+(3,1,'wharf_rat_3',			170,-15,184.5,-75,-3.15,'',0,		100,100,100,100,100,100,100,		0,0,1,8,1,0),
+(4,2,'sheep_1',				170,-12.5,183.6,-72.1,0,'',0,		100,100,100,100,100,100,100,		0,0,1,8,1,0),
+(5,2,'sheep_2',				170,-10.4,183.6,-66,0,'',0,			100,100,100,100,100,100,100,		0,0,1,8,1,0);
 
 
 /*!40000 ALTER TABLE `server_battlenpc_spawn_locations` ENABLE KEYS */;

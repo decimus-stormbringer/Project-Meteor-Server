@@ -19,12 +19,13 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using Meteor.Map.actors.chara.ai.controllers;
+using Meteor.Map.actors.chara.ai.state;
+using Meteor.Map.actors.chara.npc;
+using Meteor.Map.Actors;
+using Meteor.Map.packets.send.actor;
 using System;
 using System.Collections.Generic;
-using Meteor.Map.Actors;
-using Meteor.Map.actors.chara.ai.state;
-using Meteor.Map.actors.chara.ai.controllers;
-using Meteor.Map.packets.send.actor;
 
 // port of ai code in dsp by kjLotus (https://github.com/DarkstarProject/darkstar/blob/master/src/map/ai)
 namespace Meteor.Map.actors.chara.ai
@@ -40,6 +41,7 @@ namespace Meteor.Map.actors.chara.ai
         private TargetFind targetFind;
         private ActionQueue actionQueue;
         private DateTime lastActionTime;
+        private bool isEngaged;
 
         public AIContainer(Character actor, Controller controller, PathFind pathFind, TargetFind targetFind)
         {
@@ -51,6 +53,7 @@ namespace Meteor.Map.actors.chara.ai
             latestUpdate = DateTime.Now;
             prevUpdate = latestUpdate;
             actionQueue = new ActionQueue(owner);
+            isEngaged = false;
         }
 
         public void UpdateLastActionTime(uint delay = 0)
@@ -216,6 +219,7 @@ namespace Meteor.Map.actors.chara.ai
         public void Reset()
         {
             // todo: reset cooldowns and stuff here too?
+            isEngaged = false;
             targetFind?.Reset();
             pathFind?.Clear();
             ClearStates();
@@ -229,7 +233,13 @@ namespace Meteor.Map.actors.chara.ai
 
         public bool IsEngaged()
         {
-            return owner.currentMainState == SetActorStatePacket.MAIN_STATE_ACTIVE;
+            if (isEngaged)
+                return true;
+
+            if (owner is Player && HasIncomingHate())
+                return true;
+
+            return false;
         }
 
         public bool IsDead()
@@ -298,10 +308,24 @@ namespace Meteor.Map.actors.chara.ai
                 controller.UseItem(target, slot, itemId);
         }
 
+        private bool HasIncomingHate()
+        {
+            if (!(owner is Player player))
+                return false;
+
+            foreach (var mob in player.CurrentArea.GetActorsAroundActor<BattleNpc>(player, 50))
+            {
+                if (mob != null && !mob.IsDead() && mob.hateContainer != null && mob.hateContainer.HasHateForTarget(player))
+                    return true;
+            }
+
+            return false;
+        }
+
         public void InternalChangeTarget(Character target)
         {
             // targets are changed in the controller
-            if (IsEngaged() || target == null)
+            if (isEngaged || target == null)
             {
 
             }
@@ -313,7 +337,7 @@ namespace Meteor.Map.actors.chara.ai
 
         public bool InternalEngage(Character target)
         {
-            if (IsEngaged())
+            if (isEngaged)
             {
                 if (this.owner.target != target)
                 {
@@ -325,14 +349,37 @@ namespace Meteor.Map.actors.chara.ai
 
             if (CanChangeState() || (GetCurrentState() != null && GetCurrentState().IsCompleted()))
             {
+                isEngaged = true;
                 ForceChangeState(new AttackState(owner, target));
                 return true;
             }
+
             return false;
+        }
+
+        public bool InternalSupportEngage(Character target)
+        {
+            if (isEngaged)
+            {
+                if (owner.target != target)
+                    ChangeTarget(target);
+
+                return true;
+            }
+
+            isEngaged = true;
+            ChangeTarget(target);
+
+            if (owner.GetState() != SetActorStatePacket.MAIN_STATE_ACTIVE)
+                owner.ChangeState(SetActorStatePacket.MAIN_STATE_ACTIVE);
+
+            return true;
         }
 
         public void InternalDisengage()
         {
+            isEngaged = false;
+
             pathFind?.Clear();
             GetTargetFind()?.Reset();
 
@@ -396,5 +443,53 @@ namespace Meteor.Map.actors.chara.ai
             // todo: place at target
             // ForceChangeState(new RaiseState(target));
         }
+
+        #region AI Presets
+
+        public enum AIPreset
+        {
+            None = 0,
+            DPS = 1,
+            Tank = 2,
+            Healer = 3
+        }
+
+        private AIPreset preset = AIPreset.None;
+        private float damageHateModifier = 1.0f;
+
+        public AIPreset GetAIPreset()
+        {
+            return preset;
+        }
+
+        public float GetDamageHateModifier()
+        {
+            return damageHateModifier;
+        }
+
+        public void AttachAI(AIContainer.AIPreset preset)
+        {
+            ApplyPreset(preset);
+        }
+
+        public void ApplyPreset(AIPreset preset)
+        {
+            this.preset = preset;
+
+            switch (preset)
+            {
+                case AIPreset.DPS:
+                    damageHateModifier = 0.5f;
+                    break;
+                case AIPreset.Tank:
+                    damageHateModifier = 1.5f;
+                    break;
+
+                case AIPreset.Healer:
+                    damageHateModifier = 0.0f;
+                    break;
+            }
+        }
+        #endregion
     }
 }

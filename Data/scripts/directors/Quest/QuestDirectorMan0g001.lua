@@ -8,6 +8,7 @@ end
 
 WOLF				= 2201407;
 COUNTER_QUESTKILL	= 0;
+YDA_TALK			= 1100457;
 
 function onKillBNpc(player, director, bnpc)
     local quest = player:GetQuest(110005);
@@ -66,6 +67,7 @@ function onEventStarted(player, director, triggerName)
 			
 		-- Tutorial: Auto-Attack Monster
 		waitForSignal("playerAttack");
+		player:SendGameMessageLocalizedDisplayName(quest, 89, MESSAGE_TYPE_SAY, YDA_TALK);
 		wait(1);
 		kickEventContinue(player, director, "noticeEvent", "noticeEvent");
 		closeTutorialWidget(player);
@@ -90,6 +92,7 @@ function onEventStarted(player, director, triggerName)
 		-- Tutorial: Cast Spell
 		callClientFunction(player, "delegateEvent", player, quest, "processTtrBtlMagic001");
 		waitForSignal("spellUsed");
+		player:SendGameMessageLocalizedDisplayName(quest, 89, MESSAGE_TYPE_SAY, YDA_TALK);
 		wait(1);
 		kickEventContinue(player, director, "noticeEvent", "noticeEvent");
 		closeTutorialWidget(player);

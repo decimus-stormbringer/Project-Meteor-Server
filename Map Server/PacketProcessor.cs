@@ -57,6 +57,9 @@ namespace Meteor.Map
         {
             Session session = mServer.GetSession(subpacket.header.sourceId);
 
+            if (session != null)
+                session.MarkActivity();
+
             if (session == null && subpacket.gameMessage.opcode != 0x1000)
                 return;
 
@@ -170,12 +173,28 @@ namespace Meteor.Map
                     break;
                 //Set Target 
                 case 0x00CD:
-                    //subpacket.DebugPrintSubPacket();
-
                     SetTargetPacket setTarget = new SetTargetPacket(subpacket.data);
-                    session.GetActor().currentTarget = setTarget.actorID;
-                    session.GetActor().isAutoAttackEnabled = setTarget.attackTarget != 0xE0000000;
-                    session.GetActor().BroadcastPacket(SetActorTargetAnimatedPacket.BuildPacket(session.id, setTarget.actorID), true);
+                    var actor = session.GetActor();
+
+                    actor.currentTarget = setTarget.actorID;
+                    actor.isAutoAttackEnabled = setTarget.attackTarget != 0xE0000000 && (!(actor is Character c) || c.CanAutoAttack());
+                    actor.BroadcastPacket(SetActorTargetAnimatedPacket.BuildPacket(session.id, setTarget.actorID), true);
+
+                    if (actor is Character chara && chara.CurrentArea != null)
+                    {
+                        if (setTarget.attackTarget != 0xE0000000 &&
+                            setTarget.actorID != 0 &&
+                            setTarget.actorID != Actor.INVALID_ACTORID)
+                        {
+                            var target = chara.CurrentArea.FindActorInArea<Character>(setTarget.actorID);
+                            if (target != null)
+                                chara.Engage(target);
+                        }
+                        else if (setTarget.attackTarget == 0xE0000000 && chara.IsEngaged())
+                        {
+                            chara.Disengage();
+                        }
+                    }
                     break;
                 //Lock Target
                 case 0x00CC:

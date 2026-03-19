@@ -2261,20 +2261,42 @@ namespace Meteor.Map.Actors
             BroadcastPacket(StartCountdownPacket.BuildPacket(Id, countdownLength, syncTime, "Go!"), true);
         }
         
-        public void SendInstanceUpdate(bool force = true)  //set to false to disable seamless zones
-        {
-            Server.GetWorldManager().SeamlessCheck(this); 
+        //public void SendInstanceUpdate(bool force = true)  //set to false to disable seamless zones
+        //{
+        //    Server.GetWorldManager().SeamlessCheck(this); 
 
-            //Update Instance
+        //    //Update Instance
+        //    List<Actor> aroundMe = new List<Actor>();
+
+        //    if (CurrentArea != null)
+        //        aroundMe.AddRange(CurrentArea.GetActorsAroundActor(this, 50));
+        //
+        //    if (zone2 != null)
+        //        aroundMe.AddRange(zone2.GetActorsAroundActor(this, 50));
+        //        playerSession.UpdateInstance(aroundMe, force);
+        //}
+
+        public void SendInstanceUpdate(bool force = true) // set to false to disable seamless zones.
+        {
+            // Never do seamless/public-zone merging while inside a private/content area.
+            if (CurrentArea != null && !CurrentArea.IsPrivate())
+                Server.GetWorldManager().SeamlessCheck(this);
+            else
+            {
+                zone2 = null;
+                zoneId2 = 0;
+            }
+
             List<Actor> aroundMe = new List<Actor>();
 
             if (CurrentArea != null)
                 aroundMe.AddRange(CurrentArea.GetActorsAroundActor(this, 50));
-            if (zone2 != null)
-                aroundMe.AddRange(zone2.GetActorsAroundActor(this, 50));
-                playerSession.UpdateInstance(aroundMe, force);
-        }
 
+            if (zone2 != null && CurrentArea != null && !CurrentArea.IsPrivate())
+                aroundMe.AddRange(zone2.GetActorsAroundActor(this, 50));
+
+            playerSession.UpdateInstance(aroundMe, force);
+        }
 
         public bool IsInParty()
         {
@@ -2532,11 +2554,11 @@ namespace Meteor.Map.Actors
 
         public void RegenHp(DateTime tick)
         {
-            if (this.GetState() == SetActorStatePacket.MAIN_STATE_ACTIVE)
+            if (aiContainer.IsEngaged())
             {
                 AddHP(MaxHP / 64);
             }
-            else if (this.GetState() == SetActorStatePacket.MAIN_STATE_PASSIVE)
+            else
             {
                 AddHP(MaxHP / 16);
             }
@@ -2544,13 +2566,13 @@ namespace Meteor.Map.Actors
 
         public void RegenMp(DateTime tick)
         {
-            if (this.GetState() == SetActorStatePacket.MAIN_STATE_ACTIVE)
+            if (aiContainer.IsEngaged())
             {
-                AddMP(3);
+                AddMP(MaxMP / 16);
             }
-            else if (this.GetState() == SetActorStatePacket.MAIN_STATE_PASSIVE)
+            else
             {
-                AddMP(20);
+                AddMP(MaxMP / 8);
             }
         }
 
@@ -2962,12 +2984,48 @@ namespace Meteor.Map.Actors
                 // melee attack animation
                 //action.animation = 0x19001000;
             }
-            if (target is BattleNpc)
-            {
-                ((BattleNpc)target).hateContainer.UpdateHate(this, action.enmity);
-            }
 
             LuaEngine.GetInstance().OnSignal("playerAttack");
+        }
+
+        public override float GetAutoAttackRange()
+        {
+            const float meleeRange = 3.0f;
+            const float lanceRange = 4.0f;
+            const float bowRange = 20.0f;
+
+            var mainhand = GetEquipment()?.GetItemAtSlot(EquipmentSlot.MAINHAND);
+            var itemData = mainhand?.GetItemData();
+
+            if (itemData == null)
+                return meleeRange;
+
+            if (itemData.IsBowWeapon() ||
+                itemData.IsGunWeapon() ||
+                itemData.IsLongRangeWeapon() ||
+                itemData.IsThrowWeapon())
+            {
+                return bowRange;
+            }
+
+            if (itemData.IsLanceWeapon())
+                return lanceRange;
+
+            return meleeRange;
+        }
+
+        public override bool IsRangedAutoAttack()
+        {
+            var mainhand = GetEquipment()?.GetItemAtSlot(EquipmentSlot.MAINHAND);
+            var itemData = mainhand?.GetItemData();
+
+            if (itemData == null)
+                return false;
+
+            return itemData.IsBowWeapon() ||
+                   itemData.IsGunWeapon() ||
+                   itemData.IsLongRangeWeapon() ||
+                   itemData.IsThrowWeapon();
         }
 
         public override void OnCast(State state, CommandResult[] actions, BattleCommand spell, ref CommandResult[] errors)

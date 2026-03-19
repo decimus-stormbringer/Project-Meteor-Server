@@ -8,6 +8,7 @@ end
 
 JELLYFISH			= 2205403;
 COUNTER_QUESTKILL	= 0;
+STHALMANN_TALK		= 1600179; -- uses name id
 
 function onKillBNpc(player, director, bnpc)
     local quest = player:GetQuest(110001);
@@ -67,6 +68,7 @@ function onEventStarted(player, director, triggerName)
 			
 		-- Tutorial: Auto-Attack Monster
 		waitForSignal("playerAttack");
+		player:SendGameMessageLocalizedDisplayName(quest, 109, MESSAGE_TYPE_SAY, STHALMANN_TALK);
 		wait(1);
 		kickEventContinue(player, director, "noticeEvent", "noticeEvent");
 		closeTutorialWidget(player);
@@ -81,6 +83,7 @@ function onEventStarted(player, director, triggerName)
 		openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_WEAPONSKILLS);
 		player:EndEvent();
 		waitForSignal("weaponskillUsed")
+		player:SendGameMessageLocalizedDisplayName(quest, 109, MESSAGE_TYPE_SAY, STHALMANN_TALK);
 		wait(1);
 		kickEventContinue(player, director, "noticeEvent", "noticeEvent");
 		closeTutorialWidget(player);
@@ -91,6 +94,7 @@ function onEventStarted(player, director, triggerName)
 		-- Tutorial: Cast Spell
 		callClientFunction(player, "delegateEvent", player, quest, "processTtrBtlMagic001"); 
 		waitForSignal("spellUsed");
+		player:SendGameMessageLocalizedDisplayName(quest, 109, MESSAGE_TYPE_SAY, STHALMANN_TALK);
 		wait(1);
 		kickEventContinue(player, director, "noticeEvent", "noticeEvent");
 		closeTutorialWidget(player);

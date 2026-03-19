@@ -2944,9 +2944,13 @@ namespace Meteor.Map
 
         public static void SavePlayerStatusEffects(Player player)
         {
-            string[] faqs = null;
-            List<string> raw = new List<string>();
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            using (MySqlConnection conn = new MySqlConnection(
+                String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}",
+                ConfigConstants.DATABASE_HOST,
+                ConfigConstants.DATABASE_PORT,
+                ConfigConstants.DATABASE_NAME,
+                ConfigConstants.DATABASE_USERNAME,
+                ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
                 {
@@ -2954,39 +2958,57 @@ namespace Meteor.Map
 
                     using (MySqlTransaction trns = conn.BeginTransaction())
                     {
-                        string query = @"
-                                    REPLACE INTO characters_statuseffect
-                                    (characterId, statusId, magnitude, duration, tick, tier, extra)
-                                    VALUES
-                                    (@actorId, @statusId, @magnitude, @duration, @tick, @tier, @extra)                                  
-                                    ";
-                        using (MySqlCommand cmd = new MySqlCommand(query, conn, trns))
+                        string deleteQuery = "DELETE FROM characters_statuseffect WHERE characterId = @characterId";
+                        using (MySqlCommand deleteCmd = new MySqlCommand(deleteQuery, conn, trns))
                         {
+                            deleteCmd.Parameters.Add("@characterId", MySqlDbType.UInt32).Value = player.Id;
+                            deleteCmd.ExecuteNonQuery();
+                        }
+
+                        string insertQuery = @"
+                    INSERT INTO characters_statuseffect
+                    (characterId, statusId, magnitude, duration, tick, tier, extra)
+                    VALUES
+                    (@characterId, @statusId, @magnitude, @duration, @tick, @tier, @extra)";
+
+                        using (MySqlCommand cmd = new MySqlCommand(insertQuery, conn, trns))
+                        {
+                            cmd.Parameters.Add("@characterId", MySqlDbType.UInt32);
+                            cmd.Parameters.Add("@statusId", MySqlDbType.Int32);
+                            cmd.Parameters.Add("@magnitude", MySqlDbType.Int32);
+                            cmd.Parameters.Add("@duration", MySqlDbType.Int64);
+                            cmd.Parameters.Add("@tick", MySqlDbType.Int64);
+                            cmd.Parameters.Add("@tier", MySqlDbType.Int32);
+                            cmd.Parameters.Add("@extra", MySqlDbType.Int32);
+
                             foreach (var effect in player.statusEffects.GetStatusEffects())
                             {
-                                var duration = Utils.UnixTimeStampUTC(effect.GetEndTime()) - Utils.UnixTimeStampUTC();
+                                long duration = Utils.UnixTimeStampUTC(effect.GetEndTime()) - Utils.UnixTimeStampUTC();
+                                if (duration < 0)
+                                    duration = 0;
 
-                                cmd.Parameters.AddWithValue("@actorId", player.Id);
-                                cmd.Parameters.AddWithValue("@statusId", effect.GetStatusEffectId());
-                                cmd.Parameters.AddWithValue("@magnitude", effect.GetMagnitude());
-                                cmd.Parameters.AddWithValue("@duration", duration);
-                                cmd.Parameters.AddWithValue("@tick", effect.GetTickMs());
-                                cmd.Parameters.AddWithValue("@tier", effect.GetTier());
-                                cmd.Parameters.AddWithValue("@extra", effect.GetExtra());
+                                cmd.Parameters["@characterId"].Value = player.Id;
+                                cmd.Parameters["@statusId"].Value = (int)effect.GetStatusEffectId();
+                                cmd.Parameters["@magnitude"].Value = effect.GetMagnitude();
+                                cmd.Parameters["@duration"].Value = duration;
+                                cmd.Parameters["@tick"].Value = effect.GetTickMs();
+                                cmd.Parameters["@tier"].Value = effect.GetTier();
+                                cmd.Parameters["@extra"].Value = effect.GetExtra();
 
                                 cmd.ExecuteNonQuery();
                             }
-                            trns.Commit();
                         }
+
+                        trns.Commit();
                     }
                 }
                 catch (MySqlException e)
                 {
                     Program.Log.Error(e.ToString());
                 }
-                finally
+                catch (OverflowException e)
                 {
-                    conn.Dispose();
+                    Program.Log.Error(e.ToString());
                 }
             }
         }

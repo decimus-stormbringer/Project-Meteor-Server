@@ -613,20 +613,10 @@ function seq000_onTalk(player, quest, npc, classId)
     if (classId == MIOUNNE) then
 		callClientFunction(player, "delegateEvent", player, quest, "processEvent110");
 		quest:NewNpcLsMsg(1);
+		player:EndEvent();
 		quest:StartSequence(SEQ_005); -- Change from S003 to S005
-        player:EndEvent();
 		quest:UpdateENPCs();
 		GetWorldManager():DoZoneChange(player, 155, nil, 0, 15, player.positionX, player.positionY, player.positionZ, player.rotation);
-		--player:SendMessage(0x1D,"",">End Event after PE100_1");
-		--player:SendMessage(0x1D,"",">S003 Start");
-		--local director = GetWorldManager():GetArea(155):CreateDirector("AfterQuestWarpDirector", false);		
-		--director:StartDirector(true);
-        --player:AddDirector(director);
-		--player:SetLoginDirector(director);	     
-		--player:KickEvent(director, "noticeEvent", true);
-		---quest:UpdateENPCs();
-        --GetWorldManager():WarpToPublicArea(player);
-        --GetWorldManager():DoZoneChange(player, 155, nil, 0, 15, player.positionX, player.positionY, player.positionZ, player.rotation);
 		return;
     elseif (classId == BEAMING_ADVENTURER) then
         callClientFunction (player, "delegateEvent", player, quest, "processEvent100_6");

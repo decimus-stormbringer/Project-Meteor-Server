@@ -755,9 +755,10 @@ namespace Meteor.Map.Actors
                 enemy = new BattleNpc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, actorState, animId, displayName);
 
                 enemy.LoadEventConditions(actorClass.eventConditions);
-                enemy.ResetMoveSpeeds();
-                
+                enemy.SetMod((uint)Modifier.MovementSpeed, 4);
+
                 AddActorToZone(enemy);
+                enemy.AttachAI("DPS");
 
                 return enemy;
             }
@@ -776,7 +777,7 @@ namespace Meteor.Map.Actors
                 Ally ally = new Ally(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, actorState, animId, null);
 
                 ally.LoadEventConditions(actorClass.eventConditions);
-                ally.ResetMoveSpeeds();
+                ally.SetMod((uint)Modifier.MovementSpeed, 4);
 
                 AddActorToZone(ally);
 

@@ -421,18 +421,35 @@ namespace Meteor.Map.Actors
             updateFlags |= ActorUpdateFlags.Speed;
         }
 
+        private float ClampMoveSpeed(float value, float fallback)
+        {
+            if (float.IsNaN(value) || float.IsInfinity(value))
+                return fallback;
+
+            if (value < 0.0f)
+                return 0.0f;
+
+            if (value > 20.0f)
+                return 20.0f;
+
+            return value;
+        }
+
         public void ChangeSpeed(int type, float value)
         {
-            moveSpeeds[type] = value;
+            if (type < 0 || type >= moveSpeeds.Length)
+                return;
+
+            moveSpeeds[type] = ClampMoveSpeed(value, SetActorSpeedPacket.DEFAULT_RUN);
             updateFlags |= ActorUpdateFlags.Speed;
         }
 
         public void ChangeSpeed(float speedStop, float speedWalk, float speedRun, float speedActive)
         {
-            moveSpeeds[0] = speedStop;
-            moveSpeeds[1] = speedWalk;
-            moveSpeeds[2] = speedRun;
-            moveSpeeds[3] = speedActive;
+            moveSpeeds[0] = ClampMoveSpeed(speedStop, SetActorSpeedPacket.DEFAULT_STOP);
+            moveSpeeds[1] = ClampMoveSpeed(speedWalk, SetActorSpeedPacket.DEFAULT_WALK);
+            moveSpeeds[2] = ClampMoveSpeed(speedRun, SetActorSpeedPacket.DEFAULT_RUN);
+            moveSpeeds[3] = ClampMoveSpeed(speedActive, SetActorSpeedPacket.DEFAULT_ACTIVE);
             updateFlags |= ActorUpdateFlags.Speed;
         }
 
@@ -469,6 +486,7 @@ namespace Meteor.Map.Actors
                         positionUpdates.Remove(pos);
 
                     }
+
                     packets.Add(CreatePositionUpdatePacket());
                 }
 
@@ -704,6 +722,62 @@ namespace Meteor.Map.Actors
             }
         }
 
+        public void SmoothLookAt(float x, float z, float maxTurnRadians)
+        {
+            if (positionX == x && positionZ == z)
+                return;
+
+            var dX = this.positionX - x;
+            var dZ = this.positionZ - z;
+            var rot2 = Math.Atan2(dZ, dX);
+            float desiredRotation = (float)(Math.PI - rot2 + Math.PI / 2);
+
+            float delta = desiredRotation - this.rotation;
+
+            while (delta > Math.PI)
+                delta -= (float)(Math.PI * 2);
+
+            while (delta < -Math.PI)
+                delta += (float)(Math.PI * 2);
+
+            if (delta > maxTurnRadians)
+                delta = maxTurnRadians;
+            else if (delta < -maxTurnRadians)
+                delta = -maxTurnRadians;
+
+            if (Math.Abs(delta) <= 0.0001f)
+                return;
+
+            oldRotation = rotation;
+            this.rotation = NormalizeRotation(this.rotation + delta);
+            this.updateFlags |= ActorUpdateFlags.Position;
+        }
+
+        public void SmoothLookAt(Vector3 pos, float maxTurnRadians)
+        {
+            SmoothLookAt(pos.X, pos.Z, maxTurnRadians);
+        }
+
+        public void SmoothLookAt(Actor actor, float maxTurnRadians)
+        {
+            if (actor != null)
+                SmoothLookAt(actor.positionX, actor.positionZ, maxTurnRadians);
+        }
+
+        //NEW
+        public float NormalizeRotation(float value)
+        {
+            float twoPi = (float)(Math.PI * 2);
+
+            while (value >= twoPi)
+                value -= twoPi;
+
+            while (value < 0.0f)
+                value += twoPi;
+
+            return value;
+        }
+
         // todo: is this legit?
         public bool IsFacing(float x, float z, float angle = 90.0f)
         {
@@ -728,7 +802,11 @@ namespace Meteor.Map.Actors
             if (positionUpdates == null)
                 positionUpdates = new List<Vector3>();
 
+            // Chase/path movement should always use the newest destination,
+            // not build up a backlog of stale movement steps.
+            positionUpdates.Clear();
             positionUpdates.Add(pos);
+
             this.updateFlags |= ActorUpdateFlags.Position;
         }
 
@@ -740,6 +818,23 @@ namespace Meteor.Map.Actors
         public void ClearPositionUpdates()
         {
             positionUpdates.Clear();
+        }
+
+        //NEW
+        public void SetPositionUpdate(Vector3 pos)
+        {
+            if (positionUpdates == null)
+                positionUpdates = new List<Vector3>();
+            else
+                positionUpdates.Clear();
+
+            positionUpdates.Add(pos);
+            this.updateFlags |= ActorUpdateFlags.Position;
+        }
+
+        public void SetPositionUpdate(float x, float y, float z)
+        {
+            SetPositionUpdate(new Vector3(x, y, z));
         }
 
         public Vector3 FindRandomPoint(float x, float y, float z, float minRadius, float maxRadius)

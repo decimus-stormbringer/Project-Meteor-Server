@@ -77,6 +77,7 @@ namespace Meteor.Map.Actors
         protected uint bnpcId;
         public Character lastAttacker;
         //public string uniqueIdentifier;
+        public bool preserveScriptedActiveState = false;
 
         public uint spellListId, skillListId, dropListId;
         public Dictionary<uint, BattleCommand> skillList = new Dictionary<uint, BattleCommand>();
@@ -137,6 +138,33 @@ namespace Meteor.Map.Actors
                 subpackets.Add(GetHateTypePacket(player));
             }
             return subpackets;
+        }
+
+        //NEW - Attach AI Preset from AIContainer
+        public void AttachAI(string presetName)
+        {
+            if (string.IsNullOrWhiteSpace(presetName))
+                return;
+
+            switch (presetName.Trim().ToUpperInvariant())
+            {
+                case "DPS":
+                    aiContainer.ApplyPreset(AIContainer.AIPreset.DPS);
+                    break;
+
+                case "TANK":
+                    aiContainer.ApplyPreset(AIContainer.AIPreset.Tank);
+                    break;
+
+                case "HEALER":
+                    aiContainer.ApplyPreset(AIContainer.AIPreset.Healer);
+                    break;
+            }
+        }
+
+        public string GetAIPreset()
+        {
+            return aiContainer.GetAIPreset().ToString();
         }
 
         //This might need more work
@@ -216,24 +244,62 @@ namespace Meteor.Map.Actors
             return true;
         }
 
+        public override uint GetAttackRange()
+        {
+            return (uint)Math.Round(GetAutoAttackRange());
+        }
+
+        public override float GetAutoAttackRange()
+        {
+            const float meleeRange = 3.0f;
+            const float lanceRange = 4.0f;
+            const float rangedRange = 20.0f;
+
+            switch (GetCurrentClassOrJob())
+            {
+                case Job.Archer:
+                case Job.Bard:
+                    return rangedRange;
+
+                case Job.Lancer:
+                case Job.Dragoon:
+                    return lanceRange;
+
+                default:
+                    return meleeRange;
+            }
+        }
+
+        public override bool IsRangedAutoAttack()
+        {
+            switch (GetCurrentClassOrJob())
+            {
+                case Job.Archer:
+                case Job.Bard:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
         public override bool CanUse(Character target, BattleCommand spell, CommandResult error = null)
         {
-            // todo:
             if (target == null)
-            {
-                // Target does not exist.
                 return false;
-            }
-            if (Utils.Distance(positionX, positionY, positionZ, target.positionX, target.positionY, target.positionZ) > spell.range)
-            {
-                // The target is out of range.
+
+            float allowedRange = spell.range;
+            float allowedHeight = spell.rangeHeight;
+
+            if (Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ) > allowedRange)
                 return false;
-            }
+
+            if (Math.Abs(target.positionY - positionY) > (allowedHeight / 2.0f))
+                return false;
+
             if (!IsValidTarget(target, spell.mainTarget) || !spell.IsValidMainTarget(this, target))
-            {
-                // error packet is set in IsValidTarget
                 return false;
-            }
+
             return true;
         }
 
@@ -289,48 +355,74 @@ namespace Meteor.Map.Actors
         {
             if (IsAlive())
             {
-                // todo: does retail 
-                if (lastAttacker is Pet && lastAttacker.aiContainer.GetController<PetController>() != null && lastAttacker.aiContainer.GetController<PetController>().GetPetMaster() is Player)
+                if (lastAttacker is Pet pet &&
+                    pet.aiContainer.GetController<PetController>() != null &&
+                    pet.aiContainer.GetController<PetController>().GetPetMaster() is Player petMaster)
                 {
-                    lastAttacker = lastAttacker.aiContainer.GetController<PetController>().GetPetMaster();
+                    lastAttacker = petMaster;
                 }
 
                 var credited = new HashSet<uint>();
+                var creditedPlayers = new List<Player>();
 
+                void AddCreditedPlayer(Player player)
+                {
+                    if (player == null)
+                        return;
+
+                    if (credited.Add(player.Id))
+                        creditedPlayers.Add(player);
+                }
+
+                // If Player Kills
                 if (lastAttacker is Player killer)
                 {
-                    //I think this is, or should be odne in DoBattleAction. Packet capture had the message in the same packet as an attack
-                    // <actor> defeat/defeats <target>
-                    if (credited.Add(killer.Id))
-                        killer.HandleBNpcKill(GetActorClassId());
+                    AddCreditedPlayer(killer);
 
-                    if (lastAttacker.currentParty is Party party)
+                    if (killer.currentParty is Party party)
                     {
                         foreach (var memberId in party.members)
                         {
                             var partyMember = CurrentArea.FindActorInArea<Character>(memberId);
-                            if (partyMember is Player pm && credited.Add(pm.Id))
-                                pm.HandleBNpcKill(GetActorClassId());
-
-                            lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, partyMember, lastAttacker);
-                            if (partyMember is Player)
-                                BattleUtils.AddBattleBonusEXP((Player)partyMember, this, actionContainer);
+                            if (partyMember is Player pm)
+                                AddCreditedPlayer(pm);
                         }
                     }
-                    else
+                }
+                // If Ally Party Member kills
+                else if (lastAttacker is Ally ally)
+                {
+                    if (ally.currentParty is Party party)
                     {
-                        // onDeath(monster, player, killer)
-                        lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, lastAttacker, lastAttacker);
-                        //((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
+                        foreach (var memberId in party.members)
+                        {
+                            var partyMember = CurrentArea.FindActorInArea<Character>(memberId);
+                            if (partyMember is Player pm)
+                                AddCreditedPlayer(pm);
+                        }
                     }
+                    else if (ally.currentContentGroup != null)
+                    {
+                        foreach (var memberId in ally.currentContentGroup.GetMembers())
+                        {
+                            var member = CurrentArea.FindActorInArea<Character>(memberId);
+                            if (member is Player pm)
+                                AddCreditedPlayer(pm);
+                        }
+                    }
+                }
+
+                foreach (var player in creditedPlayers)
+                {
+                    player.HandleBNpcKill(GetActorClassId());
+                    lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, player, lastAttacker);
+                    BattleUtils.AddBattleBonusEXP(player, this, actionContainer);
                 }
 
                 if (positionUpdates != null)
                     positionUpdates.Clear();
 
                 aiContainer.InternalDie(tick, despawnTime);
-                //this.ResetMoveSpeeds();
-                // todo: reset cooldowns
 
                 lua.LuaEngine.GetInstance().OnSignal("mobkill");
             }
@@ -338,7 +430,6 @@ namespace Meteor.Map.Actors
             {
                 var err = String.Format("[{0}][{1}] {2} {3} {4} {5} tried to die ded", Id, GetUniqueId(), positionX, positionY, positionZ, CurrentArea.GetName());
                 Program.Log.Error(err);
-                //throw new Exception(err);
             }
         }
 

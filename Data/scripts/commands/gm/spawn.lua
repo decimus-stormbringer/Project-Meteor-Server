@@ -37,9 +37,9 @@ function onTrigger(player, argc, actorClassId, width, height, blockCount)
 					actor:SetMod(Hp, 500);
 					actor:SetMod(Attack, 0);
 					actor:SetMod(Damage, 0);
-					actor:SetMod(MovementSpeed, 5);
+					actor:SetMod(MovementSpeed, 4);
 					actor:SetMobMod(Roams, 1);
-					actor:SetMobMod(RoamDelay, 5);
+					actor:SetMobMod(RoamDelay, 10);
 					actor.isHostile = true;
                     actor:SetDetectionType(0);
 					actor:CalculateStats();
@@ -48,14 +48,11 @@ function onTrigger(player, argc, actorClassId, width, height, blockCount)
 			x = x + 500
 		end
 	--if anything else.
-	else
-	
-		printf("%f %f %f", x, y, z);
-		--local x, y, z = player.GetPos();
+	else	
 		for i = 0, w do
 			for j = 0, h do
-				actor = player.CurrentArea:SpawnActor(actorClassId, "test", x + (i - (w / 2) * 3), y, z + (j - (h / 2) * 3), rot, 0, 1014);
-				actor.SetAppearance(1001149)
+				actor = player.CurrentArea:SpawnActor(actorClassId, "test", x + (i - (w / 2) * 3), y, z + (j - (h / 2) * 3), rot, 0, 0);
+				--actor.SetAppearance(1001149)
 			end
 		end
 	end

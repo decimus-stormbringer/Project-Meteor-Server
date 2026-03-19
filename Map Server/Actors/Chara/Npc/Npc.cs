@@ -125,6 +125,11 @@ namespace Meteor.Map.Actors
 
                 if (this.HP == 0)
                     this.HP = this.MaxHP;
+
+                if (this.currentMainState == SetActorStatePacket.MAIN_STATE_DEAD || this.currentMainState == SetActorStatePacket.MAIN_STATE_DEAD2)
+                {
+                    this.HP = 0;
+                }
             }
         }             
 
