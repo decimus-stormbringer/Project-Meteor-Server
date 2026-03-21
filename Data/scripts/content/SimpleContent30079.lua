@@ -22,7 +22,7 @@ function onCreate(player, contentArea, director)
 	goobbue.Level = 1;
 	goobbue:SetMod(Hp, 250);
 	goobbue:SetMod(Mp, 200);
-	goobbue:SetMod(Damage, 25);
+	goobbue:SetMod(Damage, 15);
 	goobbue:CalculateStats();
 
 	openingStoper = contentArea:SpawnActor(1090385, "openingstoper", -24.34, 192, 34.22, 0);

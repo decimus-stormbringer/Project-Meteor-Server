@@ -1,14 +1,17 @@
-﻿using Meteor.Map.Actors;
+﻿using Meteor.Map.actors.area;
+using Meteor.Map.Actors;
 using Meteor.Map.Actors.QuestNS;
 using Meteor.Map.lua;
+using Meteor.Map.packets.send.actor;
+using Meteor.Map.packets.send.player;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Meteor.Map.actors.area;
-using System.Reflection;
 
 
 namespace Meteor.Map.utils
@@ -65,6 +68,8 @@ namespace Meteor.Map.utils
             {
                 var sessionId = kvp.Key;
                 var session = kvp.Value;
+                var player = session.GetActor();
+
                 if (session == null)
                     continue;
 
@@ -73,31 +78,34 @@ namespace Meteor.Map.utils
                     bool shouldClean = !session.IsSessionConnected();
 
                     if (!shouldClean)
-                        shouldClean = session.CheckIfDCing();
-
-                    //if (!shouldClean)
-                    //{
-                    //    var worldConn = Server.GetWorldConnection();
-                    //    if (worldConn == null || !worldConn.IsConnected())
-                    //        shouldClean = true;
-                    //}
-
-                    if (!shouldClean)
-                        continue;
-
-                    var player = session.GetActor();
-
-                    if (player != null)
                     {
-                        if (session.isUpdatesLocked || player.IsInZoneChange())
-                            continue;
+                        if (session.CheckIfDCing())
+                        {
+                            session.DisconnectStrikeCount++;
+
+                            if (session.DisconnectStrikeCount == 1)
+                                AbortTutorialContent(player);
+
+                            if (session.DisconnectStrikeCount >= 3)
+                                shouldClean = true;
+                        }
+                        else
+                        {
+                            session.DisconnectStrikeCount = 0;
+                        }
                     }
 
-                    //Program.Log.Info($"[SessionCleanup] Cleaning disconnected session {sessionId} ({player?.DisplayName ?? "unknown player"})...");
-                    Program.Log.Warn(
-                    $"[SessionCleanup] Candidate session={sessionId} player={player.DisplayName} " + 
-                    $"connected={session.IsSessionConnected()}" +
-                    $"locked={session.isUpdatesLocked} zoneChanging={player?.IsInZoneChange() ?? false}");
+                    if (!shouldClean)
+                    {
+                        var worldConn = Server.GetWorldConnection();
+                        if (worldConn == null || !worldConn.IsConnected())
+                            shouldClean = true;
+                    }
+
+                    if (!shouldClean)
+                            continue;
+
+                    Program.Log.Info($"[SessionCleanup] Cleaning disconnected session {sessionId} ({player?.DisplayName ?? "unknown player"})...");
 
 
                     // mark session disconnected
@@ -134,11 +142,15 @@ namespace Meteor.Map.utils
                             // Run the appropriate recovery
                             if (hasTutorialQuest)
                             {
-                                TryTutorialRecovery(player);
-                                RefreshTutorialENPCs(player);
+                                //if (!session.TutorialRecoveryAttempted)
+                                //{
+                                //    TryTutorialRecovery(player);
+                                //    RefreshTutorialENPCs(player);
+                                //}
                             }
                             else
                             {
+                                // to-do. move this recovery to be on client reconnect instead of client disconnect.
                                 TryHomepointRecovery(player);
                             }
                         }
@@ -293,8 +305,13 @@ namespace Meteor.Map.utils
             }
         }
 
-        private void TryTutorialRecovery(Player player)
+        public static bool TryTutorialRecovery(Player player)
         {
+            bool recovered = false;
+
+            if (player == null)
+                return false;
+
             foreach (var quest in player.questScenario)
             {
                 if (quest == null)
@@ -326,7 +343,7 @@ namespace Meteor.Map.utils
                         if (qid == 110001u) startZone = 193u;
                         else if (qid == 110005u) startZone = 166u;
                         else if (qid == 110009u) startZone = 184u;
-                        else return;
+                        else return false;
 
                         player.CurrentArea = Server.GetWorldManager().GetArea(startZone, null, 0); //this is needed to clear player ContentArea location from memory, despite zoneId probably never changing. 
                         player.destinationZone = 0;
@@ -339,9 +356,61 @@ namespace Meteor.Map.utils
                     }
                     // Reset the actual quest sequence
                     quest.StartSequence(0);
-                    Program.Log.Info($"[SessionCleanup] Tutorial quest {qid} was reset due to disconnect (was seq {seq}).");
+                    Program.Log.Info($"[SessionCleanup] Restarting Tutorial Quest {qid} for player {player.DisplayName}.");
+                    recovered = true;
                 }
             }
+
+            if (recovered)
+                RefreshTutorialENPCs(player);
+
+            return recovered;
+        }
+
+        public static void AbortTutorialContent(Player player)
+        {
+            if (player == null)
+                return;
+
+            bool hasTutorialQuest = false;
+
+            foreach (var quest in player.questScenario)
+            {
+                if (quest == null)
+                    continue;
+
+                uint qid = quest.GetQuestId();
+                if (qid == 110001u || qid == 110005u || qid == 110009u)
+                {
+                    hasTutorialQuest = true;
+                    break;
+                }
+            }
+
+            if (!hasTutorialQuest)
+                return;
+
+            var oldContentArea = player.CurrentArea as PrivateAreaContent;
+            if (oldContentArea == null)
+                return;
+
+            if (player.currentContentGroup != null)
+            {
+                player.currentContentGroup.RemoveMember(player.Id);
+                player.SetCurrentContentGroup(null);
+            }
+
+            var oldDirector = oldContentArea.GetContentDirector();
+            if (oldDirector != null)
+                oldDirector.EndDirector();
+
+            oldContentArea.RemoveActorFromZone(player);
+            oldContentArea.GetParentZone().DeleteContentArea(oldContentArea);
+
+            player.aiContainer?.Disengage();
+            player.target = null;
+            player.currentTarget = Actor.INVALID_ACTORID;
+            player.currentLockedTarget = Actor.INVALID_ACTORID;
         }
 
         public static void RefreshTutorialENPCs(Player player)

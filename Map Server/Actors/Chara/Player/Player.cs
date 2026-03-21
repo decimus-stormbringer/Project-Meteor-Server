@@ -20,6 +20,7 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 */
 
 using Meteor.Common;
+using Meteor.Map.actors.area;
 using Meteor.Map.actors.chara;
 using Meteor.Map.actors.chara.ai;
 using Meteor.Map.actors.chara.ai.controllers;
@@ -790,6 +791,17 @@ namespace Meteor.Map.Actors
                     BroadcastPacket(SetActorIconPacket.BuildPacket(Id, SetActorIconPacket.ISGM), true);
                 else
                     BroadcastPacket(SetActorIconPacket.BuildPacket(Id, 0), true);
+            }
+        }
+
+        public void ClearContentAreaDirectors()
+        {
+            var directors = new List<Director>(ownedDirectors);
+
+            foreach (var director in directors)
+            {
+                if (director?.CurrentArea is PrivateAreaContent)
+                    RemoveDirector(director);
             }
         }
 
@@ -2990,9 +3002,9 @@ namespace Meteor.Map.Actors
 
         public override float GetAutoAttackRange()
         {
-            const float meleeRange = 3.0f;
-            const float lanceRange = 4.0f;
-            const float bowRange = 20.0f;
+            const float meleeRange = 5.0f;
+            const float lanceRange = 6.0f;
+            //const float bowRange = 20.0f;
 
             var mainhand = GetEquipment()?.GetItemAtSlot(EquipmentSlot.MAINHAND);
             var itemData = mainhand?.GetItemData();
@@ -3000,13 +3012,14 @@ namespace Meteor.Map.Actors
             if (itemData == null)
                 return meleeRange;
 
-            if (itemData.IsBowWeapon() ||
-                itemData.IsGunWeapon() ||
-                itemData.IsLongRangeWeapon() ||
-                itemData.IsThrowWeapon())
-            {
-                return bowRange;
-            }
+            // Pretty sure bows don't use autoattack. Double-check this later
+            //if (itemData.IsBowWeapon() ||
+            //    itemData.IsGunWeapon() ||
+            //    itemData.IsLongRangeWeapon() ||
+            //    itemData.IsThrowWeapon())
+            //{
+            //    return bowRange;
+            //}
 
             if (itemData.IsLanceWeapon())
                 return lanceRange;

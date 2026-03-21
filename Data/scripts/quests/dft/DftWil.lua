@@ -254,7 +254,7 @@ local defaultTalkWil = {
     [1500129] = "defaultTalkWithYayatoki_001",          -- Yayatoki
     [1500230] = "defaultTalkCaravanChocoboUld_001",     -- Pack Chocobo (needs verifying)
     [1700039] = "defaultTalkWithBATERICH_100",          -- Baterich
-    [1090549] = "defaultTalkWithInn_ExitDoor"           -- Ul'dah Inn Exit Door pushEvent - "Leave your room?"
+    [1090549] = "defaultTalkWithInn_ExitDoor",           -- Ul'dah Inn Exit Door pushEvent - "Leave your room?"
 	[1200336] = "defaultTalkWithInn_ExitDoor",          -- Ul'dah Inn Exit Door talkEvent - "Leave your room?"
     
 	-- Need sourcing

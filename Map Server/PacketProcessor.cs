@@ -57,9 +57,6 @@ namespace Meteor.Map
         {
             Session session = mServer.GetSession(subpacket.header.sourceId);
 
-            if (session != null)
-                session.MarkActivity();
-
             if (session == null && subpacket.gameMessage.opcode != 0x1000)
                 return;
 
@@ -149,9 +146,26 @@ namespace Meteor.Map
                 //Langauge Code (Client safe to send packets to now)
                 case 0x0006:
                     LangaugeCodePacket langCode = new LangaugeCodePacket(subpacket.data);
+                    var player = session.GetActor();
+                    
+                    if (player != null)
+                    {
+                        foreach (var quest in player.questScenario)
+                        {
+                            if (quest == null)
+                                continue;
+
+                            uint qid = quest.GetQuestId();
+                            if (qid == 110001u || qid == 110005u || qid == 110009u)
+                            {
+                                SessionCleanupService.TryTutorialRecovery(player);
+                            }
+                        }
+                    }
+
                     LuaEngine.GetInstance().CallLuaFunction(session.GetActor(), session.GetActor(), "onBeginLogin", true);
                     Server.GetWorldManager().DoZoneIn(session.GetActor(), true, 0x1);
-                    //SessionCleanupService.RefreshTutorialENPCs(session.GetActor() as Player);
+                    //SessionCleanupService.RefreshTutorialENPCs(player);
                     LuaEngine.GetInstance().CallLuaFunction(session.GetActor(), session.GetActor(), "onLogin", true);
                     session.languageCode = langCode.languageCode;
                     break;

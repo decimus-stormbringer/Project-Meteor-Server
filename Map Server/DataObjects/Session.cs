@@ -37,8 +37,6 @@ namespace Meteor.Map.DataObjects
         public List<Actor> actorInstanceList = new List<Actor>();
         public uint languageCode = 1;
         private DateTime lastPingPacket = DateTime.UtcNow;
-        private DateTime lastClientActivity = DateTime.UtcNow;
-
         public bool IsConnected { get; set; } = true;
 
         public bool isUpdatesLocked = true;
@@ -47,6 +45,9 @@ namespace Meteor.Map.DataObjects
 
         public bool PendingPostZoneInLogin = false;
         public bool PostZoneInLoginRan = false;
+
+        public int DisconnectStrikeCount { get; set; } = 0;
+        public bool TutorialRecoveryAttempted { get; set; } = false;
 
         public Session(uint sessionId)
         {
@@ -73,50 +74,51 @@ namespace Meteor.Map.DataObjects
             return playerActor;
         }
 
-        public void MarkActivity()
-        {
-            lastClientActivity = DateTime.UtcNow;
-        }
-
-        public void MarkConnected()
-        {
-            IsConnected = true;
-            playerActor.SetDCFlag(false);
-            MarkActivity();
-        }
-
-        public TimeSpan GetIdleTime()
-        {
-            return DateTime.UtcNow - lastClientActivity;
-        }
-
-        //public void Ping()
-        //{
-        //    lastPingPacket = DateTime.UtcNow;
-        //}
-
         public void Ping()
         {
-            lastClientActivity = DateTime.UtcNow;
+            lastPingPacket = DateTime.UtcNow;
+            DisconnectStrikeCount = 0;
+        }
+
+        public TimeSpan GetTimeSinceLastPing()
+        {
+            return DateTime.UtcNow - lastPingPacket;
         }
 
         public bool CheckIfDCing()
         {
             // elapsed time since last client activity
-            //var elapsed = DateTime.UtcNow - lastPingPacket;
-            var elapsed = DateTime.UtcNow - lastClientActivity;
+            var elapsed = DateTime.UtcNow - lastPingPacket;
 
-            // Show DC flag if no activity for 15 seconds
-            if (elapsed >= TimeSpan.FromSeconds(15))
+            // Flag session as possibly disconnected. 
+            if (elapsed >= TimeSpan.FromSeconds(5))
                 playerActor.SetDCFlag(true);
             else
                 playerActor.SetDCFlag(false);
 
-            // Consider fully DCed after 30 seconds of no activity
-            if (elapsed >= TimeSpan.FromSeconds(30))
+            // Consider session fully disconnected.
+            if (elapsed >= TimeSpan.FromSeconds(10))
                 return true;
 
             return false;
+        }
+
+        public int GetDisconnectStrikeStage()
+        {
+            var elapsed = DateTime.UtcNow - lastPingPacket;
+
+            if (elapsed >= TimeSpan.FromSeconds(5))
+                playerActor.SetDCFlag(true);
+            else
+                playerActor.SetDCFlag(false);
+
+            if (elapsed >= TimeSpan.FromSeconds(30))
+                return 2; // fully disconnected
+
+            if (elapsed >= TimeSpan.FromSeconds(10))
+                return 1; // first strike
+
+            return 0; // healthy
         }
 
         public void UpdatePlayerActorPosition(float x, float y, float z, float rot, ushort moveState)
@@ -139,7 +141,6 @@ namespace Meteor.Map.DataObjects
             playerActor.moveState = moveState;
 
             playerActor.CurrentArea?.UpdateActorPosition(playerActor);
-
             playerActor.QueuePositionUpdate(new Vector3(x, y, z));
         }
 

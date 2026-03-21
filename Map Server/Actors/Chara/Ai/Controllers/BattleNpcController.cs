@@ -91,6 +91,40 @@ namespace Meteor.Map.actors.chara.ai.controllers
             }
         }
 
+        //protected virtual void DoCombatTick(DateTime tick, List<Character> contentGroupCharas = null)
+        //{
+        //    if (owner.aiContainer.GetAIPreset() != AIContainer.AIPreset.Healer)
+        //    {
+        //        HandleHate();
+
+        //        if (owner is Ally && owner.aiContainer.GetAIPreset() == AIContainer.AIPreset.Tank)
+        //        {
+        //            if ((!(owner.target is Character currentTarget) || currentTarget.IsDead()) && TryAllyTankAggro())
+        //            {
+        //                if ((tick - lastCombatTickScript).TotalSeconds > 0.03f)
+        //                {
+        //                    Move();
+        //                    lastCombatTickScript = tick;
+        //                }
+
+        //                return;
+        //            }
+        //        }
+
+        //        if (TryDeaggro())
+        //        {
+        //            Disengage();
+        //            return;
+        //        }
+        //    }
+
+        //    if ((tick - lastCombatTickScript).TotalSeconds > 0.03f)
+        //    {
+        //        Move();
+        //        lastCombatTickScript = tick;
+        //    }
+        //}
+
         protected virtual void DoCombatTick(DateTime tick, List<Character> contentGroupCharas = null)
         {
             if (owner.aiContainer.GetAIPreset() != AIContainer.AIPreset.Healer)
@@ -110,12 +144,12 @@ namespace Meteor.Map.actors.chara.ai.controllers
                         return;
                     }
                 }
+            }
 
-                if (TryDeaggro())
-                {
-                    Disengage();
-                    return;
-                }
+            if (TryDeaggro())
+            {
+                Disengage();
+                return;
             }
 
             if ((tick - lastCombatTickScript).TotalSeconds > 0.03f)
@@ -326,41 +360,66 @@ namespace Meteor.Map.actors.chara.ai.controllers
 
         protected virtual bool TryAllyTankAggro()
         {
-            if (!owner.aiContainer.pathFind.AtPoint())
+            List<Character> members = GetGroupMembers();
+            if (members.Count == 0)
                 return false;
 
-            Character closestTarget = null;
-            float closestDistance = float.MaxValue;
+            Character fallbackTarget = null;
 
-            foreach (var chara in owner.CurrentArea.GetActorsAroundActor<Character>(owner, 50))
+            // First pass: prefer the player's active combat target.
+            foreach (var member in members)
             {
-                if (chara == null || chara.IsDead())
+                if (!(member is Player) || member.IsDead())
                     continue;
 
-                if (chara.allegiance == owner.allegiance)
+                Character memberTarget = member.target as Character;
+                if (memberTarget == null || memberTarget.IsDead())
                     continue;
 
-                uint levelDifference = (uint)Math.Abs(owner.GetLevel() - chara.GetLevel());
+                bool memberHasCombat =
+                    (member is BattleNpc battleNpcMember && battleNpcMember.hateContainer.GetHateList().Count > 0) ||
+                    (memberTarget is BattleNpc targetNpc && targetNpc.hateContainer.HasHateForTarget(member));
 
-                if ((levelDifference > 10) && (owner.detectionType & DetectionType.IgnoreLevelDifference) == 0)
+                if (!memberHasCombat)
                     continue;
 
-                if (!CanAggroTarget(chara))
+                if (!owner.aiContainer.GetTargetFind().CanTarget(memberTarget))
                     continue;
 
-                float distance = Utils.XZDistance(owner.positionX, owner.positionZ, chara.positionX, chara.positionZ);
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closestTarget = chara;
-                }
+                owner.hateContainer.AddBaseHate(memberTarget);
+                Engage(memberTarget);
+                return true;
             }
 
-            if (closestTarget == null)
+            // Second pass: fall back to other group members already in combat.
+            foreach (var member in members)
+            {
+                if (member == owner || member.IsDead() || member is Player)
+                    continue;
+
+                Character memberTarget = member.target as Character;
+                if (memberTarget == null || memberTarget.IsDead())
+                    continue;
+
+                bool memberHasCombat =
+                    (member is BattleNpc battleNpcMember && battleNpcMember.hateContainer.GetHateList().Count > 0) ||
+                    (memberTarget is BattleNpc targetNpc && targetNpc.hateContainer.HasHateForTarget(member));
+
+                if (!memberHasCombat)
+                    continue;
+
+                if (!owner.aiContainer.GetTargetFind().CanTarget(memberTarget))
+                    continue;
+
+                fallbackTarget = memberTarget;
+                break;
+            }
+
+            if (fallbackTarget == null)
                 return false;
 
-            owner.hateContainer.AddBaseHate(closestTarget);
-            Engage(closestTarget);
+            owner.hateContainer.AddBaseHate(fallbackTarget);
+            Engage(fallbackTarget);
             return true;
         }
 
@@ -388,6 +447,47 @@ namespace Meteor.Map.actors.chara.ai.controllers
         }
 
 
+        //public bool TryDeaggro()
+        //{
+        //    Character hatedTarget = owner.hateContainer.GetMostHatedTarget();
+        //    Character currentTarget = owner.target as Character;
+
+        //    if (owner is Ally)
+        //    {
+        //        Character target = hatedTarget ?? currentTarget;
+
+        //        if (target == null)
+        //            return true;
+
+        //        if (target.IsDead())
+        //            return true;
+
+        //        if (target.CurrentArea != owner.CurrentArea)
+        //            return true;
+
+        //        return false;
+        //    }
+
+        //    // Allow scripted ACTIVE state without forcing a disengage.
+        //    if (owner.preserveScriptedActiveState &&
+        //        hatedTarget == null &&
+        //        !owner.aiContainer.GetTargetFind().CanTarget(currentTarget))
+        //    {
+        //        return false;
+        //    }
+
+        //    if (hatedTarget == null || !owner.aiContainer.GetTargetFind().CanTarget(currentTarget))
+        //    {
+        //        return true;
+        //    }
+        //    else if (!owner.IsCloseToSpawn())
+        //    {
+        //        return true;
+        //    }
+
+        //    return false;
+        //}
+
         public bool TryDeaggro()
         {
             Character hatedTarget = owner.hateContainer.GetMostHatedTarget();
@@ -395,6 +495,28 @@ namespace Meteor.Map.actors.chara.ai.controllers
 
             if (owner is Ally)
             {
+                if (owner.aiContainer.GetAIPreset() == AIContainer.AIPreset.Healer)
+                {
+                    List<Character> members = GetGroupMembers();
+
+                    foreach (var member in members)
+                    {
+                        if (member == owner || member.IsDead())
+                            continue;
+
+                        Character memberTarget = member.target as Character;
+
+                        bool memberHasCombat =
+                            (member is BattleNpc battleNpcMember && battleNpcMember.hateContainer.GetHateList().Count > 0) ||
+                            (memberTarget is BattleNpc targetNpc && targetNpc.hateContainer.HasHateForTarget(member));
+
+                        if (memberHasCombat)
+                            return false;
+                    }
+
+                    return true;
+                }
+
                 Character target = hatedTarget ?? currentTarget;
 
                 if (target == null)
@@ -409,7 +531,6 @@ namespace Meteor.Map.actors.chara.ai.controllers
                 return false;
             }
 
-            // Allow scripted ACTIVE state without forcing a disengage.
             if (owner.preserveScriptedActiveState &&
                 hatedTarget == null &&
                 !owner.aiContainer.GetTargetFind().CanTarget(currentTarget))
@@ -529,17 +650,42 @@ namespace Meteor.Map.actors.chara.ai.controllers
             return true;
         }
 
+        //public override void Disengage()
+        //{
+        //    var target = owner.target;
+        //    base.Disengage();
+        //    // todo:
+        //    lastActionTime = lastUpdate.AddSeconds(5);
+        //    owner.isMovingToSpawn = true;
+        //    owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
+        //    owner.aiContainer.pathFind.PreparePath(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 10);
+        //    neutralTime = lastActionTime;
+        //    owner.hateContainer.ClearHate();
+        //    lua.LuaEngine.CallLuaBattleFunction(owner, "onDisengage", owner, target, Utils.UnixTimeStampUTC(lastUpdate));
+        //}
+
         public override void Disengage()
         {
             var target = owner.target;
             base.Disengage();
-            // todo:
+
             lastActionTime = lastUpdate.AddSeconds(5);
-            owner.isMovingToSpawn = true;
-            owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
-            owner.aiContainer.pathFind.PreparePath(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 10);
             neutralTime = lastActionTime;
             owner.hateContainer.ClearHate();
+
+            if (owner is Ally)
+            {
+                owner.isMovingToSpawn = false;
+                owner.moveState = 0;
+                owner.aiContainer.pathFind.Clear();
+            }
+            else
+            {
+                owner.isMovingToSpawn = true;
+                owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
+                owner.aiContainer.pathFind.PreparePath(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 10);
+            }
+
             lua.LuaEngine.CallLuaBattleFunction(owner, "onDisengage", owner, target, Utils.UnixTimeStampUTC(lastUpdate));
         }
 

@@ -27,7 +27,7 @@ CREATE TABLE `users` (
   `name` varchar(45) NOT NULL,
   `passhash` char(56) NOT NULL,
   `salt` char(56) NOT NULL,
-  `email` varchar(256) NOT NULL,
+  `email` varchar(256) NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name_UNIQUE` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
