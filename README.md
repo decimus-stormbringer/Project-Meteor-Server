@@ -15,9 +15,11 @@ How To Install
 Text Guide (written by Project Meteor)
 http://ffxivclassic.fragmenterworks.com/wiki/index.php/Setting_up_the_project
 
-Video Guide (created by SlerpLederp)
+Video Guide (created by SlerpLederp)  
 https://youtu.be/HNtGxs4fUP8
-https://youtu.be/_y5K0w3ksVc (Older guide, use for original Project Meteor builds running off .NET Framework)
+
+(Older guide, use for original Project Meteor builds running off .NET Framework)  
+https://youtu.be/_y5K0w3ksVc 
 
 Pull Requests
 ========
