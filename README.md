@@ -3,8 +3,7 @@ Project Buried Memory
 
 Welcome to the repository for Project Buried Memory; a server emulator for FFXIV v1.23b.
 This project is dedicated to rebuilding and preserving as much as FFXIV 1.0's experience
-as possible, with a current emphasis on questing. We also host an online server for
-people to easily be able to play and experience the project. 
+as possible, with a current emphasis on questing.
 
 For more info on the project, and for instructions on how to play online, 
 please feel free to join us on our Discord server. 
@@ -17,8 +16,8 @@ Text Guide (written by Project Meteor)
 http://ffxivclassic.fragmenterworks.com/wiki/index.php/Setting_up_the_project
 
 Video Guide (created by SlerpLederp)
-https://youtu.be/_y5K0w3ksVc
-
+https://youtu.be/HNtGxs4fUP8
+https://youtu.be/_y5K0w3ksVc (Older guide, use for original Project Meteor builds running off .NET Framework)
 
 Pull Requests
 ========
